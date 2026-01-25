@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BRAZZERS | Админ-панель</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="theme-style">
+        :root {
+            --green-500: #16a34a;
+            --green-600: #15803d;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gray-900: #111827;
+            --border-color: #bbf7d0;
+        }
+        body {
+            background: var(--white);
+            color: var(--gray-900);
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+        .header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 30px; padding-bottom: 15px;
+            border-bottom: 2px solid var(--green-500);
+        }
+        .btn {
+            background: var(--green-500); color: white;
+            border: none; padding: 10px 20px;
+            border-radius: 6px; cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover { background: var(--green-600); }
+        .section {
+            background: var(--green-50);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        th { background: var(--green-100); }
+        select, input {
+            padding: 8px; margin: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-radius: 8px;
+        }
+        .table-container table { min-width: 900px; }
+        .chunk-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0;
+        }
+        .chunk-item label { display: block; margin-bottom: 5px; font-size: 14px; }
+        .chunk-item input { width: 80px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>АДМИН-ПАНЕЛЬ</h1>
+    <div>
+        <button class="btn" onclick="location.href='/dashboard'">← Назад</button>
+        <button class="btn" onclick="location.href='/logout'">Выйти</button>
+    </div>
+</div>
+
+<!-- Выдать проценты одному -->
+<div class="section">
+    <h2>Выдать проценты одному игроку</h2>
+    <form method="POST" action="/api/give-percent-single">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите игрока</option>
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <div class="chunk-grid">
+            <div class="chunk-item">
+                <label>Кусок №1</label>
+                <input type="number" step="0.1" name="chunk1" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №2</label>
+                <input type="number" step="0.1" name="chunk2" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №3</label>
+                <input type="number" step="0.1" name="chunk3" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №4</label>
+                <input type="number" step="0.1" name="chunk4" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №5</label>
+                <input type="number" step="0.1" name="chunk5" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №6</label>
+                <input type="number" step="0.1" name="chunk6" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №7</label>
+                <input type="number" step="0.1" name="chunk7" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Кусок №8</label>
+                <input type="number" step="0.1" name="chunk8" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>В.Рад №1</label>
+                <input type="number" step="0.1" name="vr1" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>В.Рад №2</label>
+                <input type="number" step="0.1" name="vr2" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>В.Рад №3</label>
+                <input type="number" step="0.1" name="vr3" value="0">
+            </div>
+            <div class="chunk-item">
+                <label>Ядро</label>
+                <input type="number" step="0.1" name="core" value="0">
+            </div>
+        </div>
+        <button class="btn" type="submit">Выдать проценты</button>
+    </form>
+</div>
+
+<!-- Выдать проценты группе -->
+<div class="section">
+    <h2>Выдать проценты группе игроков (100% делится поровну)</h2>
+    <form method="POST" action="/api/give-percent-multiple">
+        <select name="user_ids" multiple size="5" required style="width: 200px; height: 120px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="chunk" required style="width: 180px;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <button class="btn" type="submit">Разделить 100%</button>
+    </form>
+</div>
+
+<!-- Передача процентов -->
+<div class="section">
+    <h2>Передать проценты от одного игрока другому</h2>
+    <form method="POST" action="/api/transfer-percent">
+        <select name="from_user" required style="width: 180px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }} (от кого)</option>
+            {% endfor %}
+        </select>
+        <select name="to_user" required style="width: 180px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }} (кому)</option>
+            {% endfor %}
+        </select>
+        <select name="chunk" required style="width: 180px;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <input type="number" step="0.1" name="amount" placeholder="Сколько %" required style="width: 120px;">
+        <button class="btn" type="submit">Передать</button>
+    </form>
+</div>
+
+<!-- Выдать кусок -->
+<div class="section">
+    <h2>Выдать кусок (вычитает 100%)</h2>
+    <form method="POST" action="/api/issue-chunk">
+        <select name="user_id" required style="width: 200px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="chunk" required style="width: 180px;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <button class="btn" type="submit" onclick="return confirm('Вычесть 100% у игрока?')">Выдать кусок</button>
+    </form>
+</div>
+
+<!-- Общак -->
+<div class="section">
+    <h2>Управление общаком</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Элемент</th>
+                    <th>Проценты в общаке</th>
+                    <th>Добавить</th>
+                    <th>Забрать</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Кусок №1</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk1']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk1">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk1">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №2</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk2']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk2">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk2">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №3</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk3']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk3">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk3">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №4</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk4']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk4">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk4">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №5</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk5']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk5">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk5">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №6</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk6']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk6">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk6">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №7</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk7']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk7">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk7">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Кусок №8</td>
+                    <td>{{ "%.1f"|format(common_fund['chunk8']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk8">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="chunk8">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>В.Рад №1</td>
+                    <td>{{ "%.1f"|format(common_fund['vr1']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr1">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr1">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>В.Рад №2</td>
+                    <td>{{ "%.1f"|format(common_fund['vr2']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr2">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr2">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>В.Рад №3</td>
+                    <td>{{ "%.1f"|format(common_fund['vr3']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr3">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="vr3">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Ядро</td>
+                    <td>{{ "%.1f"|format(common_fund['core']) }}</td>
+                    <td>
+                        <form method="POST" action="/api/common-add" style="display:inline;">
+                            <input type="hidden" name="chunk" value="core">
+                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/api/common-remove" style="display:inline;">
+                            <input type="hidden" name="chunk" value="core">
+                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:70px;">
+                            <button class="btn" type="submit" style="padding:4px 8px;font-size:12px;">-</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function applyTheme() {
+    const isDark = localStorage.getItem('theme') === 'dark';
+    const style = document.getElementById('theme-style');
+    if (isDark) {
+        style.innerHTML = `
+            body { background: #0f172a; color: #e2e8f0; }
+            .header, .section { background: rgba(15, 23, 42, 0.95); border-color: #4ade80; }
+            .btn { background: #4ade80; color: #0f172a; }
+            select, input { background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border-color: #4ade80; }
+            th { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #4ade80; padding: 10px; text-align: left; }
+            .table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; }
+            .table-container table { min-width: 900px; }
+            .chunk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+            .chunk-item label { display: block; margin-bottom: 5px; font-size: 14px; color: #e2e8f0; }
+            .chunk-item input { width: 80px; background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border: 1px solid #4ade80; }
+        `;
+    } else {
+        style.innerHTML = `
+            :root {
+                --green-500: #16a34a;
+                --green-600: #15803d;
+                --green-100: #dcfce7;
+                --green-50: #f0fdf4;
+                --white: #ffffff;
+                --gray-900: #111827;
+                --border-color: #bbf7d0;
+            }
+            body {
+                background: var(--white);
+                color: var(--gray-900);
+                font-family: 'Inter', sans-serif;
+                padding: 20px;
+            }
+            .header {
+                display: flex; justify-content: space-between;
+                margin-bottom: 30px; padding-bottom: 15px;
+                border-bottom: 2px solid var(--green-500);
+            }
+            .btn {
+                background: var(--green-500); color: white;
+                border: none; padding: 10px 20px;
+                border-radius: 6px; cursor: pointer;
+                font-weight: 600;
+            }
+            .btn:hover { background: var(--green-600); }
+            .section {
+                background: var(--green-50);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+            th { background: var(--green-100); }
+            select, input {
+                padding: 8px; margin: 5px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+            }
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                margin: 16px 0;
+                border-radius: 8px;
+            }
+            .table-container table { min-width: 900px; }
+            .chunk-grid {
+                display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0;
+            }
+            .chunk-item label { display: block; margin-bottom: 5px; font-size: 14px; }
+            .chunk-item input { width: 80px; }
+        `;
+    }
+}
+applyTheme();
+</script>
+</body>
+</html>

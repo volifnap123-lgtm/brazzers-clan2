@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тех. режим | BRAZZERS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="theme-style">
+        :root {
+            --green-500: #16a34a;
+            --green-600: #15803d;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gray-900: #111827;
+            --border-color: #bbf7d0;
+        }
+        body {
+            background: var(--white);
+            color: var(--gray-900);
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+        .header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 30px; padding-bottom: 15px;
+            border-bottom: 2px solid var(--green-500);
+        }
+        .btn {
+            background: var(--green-500); color: white;
+            border: none; padding: 10px 20px;
+            border-radius: 6px; cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover { background: var(--green-600); }
+        .section {
+            background: var(--green-50);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        th { background: var(--green-100); }
+        select, input {
+            padding: 8px; margin: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-radius: 8px;
+        }
+        .table-container table { min-width: 600px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>ТЕХ. РЕЖИМ (admin2)</h1>
+    <div>
+        <button class="btn" onclick="location.href='/admin-panel'">← Назад</button>
+        <button class="btn" onclick="location.href='/logout'">Выйти</button>
+    </div>
+</div>
+
+<!-- Создание пользователя -->
+<div class="section">
+    <h2>Создать пользователя</h2>
+    <form method="POST" action="/api/create-user">
+        <input type="text" name="username" placeholder="Никнейм" required style="width: 180px;">
+        <input type="text" name="login" placeholder="Логин" required style="width: 180px;">
+        <input type="password" name="password" placeholder="Пароль" required style="width: 180px;">
+        <button type="submit" class="btn">Создать</button>
+    </form>
+</div>
+
+<!-- Удаление пользователя -->
+<div class="section">
+    <h2>Удалить пользователя</h2>
+    <form method="POST" action="/api/delete-user">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите пользователя</option>
+            {% for u in users %}
+                {% if u.role != 'admin2' %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Удалить</button>
+    </form>
+</div>
+
+<!-- Назначить админа -->
+<div class="section">
+    <h2>Назначить админа</h2>
+    <form method="POST" action="/api/promote-to-admin">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите пользователя (роль: user)</option>
+            {% for u in users %}
+                {% if u.role == 'user' %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Сделать админом</button>
+    </form>
+</div>
+
+<!-- Снять админа -->
+<div class="section">
+    <h2>Снять админа</h2>
+    <form method="POST" action="/api/remove-admin">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите админа</option>
+            {% for u in users %}
+                {% if u.role == 'admin' %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Снять админа</button>
+    </form>
+</div>
+
+<!-- Просмотр логинов -->
+<div class="section">
+    <h2>Логины пользователей</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Никнейм</th>
+                    <th>Логин</th>
+                    <th>Роль</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.login }}</td>
+                    <td>{{ u.role }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="margin-top: 10px; color: #ef4444; font-weight: bold;">
+        ⚠️ Пароли хранятся в зашифрованном виде и не отображаются.
+    </p>
+</div>
+
+<!-- Аудит -->
+<div class="section">
+    <h2>Аудит-логи</h2>
+    {% if logs %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Действие</th>
+                    <th>Детали</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.details }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>Нет записей</p>
+    {% endif %}
+</div>
+
+<!-- Информация о базе данных -->
+<div class="section">
+    <h2>Информация о базе данных</h2>
+    <p>Размер файла: <strong>{{ "%.2f"|format(db_size) }} МБ</strong></p>
+    <p>Очистка: автоматически удаляются записи старше 12 месяцев.</p>
+</div>
+
+<script>
+function applyTheme() {
+    const isDark = localStorage.getItem('theme') === 'dark';
+    const style = document.getElementById('theme-style');
+    if (isDark) {
+        style.innerHTML = `
+            body { background: #0f172a; color: #e2e8f0; }
+            .header, .section { background: rgba(15, 23, 42, 0.95); border-color: #4ade80; }
+            .btn { background: #4ade80; color: #0f172a; }
+            select, input { background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border-color: #4ade80; }
+            th { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #4ade80; padding: 10px; text-align: left; }
+            .table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; }
+            .table-container table { min-width: 600px; }
+        `;
+    } else {
+        style.innerHTML = `
+            :root {
+                --green-500: #16a34a;
+                --green-600: #15803d;
+                --green-100: #dcfce7;
+                --green-50: #f0fdf4;
+                --white: #ffffff;
+                --gray-900: #111827;
+                --border-color: #bbf7d0;
+            }
+            body {
+                background: var(--white);
+                color: var(--gray-900);
+                font-family: 'Inter', sans-serif;
+                padding: 20px;
+            }
+            .header {
+                display: flex; justify-content: space-between;
+                margin-bottom: 30px; padding-bottom: 15px;
+                border-bottom: 2px solid var(--green-500);
+            }
+            .btn {
+                background: var(--green-500); color: white;
+                border: none; padding: 10px 20px;
+                border-radius: 6px; cursor: pointer;
+                font-weight: 600;
+            }
+            .btn:hover { background: var(--green-600); }
+            .section {
+                background: var(--green-50);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+            th { background: var(--green-100); }
+            select, input {
+                padding: 8px; margin: 5px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+            }
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                margin: 16px 0;
+                border-radius: 8px;
+            }
+            .table-container table { min-width: 600px; }
+        `;
+    }
+}
+applyTheme();
+</script>
+</body>
+</html>

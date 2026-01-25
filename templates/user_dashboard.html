@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BRAZZERS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="theme-style">
+        :root {
+            --green-500: #16a34a;
+            --green-600: #15803d;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gray-900: #111827;
+            --gray-800: #1f2937;
+            --gray-700: #374151;
+            --gray-600: #4b5563;
+            --gray-500: #6b7280;
+            --gray-100: #f3f4f6;
+            --border-color: #bbf7d0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-image: url('/static/images/light-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--gray-900);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.dark-theme {
+            background-image: url('/static/images/dark-bg.jpg');
+            color: #e2e8f0 !important;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 16px 30px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            border-bottom: 2px solid var(--green-500);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 10;
+            position: relative;
+        }
+
+        .dark-theme .header {
+            background: rgba(15, 23, 42, 0.95) !important;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 28px;
+            color: var(--green-600);
+            border: 2px solid var(--green-500);
+            padding: 5px 15px;
+            border-radius: 8px;
+            background: var(--green-50);
+        }
+
+        .dark-theme .logo {
+            color: #4ade80 !important;
+            border-color: #4ade80 !important;
+            background: rgba(74, 222, 128, 0.1) !important;
+        }
+
+        .nav-buttons {
+            margin-left: 200px;
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--green-600);
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .dark-theme .nav-btn {
+            color: #4ade80 !important;
+        }
+
+        .nav-btn:hover {
+            background: var(--green-50);
+            color: var(--green-700);
+            transform: translateY(-1px);
+        }
+
+        .dark-theme .nav-btn:hover {
+            background: rgba(74, 222, 128, 0.2) !important;
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            color: #ef4444;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .logout-btn:hover {
+            color: #dc2626;
+        }
+
+        .main-content {
+            height: calc(100vh - 90px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--green-500);
+            border-radius: 16px;
+            width: 94%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .dark-theme .modal-content {
+            background: rgba(15, 23, 42, 0.95) !important;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--green-500);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .dark-theme .close-btn {
+            background: #4ade80 !important;
+            color: #0f172a !important;
+        }
+
+        .close-btn:hover {
+            background: var(--green-600);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dark-theme .modal-header {
+            border-color: #4ade80 !important;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--green-600);
+        }
+
+        .dark-theme .modal-title {
+            color: #4ade80 !important;
+        }
+
+        /* Адаптивные таблицы */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        .dark-theme th,
+        .dark-theme td {
+            border-color: #4ade80 !important;
+        }
+
+        th {
+            background: var(--green-100);
+            color: var(--green-700);
+            font-weight: 600;
+        }
+
+        .dark-theme th {
+            background: rgba(74, 222, 128, 0.15) !important;
+            color: #4ade80 !important;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: var(--green-50);
+        }
+
+        .dark-theme tbody tr:hover {
+            background: rgba(74, 222, 128, 0.1) !important;
+        }
+
+        .player-info {
+            margin-bottom: 16px;
+            font-size: 18px;
+            color: var(--gray-900);
+            text-align: center;
+        }
+
+        .dark-theme .player-info {
+            color: #e2e8f0 !important;
+        }
+
+        .extra-box {
+            background: var(--green-50);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .dark-theme .extra-box {
+            background: rgba(74, 222, 128, 0.1) !important;
+            border-color: #4ade80 !important;
+        }
+
+        .extra-box h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--green-700);
+            margin-bottom: 12px;
+        }
+
+        .dark-theme .extra-box h3 {
+            color: #4ade80 !important;
+        }
+
+        .top-player {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 6px 0;
+            transition: background 0.2s;
+        }
+
+        .top-player:hover {
+            background: var(--white);
+        }
+
+        .dark-theme .top-player:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .rank-badge {
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .rank-1 { color: #ca8a04; }
+        .rank-2 { color: #6b7280; }
+        .rank-3 { color: #d97706; }
+        .rank-other { color: var(--green-600); }
+
+        .dark-theme .rank-1 { color: #facc15 !important; }
+        .dark-theme .rank-2 { color: #cbd5e1 !important; }
+        .dark-theme .rank-3 { color: #fbbf24 !important; }
+        .dark-theme .rank-other { color: #4ade80 !important; }
+
+        .profile-panel {
+            display: none;
+            position: fixed;
+            top: 0; right: 0;
+            height: 100vh;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 2px solid var(--green-500);
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            z-index: 1001;
+            padding: 24px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .dark-theme .profile-panel {
+            background: rgba(15, 23, 42, 0.95) !important;
+            border-color: #4ade80 !important;
+        }
+
+        .profile-panel.open {
+            display: block;
+            transform: translateX(0);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .profile-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--green-600);
+        }
+
+        .dark-theme .profile-title {
+            color: #4ade80 !important;
+        }
+
+        .profile-field {
+            margin-bottom: 20px;
+        }
+
+        .profile-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--green-700);
+            margin-bottom: 8px;
+        }
+
+        .dark-theme .profile-label {
+            color: #4ade80 !important;
+        }
+
+        .profile-value {
+            background: var(--green-50);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            color: var(--gray-900);
+        }
+
+        .dark-theme .profile-value {
+            background: rgba(74, 222, 128, 0.1) !important;
+            border-color: #4ade80 !important;
+            color: #e2e8f0 !important;
+        }
+
+        .profile-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 6px;
+            font-family: monospace;
+        }
+
+        .dark-theme .profile-input {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border-color: #4ade80 !important;
+            color: #e2e8f0 !important;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: var(--green-500);
+            color: white;
+        }
+
+        .dark-theme .btn-edit {
+            background: #4ade80 !important;
+            color: #0f172a !important;
+        }
+
+        .btn-edit:hover {
+            background: var(--green-600);
+        }
+
+        .btn-cancel {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .dark-theme .btn-cancel {
+            background: rgba(71, 85, 105, 0.3) !important;
+            color: #cbd5e1 !important;
+        }
+
+        .role-info {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--green-700);
+            font-weight: 600;
+        }
+
+        .dark-theme .role-info {
+            border-color: #4ade80 !important;
+            color: #4ade80 !important;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 11px;
+                padding: 6px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">BRAZZERS</div>
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="openModal('stats')">
+            <span>📊</span> Статистика
+        </button>
+        <button class="nav-btn" onclick="openModal('common')">
+            <span>📋</span> Общая таблица
+        </button>
+        <button class="nav-btn" onclick="toggleProfile()">
+            <span>👤</span> Профиль
+        </button>
+    </div>
+    <button class="logout-btn" onclick="location.href='/logout'">
+        <span>🚪</span> Выйти
+    </button>
+</div>
+
+<div class="main-content"></div>
+
+<!-- Статистика -->
+<div id="stats-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Статистика игрока</div>
+            <button class="close-btn" onclick="closeModal('stats')">×</button>
+        </div>
+        <div class="player-info">Игрок: {{ user.username }}</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата зачисления</th>
+                        <th>Кусок №1</th>
+                        <th>Кусок №2</th>
+                        <th>В.Рад №1</th>
+                        <th>Кусок №3</th>
+                        <th>Кусок №4</th>
+                        <th>Кусок №5</th>
+                        <th>В.Рад №2</th>
+                        <th>Кусок №6</th>
+                        <th>Кусок №7</th>
+                        <th>Кусок №8</th>
+                        <th>В.Рад №3</th>
+                        <th>Ядро</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in stats_rows %}
+                    <tr>
+                        <td>{{ row.updated_at[:16] }}</td>
+                        <td>{{ "%.1f"|format(row.chunk1) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk2) }}%</td>
+                        <td>{{ "%.1f"|format(row.vr1) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk3) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk4) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk5) }}%</td>
+                        <td>{{ "%.1f"|format(row.vr2) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk6) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk7) }}%</td>
+                        <td>{{ "%.1f"|format(row.chunk8) }}%</td>
+                        <td>{{ "%.1f"|format(row.vr3) }}%</td>
+                        <td>{{ "%.1f"|format(row.core) }}%</td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="background: var(--green-100);">
+                        <td><strong>Общее кол-во</strong></td>
+                        <td>{{ "%.1f"|format(total.chunk1) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk2) }}%</td>
+                        <td>{{ "%.1f"|format(total.vr1) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk3) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk4) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk5) }}%</td>
+                        <td>{{ "%.1f"|format(total.vr2) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk6) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk7) }}%</td>
+                        <td>{{ "%.1f"|format(total.chunk8) }}%</td>
+                        <td>{{ "%.1f"|format(total.vr3) }}%</td>
+                        <td>{{ "%.1f"|format(total.core) }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 20px;">
+            <div class="extra-box">
+                <div>Полученных 6б13: 0</div>
+                <div>Отданных процентов: {{ "%.1f"|format(given_percent) }}%</div>
+            </div>
+            <div class="extra-box">
+                <h3>Топ 5 игроков</h3>
+                {% for player in top5 %}
+                <div class="top-player">
+                    <span class="rank-badge
+                        {% if loop.index == 1 %}rank-1
+                        {% elif loop.index == 2 %}rank-2
+                        {% elif loop.index == 3 %}rank-3
+                        {% else %}rank-other{% endif %}">
+                        #{{ loop.index }}
+                    </span>
+                    {{ player.username }}
+                    <span>{{ "%.1f"|format(player.total) }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Общая таблица -->
+<div id="common-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Общая статистика</div>
+            <button class="close-btn" onclick="closeModal('common')">×</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Никнейм</th>
+                        <th>Кусок №1</th>
+                        <th>Кусок №2</th>
+                        <th>В.Рад №1</th>
+                        <th>Кусок №3</th>
+                        <th>Кусок №4</th>
+                        <th>Кусок №5</th>
+                        <th>В.Рад №2</th>
+                        <th>Кусок №6</th>
+                        <th>Кусок №7</th>
+                        <th>Кусок №8</th>
+                        <th>В.Рад №3</th>
+                        <th>Ядро</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in all_users %}
+                    <tr>
+                        <td>{{ u.username }}</td>
+                        <td>{{ "%.1f"|format(u.chunk1) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk2) }}%</td>
+                        <td>{{ "%.1f"|format(u.vr1) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk3) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk4) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk5) }}%</td>
+                        <td>{{ "%.1f"|format(u.vr2) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk6) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk7) }}%</td>
+                        <td>{{ "%.1f"|format(u.chunk8) }}%</td>
+                        <td>{{ "%.1f"|format(u.vr3) }}%</td>
+                        <td>{{ "%.1f"|format(u.core) }}%</td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="background: var(--green-100);">
+                        <td><strong>Общак</strong></td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                        <td>0.0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Профиль -->
+<div id="profile-panel" class="profile-panel">
+    <div class="profile-header">
+        <div class="profile-title">Ваш профиль</div>
+        <button class="close-btn" style="width:28px;height:28px;" onclick="toggleProfile()">×</button>
+    </div>
+    <div class="profile-field">
+        <div class="profile-label">
+            <span>Логин</span>
+            <button class="btn-small btn-edit" onclick="toggleEdit('login')">Изменить</button>
+        </div>
+        <div id="login-display" class="profile-value">{{ user.login }}</div>
+        <input type="text" id="login-input" class="profile-input" value="{{ user.login }}" style="display:none;">
+        <div id="login-actions" class="profile-actions" style="display:none;">
+            <button class="btn-small btn-edit" onclick="saveField('login')">Сохранить</button>
+            <button class="btn-small btn-cancel" onclick="cancelEdit('login')">Отмена</button>
+        </div>
+    </div>
+    <div class="profile-field">
+        <div class="profile-label">
+            <span>Пароль</span>
+            <button class="btn-small btn-edit" onclick="toggleEdit('password')">Изменить</button>
+        </div>
+        <div id="password-display" class="profile-value">••••••••</div>
+        <input type="password" id="password-input" class="profile-input" value="{{ user.password }}" style="display:none;">
+        <div id="password-actions" class="profile-actions" style="display:none;">
+            <button class="btn-small btn-edit" onclick="saveField('password')">Сохранить</button>
+            <button class="btn-small btn-cancel" onclick="cancelEdit('password')">Отмена</button>
+        </div>
+    </div>
+    <div class="role-info">
+        <span>⚙️</span>
+        <span>Роль:
+            {% if user.role == 'admin2' %}Главный админ
+            {% elif user.role == 'admin' %}Администратор
+            {% else %}Пользователь{% endif %}
+        </span>
+    </div>
+    {% if user.role == 'admin' %}
+    <button class="nav-btn" style="width:100%; margin-top:20px;" onclick="location.href='/admin-panel'">
+        Админ-панель
+    </button>
+    {% elif user.role == 'admin2' %}
+    <button class="nav-btn" style="width:100%; margin-top:20px;" onclick="location.href='/tech-mode'">
+        Тех. режим
+    </button>
+    {% endif %}
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+    <button onclick="toggleTheme()" style="padding: 8px 16px; background: var(--green-500); color: white; border: none; border-radius: 6px; cursor: pointer;">
+        🌓 Тема
+    </button>
+</div>
+
+<script>
+    function openModal(name) {
+        document.getElementById(name + '-modal').style.display = 'flex';
+        document.getElementById('overlay').classList.add('active');
+    }
+    function closeModal(name) {
+        document.getElementById(name + '-modal').style.display = 'none';
+        document.getElementById('overlay').classList.remove('active');
+    }
+    function toggleProfile() {
+        const panel = document.getElementById('profile-panel');
+        const overlay = document.getElementById('overlay');
+        if (panel.classList.contains('open')) {
+            panel.classList.remove('open');
+            overlay.classList.remove('active');
+        } else {
+            panel.classList.add('open');
+            overlay.classList.add('active');
+        }
+    }
+    function toggleEdit(field) {
+        document.getElementById(field + '-display').style.display = 'block';
+        document.getElementById(field + '-input').style.display = 'block';
+        document.getElementById(field + '-actions').style.display = 'flex';
+    }
+    function cancelEdit(field) {
+        document.getElementById(field + '-display').style.display = 'block';
+        document.getElementById(field + '-input').style.display = 'none';
+        document.getElementById(field + '-actions').style.display = 'none';
+    }
+    function saveField(field) {
+        const value = document.getElementById(field + '-input').value;
+        alert('Сохранено: ' + field + ' = ' + value);
+        document.getElementById(field + '-display').textContent = field === 'password' ? '••••••••' : value;
+        cancelEdit(field);
+    }
+    document.getElementById('overlay').onclick = function() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        document.getElementById('profile-panel').classList.remove('open');
+        this.classList.remove('active');
+    };
+    function toggleTheme() {
+        const isDark = document.body.classList.contains('dark-theme');
+        if (isDark) {
+            document.body.classList.remove('dark-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    });
+</script>
+</body>
+</html>
