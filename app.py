@@ -358,6 +358,9 @@ def api_delete_user():
     conn.close()
     return redirect('/tech-mode')
 
+@app.route('/keep-alive')
+def keep_alive():
+    return 'OK', 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
