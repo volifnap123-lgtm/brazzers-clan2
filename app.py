@@ -356,6 +356,85 @@ def api_delete_user():
     log_action(session['user_id'], 'delete_user', f"user_id={user_id}")
     conn.close()
     return redirect('/tech-mode')
+# === Изменение своего логина (любой пользователь) ===
+@app.route('/api/change-login', methods=['POST'])
+def api_change_login():
+    if 'user_id' not in session:
+        return redirect('/')
+    cleanup_old_records()
+    new_login = request.form['new_login']
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, session['user_id']))
+        conn.commit()
+        # Обновляем сессию
+        session['user_id'] = session['user_id']
+    except sqlite3.IntegrityError:
+        pass  # Логин уже занят
+    finally:
+        conn.close()
+    return redirect('/dashboard')
+
+# === Изменение своего пароля (любой пользователь) ===
+@app.route('/api/change-password', methods=['POST'])
+def api_change_password():
+    if 'user_id' not in session:
+        return redirect('/')
+    cleanup_old_records()
+    new_pass = request.form['new_password']
+    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, session['user_id']))
+        conn.commit()
+        # Сбрасываем сессию — требуется повторный вход
+        session.clear()
+    except:
+        pass
+    finally:
+        conn.close()
+    return redirect('/')  # Возврат на страницу входа
+
+# === Тех. админ меняет логин другому ===
+@app.route('/api/admin-change-login', methods=['POST'])
+def api_admin_change_login():
+    if session.get('role') != 'admin2':
+        return redirect('/tech-mode')
+    cleanup_old_records()
+    user_id = request.form['user_id']
+    new_login = request.form['new_login']
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, user_id))
+        conn.commit()
+        log_action(session['user_id'], 'admin_change_login', f"user_id={user_id}, new_login={new_login}")
+    except sqlite3.IntegrityError:
+        pass
+    finally:
+        conn.close()
+    return redirect('/tech-mode')
+
+# === Тех. админ меняет пароль другому ===
+@app.route('/api/admin-change-password', methods=['POST'])
+def api_admin_change_password():
+    if session.get('role') != 'admin2':
+        return redirect('/tech-mode')
+    cleanup_old_records()
+    user_id = request.form['user_id']
+    new_pass = request.form['new_password']
+    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, user_id))
+        conn.commit()
+        log_action(session['user_id'], 'admin_change_password', f"user_id={user_id}")
+    except:
+        pass
+    finally:
+        conn.close()
+    return redirect('/tech-mode')
+
+
 
 @app.route('/keep-alive')
 def keep_alive():
