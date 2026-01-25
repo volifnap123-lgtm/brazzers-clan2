@@ -26,7 +26,6 @@ def cleanup_old_records():
 
 
 def log_action(admin_id, action, details):
-    cleanup_old_records()  # Очистка перед записью
     conn = get_db_connection()
     conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)', (admin_id, action, str(details)))
     conn.commit()
