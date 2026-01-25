@@ -9,12 +9,10 @@ app.secret_key = 'brazzers_secret_2026_strong'
 
 DATABASE = 'brazzers.db'
 
-
 def get_db_connection():
     conn = sqlite3.connect(DATABASE, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
-
 
 def cleanup_old_records():
     """Удаляет записи старше 12 месяцев"""
@@ -24,13 +22,11 @@ def cleanup_old_records():
     conn.commit()
     conn.close()
 
-
 def log_action(admin_id, action, details):
     conn = get_db_connection()
     conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)', (admin_id, action, str(details)))
     conn.commit()
     conn.close()
-
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -50,7 +46,6 @@ def login():
         else:
             return render_template('login.html', error="Неверный логин или пароль")
     return render_template('login.html')
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -104,7 +99,6 @@ def dashboard():
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
                            all_users=all_users, top5=top5)
 
-
 @app.route('/admin-panel')
 def admin_panel():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
@@ -117,7 +111,6 @@ def admin_panel():
     conn.close()
     return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund)
 
-
 @app.route('/tech-mode')
 def tech_mode():
     if session.get('role') != 'admin2':
@@ -127,17 +120,14 @@ def tech_mode():
     users = conn.execute("SELECT id, username, login, role FROM users").fetchall()
     conn.close()
 
-    # Размер базы данных в МБ
     db_size = round(os.path.getsize(DATABASE) / (1024 * 1024), 2) if os.path.exists(DATABASE) else 0
 
     return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size)
-
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
-
 
 # === API ===
 
@@ -160,7 +150,6 @@ def api_give_percent_single():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/give-percent-multiple', methods=['POST'])
 def api_give_percent_multiple():
     if 'role' not in session:
@@ -180,7 +169,6 @@ def api_give_percent_multiple():
     log_action(session['user_id'], 'give_percent_multi', f"chunk={chunk}, users={user_ids}, each={amount_per}")
     conn.close()
     return redirect('/admin-panel')
-
 
 @app.route('/api/transfer-percent', methods=['POST'])
 def api_transfer_percent():
@@ -210,7 +198,6 @@ def api_transfer_percent():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/issue-chunk', methods=['POST'])
 def api_issue_chunk():
     if 'role' not in session:
@@ -230,7 +217,6 @@ def api_issue_chunk():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/common-add', methods=['POST'])
 def api_common_add():
     if 'role' not in session:
@@ -244,7 +230,6 @@ def api_common_add():
     log_action(session['user_id'], 'common_add', f"{chunk}+{amount}")
     conn.close()
     return redirect('/admin-panel')
-
 
 @app.route('/api/common-remove', methods=['POST'])
 def api_common_remove():
@@ -260,7 +245,6 @@ def api_common_remove():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/remove-admin', methods=['POST'])
 def api_remove_admin():
     if session.get('role') != 'admin2':
@@ -274,38 +258,6 @@ def api_remove_admin():
     conn.close()
     return redirect('/tech-mode')
 
-
-@app.route('/api/change-login', methods=['POST'])
-def api_change_login():
-    if 'user_id' not in session:
-        return redirect('/')
-    cleanup_old_records()
-    new_login = request.form['new_login']
-    conn = get_db_connection()
-    try:
-        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, session['user_id']))
-        conn.commit()
-    except:
-        pass
-    finally:
-        conn.close()
-    return redirect('/dashboard')
-
-
-@app.route('/api/change-password', methods=['POST'])
-def api_change_password():
-    if 'user_id' not in session:
-        return redirect('/')
-    cleanup_old_records()
-    new_pass = request.form['new_password']
-    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
-    conn = get_db_connection()
-    conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, session['user_id']))
-    conn.commit()
-    conn.close()
-    return redirect('/dashboard')
-
-
 @app.route('/api/promote-to-admin', methods=['POST'])
 def api_promote_to_admin():
     if session.get('role') != 'admin2':
@@ -318,7 +270,6 @@ def api_promote_to_admin():
     log_action(session['user_id'], 'promote_to_admin', f"user_id={user_id}")
     conn.close()
     return redirect('/tech-mode')
-
 
 @app.route('/api/create-user', methods=['POST'])
 def api_create_user():
@@ -341,7 +292,6 @@ def api_create_user():
         conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/delete-user', methods=['POST'])
 def api_delete_user():
     if session.get('role') != 'admin2':
@@ -356,7 +306,8 @@ def api_delete_user():
     log_action(session['user_id'], 'delete_user', f"user_id={user_id}")
     conn.close()
     return redirect('/tech-mode')
-# === Изменение своего логина (любой пользователь) ===
+
+# === Изменение своего логина ===
 @app.route('/api/change-login', methods=['POST'])
 def api_change_login():
     if 'user_id' not in session:
@@ -367,15 +318,13 @@ def api_change_login():
     try:
         conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, session['user_id']))
         conn.commit()
-        # Обновляем сессию
-        session['user_id'] = session['user_id']
     except sqlite3.IntegrityError:
-        pass  # Логин уже занят
+        pass
     finally:
         conn.close()
     return redirect('/dashboard')
 
-# === Изменение своего пароля (любой пользователь) ===
+# === Изменение своего пароля ===
 @app.route('/api/change-password', methods=['POST'])
 def api_change_password():
     if 'user_id' not in session:
@@ -387,8 +336,7 @@ def api_change_password():
     try:
         conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, session['user_id']))
         conn.commit()
-        # Сбрасываем сессию — требуется повторный вход
-        session.clear()
+        session.clear()  # Требуется повторный вход
     except:
         pass
     finally:
@@ -433,8 +381,6 @@ def api_admin_change_password():
     finally:
         conn.close()
     return redirect('/tech-mode')
-
-
 
 @app.route('/keep-alive')
 def keep_alive():
