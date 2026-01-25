@@ -786,5 +786,11 @@
         }
     });
 </script>
+<script>
+// Каждые 9 минут отправляем запрос, чтобы Render не уснул
+setInterval(() => {
+    fetch('/keep-alive').catch(() => {});
+}, 9 * 60 * 1000);
+</script>
 </body>
 </html>
