@@ -189,6 +189,35 @@
     <p>Очистка: автоматически удаляются записи старше 12 месяцев.</p>
 </div>
 
+<!-- Управление логинами и паролями -->
+<div class="section">
+    <h2>Изменить логин или пароль пользователя</h2>
+    <form method="POST" action="/api/admin-change-login">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите пользователя</option>
+            {% for u in users %}
+                {% if u.role != 'admin2' %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <input type="text" name="new_login" placeholder="Новый логин" required style="width: 180px;">
+        <button type="submit" class="btn">Сменить логин</button>
+    </form>
+    <form method="POST" action="/api/admin-change-password" style="margin-top: 10px;">
+        <select name="user_id" required style="width: 200px;">
+            <option value="">Выберите пользователя</option>
+            {% for u in users %}
+                {% if u.role != 'admin2' %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <input type="password" name="new_password" placeholder="Новый пароль" required style="width: 180px;">
+        <button type="submit" class="btn">Сменить пароль</button>
+    </form>
+</div>
+
 <script>
 function applyTheme() {
     const isDark = localStorage.getItem('theme') === 'dark';
@@ -261,33 +290,5 @@ function applyTheme() {
 }
 applyTheme();
 </script>
-<!-- Управление логинами и паролями -->
-<div class="section">
-    <h2>Изменить логин или пароль пользователя</h2>
-    <form method="POST" action="/api/admin-change-login">
-        <select name="user_id" required>
-            <option value="">Выберите пользователя</option>
-            {% for u in users %}
-                {% if u.role != 'admin2' %}
-                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-        <input type="text" name="new_login" placeholder="Новый логин" required>
-        <button type="submit" class="btn">Сменить логин</button>
-    </form>
-    <form method="POST" action="/api/admin-change-password" style="margin-top: 10px;">
-        <select name="user_id" required>
-            <option value="">Выберите пользователя</option>
-            {% for u in users %}
-                {% if u.role != 'admin2' %}
-                    <option value="{{ u.id }}">{{ u.username }} ({{ u.login }})</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-        <input type="password" name="new_password" placeholder="Новый пароль" required>
-        <button type="submit" class="btn">Сменить пароль</button>
-    </form>
-</div>
 </body>
 </html>
