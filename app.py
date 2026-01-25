@@ -331,17 +331,21 @@ def api_change_password():
         return redirect('/')
     cleanup_old_records()
     new_pass = request.form['new_password']
+    if not new_pass or len(new_pass) < 4:
+        return redirect('/dashboard')  # Минимальная длина пароля
+    
     pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
     conn = get_db_connection()
     try:
         conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, session['user_id']))
         conn.commit()
-        session.clear()  # Требуется повторный вход
-    except:
-        pass
+        session.clear()  # Обязательно сбросить сессию
+        return redirect('/')  # Перенаправить на страницу входа
+    except Exception as e:
+        print(f"Ошибка при смене пароля: {e}")
+        return redirect('/dashboard')
     finally:
         conn.close()
-    return redirect('/')  # Возврат на страницу входа
 
 # === Тех. админ меняет логин другому ===
 @app.route('/api/admin-change-login', methods=['POST'])
