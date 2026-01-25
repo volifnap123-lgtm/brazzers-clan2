@@ -695,11 +695,13 @@
             <button class="btn-small btn-edit" onclick="toggleEdit('password')">Изменить</button>
         </div>
         <div id="password-display" class="profile-value">••••••••</div>
-        <input type="password" id="password-input" class="profile-input" value="{{ user.password }}" style="display:none;">
-        <div id="password-actions" class="profile-actions" style="display:none;">
-            <button class="btn-small btn-edit" onclick="saveField('password')">Сохранить</button>
-            <button class="btn-small btn-cancel" onclick="cancelEdit('password')">Отмена</button>
-        </div>
+        <form method="POST" action="/api/change-password" id="password-form" style="display:none;">
+            <input type="password" name="new_password" placeholder="Новый пароль" required style="width:100%; padding:10px; margin-top:6px; border:1px solid var(--border-color); border-radius:8px;">
+            <div class="profile-actions" style="margin-top:8px;">
+                <button type="submit" class="btn-small btn-edit">Сохранить</button>
+                <button type="button" class="btn-small btn-cancel" onclick="cancelEdit('password')">Отмена</button>
+            </div>
+        </form>
     </div>
     <div class="role-info">
         <span>⚙️</span>
