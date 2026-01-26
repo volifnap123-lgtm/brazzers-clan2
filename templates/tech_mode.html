@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тех. режим | BRAZZERS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style id="theme-style">
@@ -13,47 +14,75 @@
             --white: #ffffff;
             --gray-900: #111827;
             --border-color: #bbf7d0;
+            --yellow-border: #eab308;
         }
         body {
             background: var(--white);
             color: var(--gray-900);
             font-family: 'Inter', sans-serif;
-            padding: 20px;
+            padding: 15px;
         }
         .header {
             display: flex; justify-content: space-between;
-            margin-bottom: 30px; padding-bottom: 15px;
+            margin-bottom: 25px; padding-bottom: 12px;
             border-bottom: 2px solid var(--green-500);
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .btn {
             background: var(--green-500); color: white;
-            border: none; padding: 10px 20px;
+            border: none; padding: 8px 16px;
             border-radius: 6px; cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
         }
         .btn:hover { background: var(--green-600); }
         .section {
             background: var(--green-50);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
+            padding: 18px;
+            margin-bottom: 20px;
         }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
         th { background: var(--green-100); }
-        select, input {
-            padding: 8px; margin: 5px;
+        select, input, textarea {
+            padding: 6px; margin: 4px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 14px;
+            width: 100%;
         }
         .table-container {
             width: 100%;
             overflow-x: auto;
-            margin: 16px 0;
+            margin: 12px 0;
             border-radius: 8px;
         }
         .table-container table { min-width: 600px; }
+        
+        /* Заявки */
+        .request-item {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid var(--yellow-border);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        /* Новости */
+        .news-section {
+            margin-top: 25px;
+        }
+        .news-border::before,
+        .news-border::after {
+            content: "--------------------------------------------------";
+            display: block;
+            color: var(--yellow-border);
+            font-weight: bold;
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -70,9 +99,9 @@
 <div class="section">
     <h2>Создать пользователя</h2>
     <form method="POST" action="/api/create-user">
-        <input type="text" name="username" placeholder="Никнейм" required style="width: 180px;">
-        <input type="text" name="login" placeholder="Логин" required style="width: 180px;">
-        <input type="password" name="password" placeholder="Пароль" required style="width: 180px;">
+        <input type="text" name="username" placeholder="Никнейм" required>
+        <input type="text" name="login" placeholder="Логин" required>
+        <input type="password" name="password" placeholder="Пароль" required>
         <button type="submit" class="btn">Создать</button>
     </form>
 </div>
@@ -81,7 +110,7 @@
 <div class="section">
     <h2>Удалить пользователя</h2>
     <form method="POST" action="/api/delete-user">
-        <select name="user_id" required style="width: 200px;">
+        <select name="user_id" required>
             <option value="">Выберите пользователя</option>
             {% for u in users %}
                 {% if u.role != 'admin2' %}
@@ -97,7 +126,7 @@
 <div class="section">
     <h2>Назначить админа</h2>
     <form method="POST" action="/api/promote-to-admin">
-        <select name="user_id" required style="width: 200px;">
+        <select name="user_id" required>
             <option value="">Выберите пользователя (роль: user)</option>
             {% for u in users %}
                 {% if u.role == 'user' %}
@@ -113,7 +142,7 @@
 <div class="section">
     <h2>Снять админа</h2>
     <form method="POST" action="/api/remove-admin">
-        <select name="user_id" required style="width: 200px;">
+        <select name="user_id" required>
             <option value="">Выберите админа</option>
             {% for u in users %}
                 {% if u.role == 'admin' %}
@@ -169,7 +198,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.timestamp[:16] }}</td>
                     <td>{{ log.action }}</td>
                     <td>{{ log.details }}</td>
                 </tr>
@@ -189,11 +218,42 @@
     <p>Очистка: автоматически удаляются записи старше 12 месяцев.</p>
 </div>
 
+<!-- Заявки на смену -->
+<div class="section">
+    <h2>Заявки на смену учётных данных</h2>
+    {% if requests %}
+        {% for req in requests %}
+        <div class="request-item">
+            <div><strong>{{ req.user_name }}</strong> ({{ req.user_login }})</div>
+            {% if req.new_login %}
+                <div>Новый логин: {{ req.new_login }}</div>
+            {% endif %}
+            {% if req.new_password_hash %}
+                <div>Новый пароль: задан</div>
+            {% endif %}
+            <div style="margin-top: 8px;">
+                <form method="POST" action="/api/approve-change" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <button type="submit" class="btn" style="background: #10b981; padding: 4px 10px; font-size: 12px;">Одобрить</button>
+                </form>
+                <form method="POST" action="/api/reject-change" style="display: inline; margin-left: 8px;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="text" name="reason" placeholder="Причина отклонения" required style="width: 150px; display: inline; margin: 0 6px;">
+                    <button type="submit" class="btn" style="background: #ef4444; padding: 4px 10px; font-size: 12px;">Отклонить</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет заявок</p>
+    {% endif %}
+</div>
+
 <!-- Управление логинами и паролями -->
 <div class="section">
     <h2>Изменить логин или пароль пользователя</h2>
     <form method="POST" action="/api/admin-change-login">
-        <select name="user_id" required style="width: 200px;">
+        <select name="user_id" required>
             <option value="">Выберите пользователя</option>
             {% for u in users %}
                 {% if u.role != 'admin2' %}
@@ -201,11 +261,11 @@
                 {% endif %}
             {% endfor %}
         </select>
-        <input type="text" name="new_login" placeholder="Новый логин" required style="width: 180px;">
+        <input type="text" name="new_login" placeholder="Новый логин" required>
         <button type="submit" class="btn">Сменить логин</button>
     </form>
     <form method="POST" action="/api/admin-change-password" style="margin-top: 10px;">
-        <select name="user_id" required style="width: 200px;">
+        <select name="user_id" required>
             <option value="">Выберите пользователя</option>
             {% for u in users %}
                 {% if u.role != 'admin2' %}
@@ -213,8 +273,17 @@
                 {% endif %}
             {% endfor %}
         </select>
-        <input type="password" name="new_password" placeholder="Новый пароль" required style="width: 180px;">
+        <input type="password" name="new_password" placeholder="Новый пароль" required>
         <button type="submit" class="btn">Сменить пароль</button>
+    </form>
+</div>
+
+<!-- Новости -->
+<div class="section news-section">
+    <h2>Сообщение на доску обновлений</h2>
+    <form method="POST" action="/api/post-news">
+        <textarea name="message" placeholder="Введите сообщение..." required style="height: 100px;"></textarea>
+        <button type="submit" class="btn">Опубликовать</button>
     </form>
 </div>
 
@@ -227,12 +296,28 @@ function applyTheme() {
             body { background: #0f172a; color: #e2e8f0; }
             .header, .section { background: rgba(15, 23, 42, 0.95); border-color: #4ade80; }
             .btn { background: #4ade80; color: #0f172a; }
-            select, input { background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border-color: #4ade80; }
+            select, input, textarea { background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border-color: #4ade80; }
             th { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
-            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-            th, td { border: 1px solid #4ade80; padding: 10px; text-align: left; }
-            .table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; }
+            table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+            th, td { border: 1px solid #4ade80; padding: 8px; text-align: left; }
+            .table-container { width: 100%; overflow-x: auto; margin: 12px 0; border-radius: 8px; }
             .table-container table { min-width: 600px; }
+            .request-item {
+                background: rgba(251, 191, 36, 0.1);
+                border-left: 4px solid #eab308;
+                padding: 12px;
+                margin-bottom: 12px;
+                border-radius: 0 8px 8px 0;
+                color: #e2e8f0;
+            }
+            .news-border::before,
+            .news-border::after {
+                content: "--------------------------------------------------";
+                display: block;
+                color: #fde047;
+                font-weight: bold;
+                margin: 4px 0;
+            }
         `;
     } else {
         style.innerHTML = `
@@ -244,47 +329,71 @@ function applyTheme() {
                 --white: #ffffff;
                 --gray-900: #111827;
                 --border-color: #bbf7d0;
+                --yellow-border: #eab308;
             }
             body {
                 background: var(--white);
                 color: var(--gray-900);
                 font-family: 'Inter', sans-serif;
-                padding: 20px;
+                padding: 15px;
             }
             .header {
                 display: flex; justify-content: space-between;
-                margin-bottom: 30px; padding-bottom: 15px;
+                margin-bottom: 25px; padding-bottom: 12px;
                 border-bottom: 2px solid var(--green-500);
+                flex-wrap: wrap;
+                gap: 10px;
             }
             .btn {
                 background: var(--green-500); color: white;
-                border: none; padding: 10px 20px;
+                border: none; padding: 8px 16px;
                 border-radius: 6px; cursor: pointer;
                 font-weight: 600;
+                font-size: 14px;
             }
             .btn:hover { background: var(--green-600); }
             .section {
                 background: var(--green-50);
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 25px;
+                padding: 18px;
+                margin-bottom: 20px;
             }
-            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-            th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+            table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+            th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
             th { background: var(--green-100); }
-            select, input {
-                padding: 8px; margin: 5px;
+            select, input, textarea {
+                padding: 6px; margin: 4px;
                 border: 1px solid var(--border-color);
                 border-radius: 4px;
+                font-size: 14px;
+                width: 100%;
             }
             .table-container {
                 width: 100%;
                 overflow-x: auto;
-                margin: 16px 0;
+                margin: 12px 0;
                 border-radius: 8px;
             }
             .table-container table { min-width: 600px; }
+            .request-item {
+                background: rgba(251, 191, 36, 0.1);
+                border-left: 4px solid var(--yellow-border);
+                padding: 12px;
+                margin-bottom: 12px;
+                border-radius: 0 8px 8px 0;
+            }
+            .news-section {
+                margin-top: 25px;
+            }
+            .news-border::before,
+            .news-border::after {
+                content: "--------------------------------------------------";
+                display: block;
+                color: var(--yellow-border);
+                font-weight: bold;
+                margin: 4px 0;
+            }
         `;
     }
 }
