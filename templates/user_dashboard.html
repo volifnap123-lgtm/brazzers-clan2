@@ -863,9 +863,10 @@
 
 <!-- Уведомление об отклонении -->
 {% if session.get('reject_reason') %}
-<div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fee2e2; color: #b91c1c; padding: 12px 20px; border-radius: 8px; z-index: 2000; border: 2px solid #fecaca;">
+<div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fee2e2; color: #b91c1c; padding: 12px 20px; border-radius: 8px; z-index: 2000; border: 2px solid #fecaca; display: flex; align-items: center; gap: 10px;">
     ❌ Ваша заявка на смену учётных данных отклонена.<br>
     Причина: {{ session['reject_reason'] }}
+    <button onclick="location.href='/api/clear-reject-notice'" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer;">×</button>
 </div>
 {% endif %}
 
