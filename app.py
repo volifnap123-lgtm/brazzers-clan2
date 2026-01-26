@@ -19,6 +19,8 @@ def cleanup_old_records():
     conn = get_db_connection()
     conn.execute("DELETE FROM stats WHERE updated_at < datetime('now', '-12 months')")
     conn.execute("DELETE FROM audit_log WHERE timestamp < datetime('now', '-12 months')")
+    conn.execute("DELETE FROM change_requests WHERE created_at < datetime('now', '-12 months')")
+    conn.execute("DELETE FROM news WHERE created_at < datetime('now', '-12 months')")
     conn.commit()
     conn.close()
 
@@ -42,6 +44,16 @@ def login():
             session['user_id'] = user['id']
             session['role'] = user['role']
             session['username'] = user['username']
+            
+            # Проверка отклонённых заявок
+            conn = get_db_connection()
+            rejected = conn.execute('SELECT reason FROM change_requests WHERE user_id = ? AND status = "rejected" ORDER BY created_at DESC LIMIT 1', (user['id'],)).fetchone()
+            conn.close()
+            if rejected:
+                session['reject_reason'] = rejected['reason']
+            else:
+                session.pop('reject_reason', None)
+                
             return redirect('/dashboard')
         else:
             return render_template('login.html', error="Неверный логин или пароль")
@@ -54,6 +66,7 @@ def dashboard():
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
+    # Загрузка статистики
     stats_rows = conn.execute('''
         SELECT * FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 10
     ''', (session['user_id'],)).fetchall()
@@ -64,6 +77,7 @@ def dashboard():
     given = conn.execute('SELECT SUM(amount) FROM transfers WHERE from_user_id = ?', (session['user_id'],)).fetchone()[
                 0] or 0
 
+    # Все пользователи
     all_users = conn.execute('''
         SELECT u.username,
                COALESCE(MAX(s.chunk1), 0) as chunk1,
@@ -83,6 +97,7 @@ def dashboard():
         GROUP BY u.id, u.username
     ''').fetchall()
 
+    # Топ-5
     top5_data = conn.execute('''
         SELECT u.username,
                COALESCE(SUM(s.chunk1 + s.chunk2 + s.chunk3 + s.chunk4 + s.chunk5 + 
@@ -95,9 +110,17 @@ def dashboard():
     ''').fetchall()
     top5 = [{'username': row['username'], 'total': round(row['total'], 1)} for row in top5_data]
 
+    # Новости
+    news = conn.execute('''
+        SELECT n.*, u.username as author_name
+        FROM news n
+        JOIN users u ON n.author_id = u.id
+        ORDER BY n.created_at DESC
+    ''').fetchall()
+
     conn.close()
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
-                           all_users=all_users, top5=top5)
+                           all_users=all_users, top5=top5, news=news)
 
 @app.route('/admin-panel')
 def admin_panel():
@@ -118,11 +141,19 @@ def tech_mode():
     conn = get_db_connection()
     logs = conn.execute("SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 50").fetchall()
     users = conn.execute("SELECT id, username, login, role FROM users").fetchall()
-    conn.close()
-
+    
+    # Заявки на смену
+    requests = conn.execute('''
+        SELECT cr.*, u.username as user_name, u.login as user_login
+        FROM change_requests cr
+        JOIN users u ON cr.user_id = u.id
+        WHERE cr.status = 'pending'
+        ORDER BY cr.created_at DESC
+    ''').fetchall()
+    
     db_size = round(os.path.getsize(DATABASE) / (1024 * 1024), 2) if os.path.exists(DATABASE) else 0
-
-    return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size)
+    conn.close()
+    return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size, requests=requests)
 
 @app.route('/logout')
 def logout():
@@ -307,7 +338,7 @@ def api_delete_user():
     conn.close()
     return redirect('/tech-mode')
 
-# === Изменение своего логина ===
+# === Смена учётных данных для админов ===
 @app.route('/api/change-login', methods=['POST'])
 def api_change_login():
     if 'user_id' not in session:
@@ -324,7 +355,6 @@ def api_change_login():
         conn.close()
     return redirect('/dashboard')
 
-# === Изменение своего пароля ===
 @app.route('/api/change-password', methods=['POST'])
 def api_change_password():
     if 'user_id' not in session:
@@ -332,59 +362,94 @@ def api_change_password():
     cleanup_old_records()
     new_pass = request.form['new_password']
     if not new_pass or len(new_pass) < 4:
-        return redirect('/dashboard')  # Минимальная длина пароля
+        return redirect('/dashboard')
     
     pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
     conn = get_db_connection()
     try:
         conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, session['user_id']))
         conn.commit()
-        session.clear()  # Обязательно сбросить сессию
-        return redirect('/')  # Перенаправить на страницу входа
+        session.clear()
+        return redirect('/')
     except Exception as e:
         print(f"Ошибка при смене пароля: {e}")
         return redirect('/dashboard')
     finally:
         conn.close()
 
-# === Тех. админ меняет логин другому ===
-@app.route('/api/admin-change-login', methods=['POST'])
-def api_admin_change_login():
+# === Заявки на смену ===
+@app.route('/api/request-change', methods=['POST'])
+def api_request_change():
+    if 'user_id' not in session:
+        return redirect('/')
+    cleanup_old_records()
+    new_login = request.form.get('new_login')
+    new_password = request.form.get('new_password')
+    
+    conn = get_db_connection()
+    if new_password:
+        pwd_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
+        conn.execute('INSERT INTO change_requests (user_id, new_login, new_password_hash) VALUES (?, ?, ?)',
+                     (session['user_id'], new_login, pwd_hash))
+    else:
+        conn.execute('INSERT INTO change_requests (user_id, new_login) VALUES (?, ?)',
+                     (session['user_id'], new_login))
+    conn.commit()
+    conn.close()
+    return redirect('/dashboard')
+
+@app.route('/api/approve-change', methods=['POST'])
+def api_approve_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
     cleanup_old_records()
-    user_id = request.form['user_id']
-    new_login = request.form['new_login']
+    request_id = request.form['request_id']
     conn = get_db_connection()
-    try:
-        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, user_id))
+    req = conn.execute('SELECT * FROM change_requests WHERE id = ?', (request_id,)).fetchone()
+    if req:
+        updates = []
+        params = []
+        if req['new_login']:
+            updates.append("login = ?")
+            params.append(req['new_login'])
+        if req['new_password_hash']:
+            updates.append("password_hash = ?")
+            params.append(req['new_password_hash'])
+        if updates:
+            params.append(req['user_id'])
+            query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
+            conn.execute(query, params)
+        conn.execute('UPDATE change_requests SET status = "approved" WHERE id = ?', (request_id,))
         conn.commit()
-        log_action(session['user_id'], 'admin_change_login', f"user_id={user_id}, new_login={new_login}")
-    except sqlite3.IntegrityError:
-        pass
-    finally:
-        conn.close()
+    conn.close()
     return redirect('/tech-mode')
 
-# === Тех. админ меняет пароль другому ===
-@app.route('/api/admin-change-password', methods=['POST'])
-def api_admin_change_password():
+@app.route('/api/reject-change', methods=['POST'])
+def api_reject_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
     cleanup_old_records()
-    user_id = request.form['user_id']
-    new_pass = request.form['new_password']
-    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
+    request_id = request.form['request_id']
+    reason = request.form['reason']
     conn = get_db_connection()
-    try:
-        conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, user_id))
-        conn.commit()
-        log_action(session['user_id'], 'admin_change_password', f"user_id={user_id}")
-    except:
-        pass
-    finally:
-        conn.close()
+    conn.execute('UPDATE change_requests SET status = "rejected", reason = ? WHERE id = ?', (reason, request_id))
+    conn.commit()
+    conn.close()
     return redirect('/tech-mode')
+
+# === Новости ===
+@app.route('/api/post-news', methods=['POST'])
+def api_post_news():
+    if 'role' not in session or session['role'] not in ('admin', 'admin2'):
+        return redirect('/')
+    cleanup_old_records()
+    message = request.form['message']
+    conn = get_db_connection()
+    conn.execute('INSERT INTO news (author_id, message, role) VALUES (?, ?, ?)',
+                 (session['user_id'], message, session['role']))
+    conn.commit()
+    conn.close()
+    return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
 
 @app.route('/keep-alive')
 def keep_alive():
