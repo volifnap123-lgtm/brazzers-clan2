@@ -395,123 +395,6 @@ def api_request_change():
         conn.execute('INSERT INTO change_requests (user_id, new_login) VALUES (?, ?)',
                      (session['user_id'], new_login))
     conn.commit()
-    conn.close()
-    return redirect('/dashboard')
-
-@app.route('/api/approve-change', methods=['POST'])
-def api_approve_change():
-    if session.get('role') != 'admin2':
-        return redirect('/tech-mode')
-    cleanup_old_records()
-    request_id = request.form['request_id']
-    conn = get_db_connection()
-    req = conn.execute('SELECT * FROM change_requests WHERE id = ?', (request_id,)).fetchone()
-    if req:
-        updates = []
-        params = []
-        if req['new_login']:
-            updates.append("login = ?")
-            params.append(req['new_login'])
-        if req['new_password_hash']:
-            updates.append("password_hash = ?")
-            params.append(req['new_password_hash'])
-        if updates:
-            params.append(req['user_id'])
-            query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
-            conn.execute(query, params)
-        conn.execute('UPDATE change_requests SET status = "approved" WHERE id = ?', (request_id,))
-        conn.commit()
-    conn.close()
-    return redirect('/tech-mode')
-
-@app.route('/api/reject-change', methods=['POST'])
-def api_reject_change():
-    if session.get('role') != 'admin2':
-        return redirect('/tech-mode')
-    cleanup_old_records()
-    request_id = request.form['request_id']
-    reason = request.form['reason']
-    conn = get_db_connection()
-    conn.execute('UPDATE change_requests SET status = "rejected", reason = ? WHERE id = ?', (reason, request_id))
-    conn.commit()
-    conn.close()
-    return redirect('/tech-mode')
-
-# === Новости ===
-@app.route('/api/post-news', methods=['POST'])
-def api_post_news():
-    if 'role' not in session or session['role'] not in ('admin', 'admin2'):
-        return redirect('/')
-    cleanup_old_records()
-    message = request.form['message']
-    conn = get_db_connection()
-    conn.execute('INSERT INTO news (author_id, message, role) VALUES (?, ?, ?)',
-                 (session['user_id'], message, session['role']))
-    conn.commit()
-    conn.close()
-    return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
-
-@app.route('/keep-alive')
-def keep_alive():
-    return 'OK', 200
-
-# === Тех. админ меняет логин другому напрямую ===
-@app.route('/api/admin-change-login', methods=['POST'])
-def api_admin_change_login():
-    if session.get('role') != 'admin2':
-        return redirect('/tech-mode')
-    cleanup_old_records()
-    user_id = request.form['user_id']
-    new_login = request.form['new_login']
-    conn = get_db_connection()
-    try:
-        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, user_id))
-        conn.commit()
-        log_action(session['user_id'], 'admin_change_login', f"user_id={user_id}, new_login={new_login}")
-    except sqlite3.IntegrityError:
-        pass
-    finally:
-        conn.close()
-    return redirect('/tech-mode')
-
-# === Тех. админ меняет пароль другому напрямую ===
-@app.route('/api/admin-change-password', methods=['POST'])
-def api_admin_change_password():
-    if session.get('role') != 'admin2':
-        return redirect('/tech-mode')
-    cleanup_old_records()
-    user_id = request.form['user_id']
-    new_pass = request.form['new_password']
-    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
-    conn = get_db_connection()
-    try:
-        conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, user_id))
-        conn.commit()
-        log_action(session['user_id'], 'admin_change_password', f"user_id={user_id}")
-    except:
-        pass
-    finally:
-        conn.close()
-    return redirect('/tech-mode')
-
-# === Заявки на смену ===
-@app.route('/api/request-change', methods=['POST'])
-def api_request_change():
-    if 'user_id' not in session:
-        return redirect('/')
-    cleanup_old_records()
-    new_login = request.form.get('new_login')
-    new_password = request.form.get('new_password')
-    
-    conn = get_db_connection()
-    if new_password:
-        pwd_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
-        conn.execute('INSERT INTO change_requests (user_id, new_login, new_password_hash) VALUES (?, ?, ?)',
-                     (session['user_id'], new_login, pwd_hash))
-    else:
-        conn.execute('INSERT INTO change_requests (user_id, new_login) VALUES (?, ?)',
-                     (session['user_id'], new_login))
-    conn.commit()
     # Логируем заявку
     details = f"login={new_login}" + (", password=***" if new_password else "")
     log_action(session['user_id'], 'request_change', details)
@@ -574,11 +457,54 @@ def api_post_news():
     conn.close()
     return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
 
+# === Тех. админ меняет логин другому напрямую ===
+@app.route('/api/admin-change-login', methods=['POST'])
+def api_admin_change_login():
+    if session.get('role') != 'admin2':
+        return redirect('/tech-mode')
+    cleanup_old_records()
+    user_id = request.form['user_id']
+    new_login = request.form['new_login']
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET login = ? WHERE id = ?', (new_login, user_id))
+        conn.commit()
+        log_action(session['user_id'], 'admin_change_login', f"user_id={user_id}, new_login={new_login}")
+    except sqlite3.IntegrityError:
+        pass
+    finally:
+        conn.close()
+    return redirect('/tech-mode')
+
+# === Тех. админ меняет пароль другому напрямую ===
+@app.route('/api/admin-change-password', methods=['POST'])
+def api_admin_change_password():
+    if session.get('role') != 'admin2':
+        return redirect('/tech-mode')
+    cleanup_old_records()
+    user_id = request.form['user_id']
+    new_pass = request.form['new_password']
+    pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (pwd_hash, user_id))
+        conn.commit()
+        log_action(session['user_id'], 'admin_change_password', f"user_id={user_id}")
+    except:
+        pass
+    finally:
+        conn.close()
+    return redirect('/tech-mode')
+
 # === Закрыть уведомление об отклонении ===
 @app.route('/api/clear-reject-notice')
 def api_clear_reject_notice():
     session.pop('reject_reason', None)
     return redirect('/dashboard')
+
+@app.route('/keep-alive')
+def keep_alive():
+    return 'OK', 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
