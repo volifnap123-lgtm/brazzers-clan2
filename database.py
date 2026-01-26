@@ -74,6 +74,32 @@ def init_db():
         )
     ''')
 
+    # Заявки на смену учётных данных
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS change_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            new_login TEXT,
+            new_password_hash TEXT,
+            status TEXT CHECK(status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+            reason TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    ''')
+
+    # Новости
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            author_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(author_id) REFERENCES users(id)
+        )
+    ''')
+
     # Инициализация общака
     chunks = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']
     for ch in chunks:
