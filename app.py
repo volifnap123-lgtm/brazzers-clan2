@@ -4,6 +4,7 @@ import bcrypt
 import os
 from datetime import datetime
 import threading
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'brazzers_secret_2026_strong'
@@ -176,10 +177,10 @@ def logout():
 # === API ===
 
 def safe_db_operation(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         with db_lock:
             return func(*args, **kwargs)
-
     return wrapper
 
 
