@@ -70,10 +70,25 @@ def dashboard():
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
-    stats_rows = conn.execute('''
-        SELECT * FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 10
-    ''', (session['user_id'],)).fetchall()
-    total = {k: sum(row[k] or 0 for row in stats_rows) for k in
+    # Получаем последнее значение по каждому куску
+    last_stats = conn.execute('''
+        SELECT 
+            COALESCE(MAX(chunk1), 0) as chunk1,
+            COALESCE(MAX(chunk2), 0) as chunk2,
+            COALESCE(MAX(chunk3), 0) as chunk3,
+            COALESCE(MAX(chunk4), 0) as chunk4,
+            COALESCE(MAX(chunk5), 0) as chunk5,
+            COALESCE(MAX(chunk6), 0) as chunk6,
+            COALESCE(MAX(chunk7), 0) as chunk7,
+            COALESCE(MAX(chunk8), 0) as chunk8,
+            COALESCE(MAX(vr1), 0) as vr1,
+            COALESCE(MAX(vr2), 0) as vr2,
+            COALESCE(MAX(vr3), 0) as vr3,
+            COALESCE(MAX(core), 0) as core
+        FROM stats WHERE user_id = ?
+    ''', (session['user_id'],)).fetchone()
+
+    total = {k: last_stats[k] for k in
              ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3',
               'core']}
 
@@ -101,8 +116,8 @@ def dashboard():
 
     top5_data = conn.execute('''
         SELECT u.username,
-               COALESCE(SUM(s.chunk1 + s.chunk2 + s.chunk3 + s.chunk4 + s.chunk5 + 
-                            s.chunk6 + s.chunk7 + s.chunk8 + s.vr1 + s.vr2 + s.vr3 + s.core), 0) as total
+               COALESCE(MAX(s.chunk1) + MAX(s.chunk2) + MAX(s.chunk3) + MAX(s.chunk4) + MAX(s.chunk5) + 
+                        MAX(s.chunk6) + MAX(s.chunk7) + MAX(s.chunk8) + MAX(s.vr1) + MAX(s.vr2) + MAX(s.vr3) + MAX(s.core), 0) as total
         FROM users u
         LEFT JOIN stats s ON u.id = s.user_id
         GROUP BY u.id, u.username
@@ -119,7 +134,7 @@ def dashboard():
     ''').fetchall()
 
     conn.close()
-    return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
+    return render_template('user_dashboard.html', user=user, stats_rows=[last_stats], total=total, given_percent=given,
                            all_users=all_users, top5=top5, news=news)
 
 @app.route('/admin-panel')
@@ -210,17 +225,30 @@ def api_transfer_percent():
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
     conn = get_db_connection()
-    last_from = conn.execute(f'SELECT {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+    
+    # Получаем последнюю запись отправителя
+    last_from = conn.execute(f'SELECT id, {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
                              (from_id,)).fetchone()
     if not last_from or last_from[chunk] < amount:
         conn.close()
         return redirect('/admin-panel')
+    
+    # Обновляем запись отправителя
     new_from = last_from[chunk] - amount
-    conn.execute(f'INSERT INTO stats (user_id, {chunk}) VALUES (?, ?)', (from_id, new_from))
-    last_to = conn.execute(f'SELECT {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+    conn.execute(f'UPDATE stats SET {chunk} = ? WHERE id = ?', (new_from, last_from['id']))
+    
+    # Получаем последнюю запись получателя
+    last_to = conn.execute(f'SELECT id, {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
                            (to_id,)).fetchone()
-    new_to = (last_to[chunk] if last_to else 0) + amount
-    conn.execute(f'INSERT INTO stats (user_id, {chunk}) VALUES (?, ?)', (to_id, new_to))
+    if last_to:
+        # Обновляем существующую запись
+        new_to = last_to[chunk] + amount
+        conn.execute(f'UPDATE stats SET {chunk} = ? WHERE id = ?', (new_to, last_to['id']))
+    else:
+        # Создаём новую запись
+        conn.execute(f'INSERT INTO stats (user_id, {chunk}) VALUES (?, ?)', (to_id, amount))
+    
+    # Записываем передачу в историю
     conn.execute('INSERT INTO transfers (from_user_id, to_user_id, chunk_name, amount) VALUES (?, ?, ?, ?)',
                  (from_id, to_id, chunk, amount))
     conn.commit()
@@ -236,12 +264,15 @@ def api_issue_chunk():
     user_id = request.form['user_id']
     chunk = request.form['chunk']
     conn = get_db_connection()
-    last = conn.execute(f'SELECT {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+    last = conn.execute(f'SELECT id, {chunk} FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
                         (user_id,)).fetchone()
     current = last[chunk] if last else 0
     new_val = current - 100.0
     if new_val < 0: new_val = 0
-    conn.execute(f'INSERT INTO stats (user_id, {chunk}) VALUES (?, ?)', (user_id, new_val))
+    if last:
+        conn.execute(f'UPDATE stats SET {chunk} = ? WHERE id = ?', (new_val, last['id']))
+    else:
+        conn.execute(f'INSERT INTO stats (user_id, {chunk}) VALUES (?, ?)', (user_id, new_val))
     conn.commit()
     log_action(session['user_id'], 'issue_chunk', f"user={user_id}, chunk={chunk}")
     conn.close()
