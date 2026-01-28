@@ -74,7 +74,7 @@ def init_db():
         )
     ''')
 
-    # Заявки на смену учётных данных
+    # Заявки на смену
     c.execute('''
         CREATE TABLE IF NOT EXISTS change_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,7 +105,7 @@ def init_db():
     for ch in chunks:
         c.execute("INSERT OR IGNORE INTO common_fund (chunk_name, amount) VALUES (?, 0)", (ch,))
 
-    # Только ОДИН тестовый аккаунт: admin2
+    # Первый пользователь
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:
         pwd_hash = bcrypt.hashpw("admin2".encode(), bcrypt.gensalt())
@@ -116,7 +116,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("✅ База данных инициализирована. Единственный аккаунт: admin2 / admin2")
+    print("✅ База данных инициализирована. Логин: admin2 / Пароль: admin2")
 
 if __name__ == "__main__":
     init_db()

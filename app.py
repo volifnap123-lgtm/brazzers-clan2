@@ -3,32 +3,44 @@ import sqlite3
 import bcrypt
 import os
 from datetime import datetime
+import threading
 
 app = Flask(__name__)
 app.secret_key = 'brazzers_secret_2026_strong'
 
 DATABASE = 'brazzers.db'
+db_lock = threading.Lock()
+
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def cleanup_old_records():
-    """Удаляет записи старше 12 месяцев"""
-    conn = get_db_connection()
-    conn.execute("DELETE FROM stats WHERE updated_at < datetime('now', '-12 months')")
-    conn.execute("DELETE FROM audit_log WHERE timestamp < datetime('now', '-12 months')")
-    conn.execute("DELETE FROM change_requests WHERE created_at < datetime('now', '-12 months')")
-    conn.execute("DELETE FROM news WHERE created_at < datetime('now', '-12 months')")
-    conn.commit()
-    conn.close()
+    with db_lock:
+        conn = get_db_connection()
+        try:
+            conn.execute("DELETE FROM stats WHERE updated_at < datetime('now', '-12 months')")
+            conn.execute("DELETE FROM audit_log WHERE timestamp < datetime('now', '-12 months')")
+            conn.execute("DELETE FROM change_requests WHERE created_at < datetime('now', '-12 months')")
+            conn.execute("DELETE FROM news WHERE created_at < datetime('now', '-12 months')")
+            conn.commit()
+        finally:
+            conn.close()
+
 
 def log_action(admin_id, action, details):
-    conn = get_db_connection()
-    conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)', (admin_id, action, str(details)))
-    conn.commit()
-    conn.close()
+    with db_lock:
+        conn = get_db_connection()
+        try:
+            conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)',
+                         (admin_id, action, str(details)))
+            conn.commit()
+        finally:
+            conn.close()
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -44,20 +56,22 @@ def login():
             session['user_id'] = user['id']
             session['role'] = user['role']
             session['username'] = user['username']
-            
-            # Проверка отклонённых заявок
+
             conn = get_db_connection()
-            rejected = conn.execute('SELECT reason FROM change_requests WHERE user_id = ? AND status = "rejected" ORDER BY created_at DESC LIMIT 1', (user['id'],)).fetchone()
+            rejected = conn.execute(
+                'SELECT reason FROM change_requests WHERE user_id = ? AND status = "rejected" ORDER BY created_at DESC LIMIT 1',
+                (user['id'],)).fetchone()
             conn.close()
             if rejected:
                 session['reject_reason'] = rejected['reason']
             else:
                 session.pop('reject_reason', None)
-                
+
             return redirect('/dashboard')
         else:
             return render_template('login.html', error="Неверный логин или пароль")
     return render_template('login.html')
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -66,7 +80,6 @@ def dashboard():
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
-    # Загрузка статистики
     stats_rows = conn.execute('''
         SELECT * FROM stats WHERE user_id = ? ORDER BY updated_at DESC LIMIT 10
     ''', (session['user_id'],)).fetchall()
@@ -77,7 +90,6 @@ def dashboard():
     given = conn.execute('SELECT SUM(amount) FROM transfers WHERE from_user_id = ?', (session['user_id'],)).fetchone()[
                 0] or 0
 
-    # Все пользователи
     all_users = conn.execute('''
         SELECT u.username,
                COALESCE(MAX(s.chunk1), 0) as chunk1,
@@ -97,7 +109,6 @@ def dashboard():
         GROUP BY u.id, u.username
     ''').fetchall()
 
-    # Топ-5
     top5_data = conn.execute('''
         SELECT u.username,
                COALESCE(SUM(s.chunk1 + s.chunk2 + s.chunk3 + s.chunk4 + s.chunk5 + 
@@ -110,7 +121,6 @@ def dashboard():
     ''').fetchall()
     top5 = [{'username': row['username'], 'total': round(row['total'], 1)} for row in top5_data]
 
-    # Новости
     news = conn.execute('''
         SELECT n.*, u.username as author_name
         FROM news n
@@ -121,6 +131,7 @@ def dashboard():
     conn.close()
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
                            all_users=all_users, top5=top5, news=news)
+
 
 @app.route('/admin-panel')
 def admin_panel():
@@ -134,6 +145,7 @@ def admin_panel():
     conn.close()
     return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund)
 
+
 @app.route('/tech-mode')
 def tech_mode():
     if session.get('role') != 'admin2':
@@ -141,8 +153,7 @@ def tech_mode():
     conn = get_db_connection()
     logs = conn.execute("SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 50").fetchall()
     users = conn.execute("SELECT id, username, login, role FROM users").fetchall()
-    
-    # Заявки на смену
+
     requests = conn.execute('''
         SELECT cr.*, u.username as user_name, u.login as user_login
         FROM change_requests cr
@@ -150,19 +161,30 @@ def tech_mode():
         WHERE cr.status = 'pending'
         ORDER BY cr.created_at DESC
     ''').fetchall()
-    
+
     db_size = round(os.path.getsize(DATABASE) / (1024 * 1024), 2) if os.path.exists(DATABASE) else 0
     conn.close()
     return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size, requests=requests)
+
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
+
 # === API ===
 
+def safe_db_operation(func):
+    def wrapper(*args, **kwargs):
+        with db_lock:
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
 @app.route('/api/give-percent-single', methods=['POST'])
+@safe_db_operation
 def api_give_percent_single():
     if 'role' not in session:
         return redirect('/')
@@ -181,7 +203,9 @@ def api_give_percent_single():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/give-percent-multiple', methods=['POST'])
+@safe_db_operation
 def api_give_percent_multiple():
     if 'role' not in session:
         return redirect('/')
@@ -201,7 +225,9 @@ def api_give_percent_multiple():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/transfer-percent', methods=['POST'])
+@safe_db_operation
 def api_transfer_percent():
     if 'role' not in session:
         return redirect('/')
@@ -229,7 +255,9 @@ def api_transfer_percent():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/issue-chunk', methods=['POST'])
+@safe_db_operation
 def api_issue_chunk():
     if 'role' not in session:
         return redirect('/')
@@ -248,7 +276,9 @@ def api_issue_chunk():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/common-add', methods=['POST'])
+@safe_db_operation
 def api_common_add():
     if 'role' not in session:
         return redirect('/')
@@ -262,7 +292,9 @@ def api_common_add():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/common-remove', methods=['POST'])
+@safe_db_operation
 def api_common_remove():
     if 'role' not in session:
         return redirect('/')
@@ -276,7 +308,9 @@ def api_common_remove():
     conn.close()
     return redirect('/admin-panel')
 
+
 @app.route('/api/remove-admin', methods=['POST'])
+@safe_db_operation
 def api_remove_admin():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -289,7 +323,9 @@ def api_remove_admin():
     conn.close()
     return redirect('/tech-mode')
 
+
 @app.route('/api/promote-to-admin', methods=['POST'])
+@safe_db_operation
 def api_promote_to_admin():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -302,7 +338,9 @@ def api_promote_to_admin():
     conn.close()
     return redirect('/tech-mode')
 
+
 @app.route('/api/create-user', methods=['POST'])
+@safe_db_operation
 def api_create_user():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -323,7 +361,9 @@ def api_create_user():
         conn.close()
     return redirect('/tech-mode')
 
+
 @app.route('/api/delete-user', methods=['POST'])
+@safe_db_operation
 def api_delete_user():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -338,8 +378,9 @@ def api_delete_user():
     conn.close()
     return redirect('/tech-mode')
 
-# === Смена учётных данных для админов ===
+
 @app.route('/api/change-login', methods=['POST'])
+@safe_db_operation
 def api_change_login():
     if 'user_id' not in session:
         return redirect('/')
@@ -355,7 +396,9 @@ def api_change_login():
         conn.close()
     return redirect('/dashboard')
 
+
 @app.route('/api/change-password', methods=['POST'])
+@safe_db_operation
 def api_change_password():
     if 'user_id' not in session:
         return redirect('/')
@@ -363,7 +406,7 @@ def api_change_password():
     new_pass = request.form['new_password']
     if not new_pass or len(new_pass) < 4:
         return redirect('/dashboard')
-    
+
     pwd_hash = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt())
     conn = get_db_connection()
     try:
@@ -377,15 +420,16 @@ def api_change_password():
     finally:
         conn.close()
 
-# === Заявки на смену ===
+
 @app.route('/api/request-change', methods=['POST'])
+@safe_db_operation
 def api_request_change():
     if 'user_id' not in session:
         return redirect('/')
     cleanup_old_records()
     new_login = request.form.get('new_login')
     new_password = request.form.get('new_password')
-    
+
     conn = get_db_connection()
     if new_password:
         pwd_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
@@ -395,13 +439,14 @@ def api_request_change():
         conn.execute('INSERT INTO change_requests (user_id, new_login) VALUES (?, ?)',
                      (session['user_id'], new_login))
     conn.commit()
-    # Логируем заявку
     details = f"login={new_login}" + (", password=***" if new_password else "")
     log_action(session['user_id'], 'request_change', details)
     conn.close()
     return redirect('/dashboard')
 
+
 @app.route('/api/approve-change', methods=['POST'])
+@safe_db_operation
 def api_approve_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -428,7 +473,9 @@ def api_approve_change():
     conn.close()
     return redirect('/tech-mode')
 
+
 @app.route('/api/reject-change', methods=['POST'])
+@safe_db_operation
 def api_reject_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -442,8 +489,9 @@ def api_reject_change():
     conn.close()
     return redirect('/tech-mode')
 
-# === Новости ===
+
 @app.route('/api/post-news', methods=['POST'])
+@safe_db_operation
 def api_post_news():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
         return redirect('/')
@@ -457,8 +505,9 @@ def api_post_news():
     conn.close()
     return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
 
-# === Тех. админ меняет логин другому напрямую ===
+
 @app.route('/api/admin-change-login', methods=['POST'])
+@safe_db_operation
 def api_admin_change_login():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -476,8 +525,9 @@ def api_admin_change_login():
         conn.close()
     return redirect('/tech-mode')
 
-# === Тех. админ меняет пароль другому напрямую ===
+
 @app.route('/api/admin-change-password', methods=['POST'])
+@safe_db_operation
 def api_admin_change_password():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -496,15 +546,17 @@ def api_admin_change_password():
         conn.close()
     return redirect('/tech-mode')
 
-# === Закрыть уведомление об отклонении ===
+
 @app.route('/api/clear-reject-notice')
 def api_clear_reject_notice():
     session.pop('reject_reason', None)
     return redirect('/dashboard')
 
+
 @app.route('/keep-alive')
 def keep_alive():
     return 'OK', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
