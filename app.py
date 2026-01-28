@@ -3,45 +3,35 @@ import sqlite3
 import bcrypt
 import os
 from datetime import datetime
-import threading
-from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'brazzers_secret_2026_strong'
 
 DATABASE = 'brazzers.db'
-db_lock = threading.Lock()
-
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
-
 def cleanup_old_records():
-    with db_lock:
-        conn = get_db_connection()
-        try:
-            conn.execute("DELETE FROM stats WHERE updated_at < datetime('now', '-12 months')")
-            conn.execute("DELETE FROM audit_log WHERE timestamp < datetime('now', '-12 months')")
-            conn.execute("DELETE FROM change_requests WHERE created_at < datetime('now', '-12 months')")
-            conn.execute("DELETE FROM news WHERE created_at < datetime('now', '-12 months')")
-            conn.commit()
-        finally:
-            conn.close()
-
+    conn = get_db_connection()
+    try:
+        conn.execute("DELETE FROM stats WHERE updated_at < datetime('now', '-12 months')")
+        conn.execute("DELETE FROM audit_log WHERE timestamp < datetime('now', '-12 months')")
+        conn.execute("DELETE FROM change_requests WHERE created_at < datetime('now', '-12 months')")
+        conn.execute("DELETE FROM news WHERE created_at < datetime('now', '-12 months')")
+        conn.commit()
+    finally:
+        conn.close()
 
 def log_action(admin_id, action, details):
-    with db_lock:
-        conn = get_db_connection()
-        try:
-            conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)',
-                         (admin_id, action, str(details)))
-            conn.commit()
-        finally:
-            conn.close()
-
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO audit_log (admin_id, action, details) VALUES (?, ?, ?)', (admin_id, action, str(details)))
+        conn.commit()
+    finally:
+        conn.close()
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -72,7 +62,6 @@ def login():
         else:
             return render_template('login.html', error="Неверный логин или пароль")
     return render_template('login.html')
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -133,7 +122,6 @@ def dashboard():
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
                            all_users=all_users, top5=top5, news=news)
 
-
 @app.route('/admin-panel')
 def admin_panel():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
@@ -145,7 +133,6 @@ def admin_panel():
     common_fund = {row['chunk_name']: row['amount'] for row in conn.execute("SELECT * FROM common_fund").fetchall()}
     conn.close()
     return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund)
-
 
 @app.route('/tech-mode')
 def tech_mode():
@@ -167,25 +154,14 @@ def tech_mode():
     conn.close()
     return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size, requests=requests)
 
-
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
-
 # === API ===
 
-def safe_db_operation(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        with db_lock:
-            return func(*args, **kwargs)
-    return wrapper
-
-
 @app.route('/api/give-percent-single', methods=['POST'])
-@safe_db_operation
 def api_give_percent_single():
     if 'role' not in session:
         return redirect('/')
@@ -204,9 +180,7 @@ def api_give_percent_single():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/give-percent-multiple', methods=['POST'])
-@safe_db_operation
 def api_give_percent_multiple():
     if 'role' not in session:
         return redirect('/')
@@ -226,9 +200,7 @@ def api_give_percent_multiple():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/transfer-percent', methods=['POST'])
-@safe_db_operation
 def api_transfer_percent():
     if 'role' not in session:
         return redirect('/')
@@ -256,9 +228,7 @@ def api_transfer_percent():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/issue-chunk', methods=['POST'])
-@safe_db_operation
 def api_issue_chunk():
     if 'role' not in session:
         return redirect('/')
@@ -277,9 +247,7 @@ def api_issue_chunk():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/common-add', methods=['POST'])
-@safe_db_operation
 def api_common_add():
     if 'role' not in session:
         return redirect('/')
@@ -293,9 +261,7 @@ def api_common_add():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/common-remove', methods=['POST'])
-@safe_db_operation
 def api_common_remove():
     if 'role' not in session:
         return redirect('/')
@@ -309,9 +275,7 @@ def api_common_remove():
     conn.close()
     return redirect('/admin-panel')
 
-
 @app.route('/api/remove-admin', methods=['POST'])
-@safe_db_operation
 def api_remove_admin():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -324,9 +288,7 @@ def api_remove_admin():
     conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/promote-to-admin', methods=['POST'])
-@safe_db_operation
 def api_promote_to_admin():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -339,9 +301,7 @@ def api_promote_to_admin():
     conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/create-user', methods=['POST'])
-@safe_db_operation
 def api_create_user():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -362,9 +322,7 @@ def api_create_user():
         conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/delete-user', methods=['POST'])
-@safe_db_operation
 def api_delete_user():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -379,9 +337,7 @@ def api_delete_user():
     conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/change-login', methods=['POST'])
-@safe_db_operation
 def api_change_login():
     if 'user_id' not in session:
         return redirect('/')
@@ -397,9 +353,7 @@ def api_change_login():
         conn.close()
     return redirect('/dashboard')
 
-
 @app.route('/api/change-password', methods=['POST'])
-@safe_db_operation
 def api_change_password():
     if 'user_id' not in session:
         return redirect('/')
@@ -421,9 +375,7 @@ def api_change_password():
     finally:
         conn.close()
 
-
 @app.route('/api/request-change', methods=['POST'])
-@safe_db_operation
 def api_request_change():
     if 'user_id' not in session:
         return redirect('/')
@@ -445,9 +397,7 @@ def api_request_change():
     conn.close()
     return redirect('/dashboard')
 
-
 @app.route('/api/approve-change', methods=['POST'])
-@safe_db_operation
 def api_approve_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -474,9 +424,7 @@ def api_approve_change():
     conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/reject-change', methods=['POST'])
-@safe_db_operation
 def api_reject_change():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -490,9 +438,7 @@ def api_reject_change():
     conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/post-news', methods=['POST'])
-@safe_db_operation
 def api_post_news():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
         return redirect('/')
@@ -506,9 +452,7 @@ def api_post_news():
     conn.close()
     return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
 
-
 @app.route('/api/admin-change-login', methods=['POST'])
-@safe_db_operation
 def api_admin_change_login():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -526,9 +470,7 @@ def api_admin_change_login():
         conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/admin-change-password', methods=['POST'])
-@safe_db_operation
 def api_admin_change_password():
     if session.get('role') != 'admin2':
         return redirect('/tech-mode')
@@ -547,17 +489,11 @@ def api_admin_change_password():
         conn.close()
     return redirect('/tech-mode')
 
-
 @app.route('/api/clear-reject-notice')
 def api_clear_reject_notice():
     session.pop('reject_reason', None)
     return redirect('/dashboard')
 
-
 @app.route('/keep-alive')
 def keep_alive():
     return 'OK', 200
-
-
-# if __name__ == '__main__':
-#    app.run(debug=True, host='0.0.0.0', port=5000)
