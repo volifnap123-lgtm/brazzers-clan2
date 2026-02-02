@@ -4,6 +4,7 @@ import bcrypt
 import os
 from datetime import datetime
 import threading
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'brazzers_secret_2026_strong'
@@ -176,10 +177,10 @@ def logout():
 # === API ===
 
 def safe_db_operation(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         with db_lock:
             return func(*args, **kwargs)
-
     return wrapper
 
 
@@ -558,5 +559,5 @@ def keep_alive():
     return 'OK', 200
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+# if __name__ == '__main__':
+#    app.run(debug=True, host='0.0.0.0', port=5000)
