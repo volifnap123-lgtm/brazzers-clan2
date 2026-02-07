@@ -1,4 +1,5 @@
 import os
+import socket  # ← добавлено
 from flask import Flask, render_template, request, redirect, session, send_file, make_response
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -11,6 +12,15 @@ app = Flask(__name__)
 app.secret_key = 'brazzers_secret_2026_strong'
 
 DATABASE_URL = os.environ['DATABASE_URL']
+
+# === ФИКС: принудительное использование IPv4 ===
+original_getaddrinfo = socket.getaddrinfo
+
+def ipv4_only_getaddrinfo(*args, **kwargs):
+    return [res for res in original_getaddrinfo(*args, **kwargs) if res[0] == socket.AF_INET]
+
+socket.getaddrinfo = ipv4_only_getaddrinfo
+# ==============================================
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -197,12 +207,12 @@ def tech_mode():
             ''')
             requests = c.fetchall()
         
-        db_size = 0  # PostgreSQL size не нужен
+        db_size = 0
         return render_template('tech_mode.html', logs=logs, users=users, db_size=db_size, requests=requests)
     finally:
         conn.close()
 
-# === EXPORT DATABASE TO CSV (EXCEL-COMPATIBLE) ===
+# === EXPORT DATABASE TO CSV ===
 @app.route('/api/export-db')
 def export_db():
     if session.get('role') != 'admin2':
@@ -222,7 +232,7 @@ def export_db():
             rows = c.fetchall()
             for row in rows:
                 writer.writerow(row)
-        writer.writerow([])  # пустая строка между таблицами
+        writer.writerow([])
 
     conn.close()
 
@@ -238,6 +248,7 @@ def logout():
     return redirect('/')
 
 # === API FUNCTIONS ===
+# ... (остальные функции остаются без изменений — они уже корректны) ...
 
 @app.route('/api/give-percent-single', methods=['POST'])
 def api_give_percent_single():
