@@ -21,6 +21,11 @@
             --border-color: #bbf7d0;
             --red-border: #ef4444;
             --yellow-border: #eab308;
+            /* Категории */
+            --bulldozer: #f59e0b;      /* Бульдозер Левая */
+            --caravan: #4ade80;        /* Караван Правая */
+            --newland: #3b82f6;        /* Новая Земля Верхняя */
+            --core: #ef4444;           /* Ядро */
         }
 
         * {
@@ -239,7 +244,7 @@
         }
 
         th, td {
-            padding: 10px;
+            padding: 11px 8px;
             text-align: center;
             border: 1px solid var(--border-color);
             white-space: nowrap;
@@ -251,16 +256,16 @@
             border-color: #4ade80 !important;
         }
 
-        th {
-            background: var(--green-100);
-            color: var(--green-700);
-            font-weight: 600;
-        }
+        /* Цвета заголовков категорий */
+        .cat-bulldozer { background: var(--bulldozer); color: white; }
+        .cat-caravan { background: var(--caravan); color: white; }
+        .cat-newland { background: var(--newland); color: white; }
+        .cat-core { background: var(--core); color: white; }
 
-        .dark-theme th {
-            background: rgba(74, 222, 128, 0.15) !important;
-            color: #4ade80 !important;
-        }
+        .dark-theme .cat-bulldozer { background: #d97706; }
+        .dark-theme .cat-caravan { background: #22c55e; }
+        .dark-theme .cat-newland { background: #2563eb; }
+        .dark-theme .cat-core { background: #dc2626; }
 
         tbody tr {
             transition: background 0.2s;
@@ -627,51 +632,55 @@
                 <thead>
                     <tr>
                         <th>Дата зачисления</th>
-                        <th>Кусок №1</th>
-                        <th>Кусок №2</th>
-                        <th>В.Рад №1</th>
-                        <th>Кусок №3</th>
-                        <th>Кусок №4</th>
-                        <th>Кусок №5</th>
-                        <th>В.Рад №2</th>
-                        <th>Кусок №6</th>
-                        <th>Кусок №7</th>
-                        <th>Кусок №8</th>
-                        <th>В.Рад №3</th>
-                        <th>Ядро</th>
+                        <!-- Бульдозер Левая -->
+                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №1</th>
+                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №2</th>
+                        <th class="cat-bulldozer" title="Бульдозер Левая">В.Рад №1</th>
+                        <!-- Караван Правая -->
+                        <th class="cat-caravan" title="Караван Правая">Кусок №3</th>
+                        <th class="cat-caravan" title="Караван Правая">Кусок №4</th>
+                        <th class="cat-caravan" title="Караван Правая">Кусок №5</th>
+                        <th class="cat-caravan" title="Караван Правая">В.Рад №2</th>
+                        <!-- Новая Земля Верхняя -->
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №6</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №7</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №8</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">В.Рад №3</th>
+                        <!-- Ядро -->
+                        <th class="cat-core" title="Ядро">Ядро</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in stats_rows %}
                     <tr>
                         <td>{{ row.get('updated_at', '')[:16] if row.get('updated_at') else '' }}</td>
-                        <td>{{ "%.1f"|format(row.get('chunk1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('vr1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk3', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk4', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk5', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('vr2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk6', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk7', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('chunk8', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(row.get('vr3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk2', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(row.get('vr1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk4', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk5', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('vr2', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk6', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('chunk7', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(row.get('chunk8', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(row.get('vr3', 0)) }}%</td>
                         <td>{{ "%.1f"|format(row.get('core', 0)) }}%</td>
                     </tr>
                     {% endfor %}
                     <tr style="background: var(--green-100);">
                         <td><strong>Общее кол-во</strong></td>
-                        <td>{{ "%.1f"|format(total.get('chunk1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('vr1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk3', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk4', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk5', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('vr2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk6', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk7', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('chunk8', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(total.get('vr3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk2', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(total.get('vr1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk4', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk5', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('vr2', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk6', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('chunk7', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(total.get('chunk8', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(total.get('vr3', 0)) }}%</td>
                         <td>{{ "%.1f"|format(total.get('core', 0)) }}%</td>
                     </tr>
                 </tbody>
@@ -714,52 +723,56 @@
                 <thead>
                     <tr>
                         <th>Никнейм</th>
-                        <th>Кусок №1</th>
-                        <th>Кусок №2</th>
-                        <th>В.Рад №1</th>
-                        <th>Кусок №3</th>
-                        <th>Кусок №4</th>
-                        <th>Кусок №5</th>
-                        <th>В.Рад №2</th>
-                        <th>Кусок №6</th>
-                        <th>Кусок №7</th>
-                        <th>Кусок №8</th>
-                        <th>В.Рад №3</th>
-                        <th>Ядро</th>
+                        <!-- Бульдозер Левая -->
+                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №1</th>
+                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №2</th>
+                        <th class="cat-bulldozer" title="Бульдозер Левая">В.Рад №1</th>
+                        <!-- Караван Правая -->
+                        <th class="cat-caravan" title="Караван Правая">Кусок №3</th>
+                        <th class="cat-caravan" title="Караван Правая">Кусок №4</th>
+                        <th class="cat-caravan" title="Караван Правая">Кусок №5</th>
+                        <th class="cat-caravan" title="Караван Правая">В.Рад №2</th>
+                        <!-- Новая Земля Верхняя -->
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №6</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №7</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №8</th>
+                        <th class="cat-newland" title="Новая Земля Верхняя">В.Рад №3</th>
+                        <!-- Ядро -->
+                        <th class="cat-core" title="Ядро">Ядро</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for u in all_users %}
                     <tr>
                         <td>{{ u.username }}</td>
-                        <td>{{ "%.1f"|format(u.get('chunk1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('vr1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk3', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk4', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk5', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('vr2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk6', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk7', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('chunk8', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(u.get('vr3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk2', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(u.get('vr1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk4', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk5', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('vr2', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk6', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('chunk7', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(u.get('chunk8', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(u.get('vr3', 0)) }}%</td>
                         <td>{{ "%.1f"|format(u.get('core', 0)) }}%</td>
                     </tr>
                     {% endfor %}
                     {% if common_fund %}
                     <tr style="background: var(--green-100);">
                         <td><strong>Общак</strong></td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('vr1', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk3', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk4', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk5', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('vr2', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk6', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk7', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('chunk8', 0)) }}%</td>
-                        <td>{{ "%.1f"|format(common_fund.get('vr3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk2', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(common_fund.get('vr1', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk3', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk4', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk5', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('vr2', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk6', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('chunk7', 0)) }}%</td>
+                        <td title="Шанс: 20%">{{ "%.1f"|format(common_fund.get('chunk8', 0)) }}%</td>
+                        <td title="Шанс: 25%">{{ "%.1f"|format(common_fund.get('vr3', 0)) }}%</td>
                         <td>{{ "%.1f"|format(common_fund.get('core', 0)) }}%</td>
                     </tr>
                     {% endif %}
