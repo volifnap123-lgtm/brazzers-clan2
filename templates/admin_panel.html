@@ -18,7 +18,7 @@
         }
         body {
             background: var(--white);
-            color: var(--gray-909);
+            color: var(--gray-900);
             font-family: 'Inter', sans-serif;
             padding: 15px;
         }
@@ -258,7 +258,7 @@
                 {% for chunk in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'] %}
                 <tr>
                     <td>{{ chunk|replace('chunk','Кусок №')|replace('vr','В.Рад №')|replace('core','Ядро') }}</td>
-                    <td>{{ "%.1f"|format(common_fund[chunk]) }}</td>
+                    <td>{{ "%.1f"|format(common_fund.get(chunk, 0)) }}</td>
                     <td>
                         <form method="POST" action="/api/common-add" style="display:inline;">
                             <input type="hidden" name="chunk" value="{{ chunk }}">
