@@ -198,7 +198,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td>{{ log.timestamp[:16] }}</td>
+                    <td>{{ log.timestamp[:16] if log.timestamp else '' }}</td>
                     <td>{{ log.action }}</td>
                     <td>{{ log.details }}</td>
                 </tr>
@@ -216,7 +216,6 @@
     <h2>Информация о базе данных</h2>
     <p>Размер файла: <strong>{{ "%.2f"|format(db_size) }} МБ</strong></p>
     <p>Очистка: автоматически удаляются записи старше 12 месяцев.</p>
-    <!-- КНОПКА ЭКСПОРТА -->
     <a href="/api/export-db" class="btn" style="margin-top: 12px; display: inline-block;">Скачать резервную копию (CSV)</a>
 </div>
 
