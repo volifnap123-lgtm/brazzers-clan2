@@ -267,6 +267,18 @@
         .dark-theme .cat-newland { background: #2563eb; }
         .dark-theme .cat-core { background: #dc2626; }
 
+        /* Заголовки категорий */
+        .category-header {
+            background: rgba(0,0,0,0.05);
+            font-weight: 700;
+            color: var(--gray-900);
+            padding: 6px 0;
+        }
+        .dark-theme .category-header {
+            background: rgba(255,255,255,0.05);
+            color: #e2e8f0;
+        }
+
         tbody tr {
             transition: background 0.2s;
         }
@@ -631,23 +643,28 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Дата зачисления</th>
+                        <th rowspan="2">Дата зачисления</th>
                         <!-- Бульдозер Левая -->
-                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №1</th>
-                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №2</th>
-                        <th class="cat-bulldozer" title="Бульдозер Левая">В.Рад №1</th>
+                        <th class="category-header" colspan="3">Бульдозер Левая</th>
                         <!-- Караван Правая -->
-                        <th class="cat-caravan" title="Караван Правая">Кусок №3</th>
-                        <th class="cat-caravan" title="Караван Правая">Кусок №4</th>
-                        <th class="cat-caravan" title="Караван Правая">Кусок №5</th>
-                        <th class="cat-caravan" title="Караван Правая">В.Рад №2</th>
+                        <th class="category-header" colspan="4">Караван Правая</th>
                         <!-- Новая Земля Верхняя -->
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №6</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №7</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №8</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">В.Рад №3</th>
+                        <th class="category-header" colspan="4">Новая Земля Верхняя</th>
                         <!-- Ядро -->
-                        <th class="cat-core" title="Ядро">Ядро</th>
+                        <th class="category-header" rowspan="2">Ядро</th>
+                    </tr>
+                    <tr>
+                        <th class="cat-bulldozer">Кусок №1</th>
+                        <th class="cat-bulldozer">Кусок №2</th>
+                        <th class="cat-bulldozer">В.Рад №1</th>
+                        <th class="cat-caravan">Кусок №3</th>
+                        <th class="cat-caravan">Кусок №4</th>
+                        <th class="cat-caravan">Кусок №5</th>
+                        <th class="cat-caravan">В.Рад №2</th>
+                        <th class="cat-newland">Кусок №6</th>
+                        <th class="cat-newland">Кусок №7</th>
+                        <th class="cat-newland">Кусок №8</th>
+                        <th class="cat-newland">В.Рад №3</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -722,23 +739,28 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Никнейм</th>
+                        <th rowspan="2">Никнейм</th>
                         <!-- Бульдозер Левая -->
-                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №1</th>
-                        <th class="cat-bulldozer" title="Бульдозер Левая">Кусок №2</th>
-                        <th class="cat-bulldozer" title="Бульдозер Левая">В.Рад №1</th>
+                        <th class="category-header" colspan="3">Бульдозер Левая</th>
                         <!-- Караван Правая -->
-                        <th class="cat-caravan" title="Караван Правая">Кусок №3</th>
-                        <th class="cat-caravan" title="Караван Правая">Кусок №4</th>
-                        <th class="cat-caravan" title="Караван Правая">Кусок №5</th>
-                        <th class="cat-caravan" title="Караван Правая">В.Рад №2</th>
+                        <th class="category-header" colspan="4">Караван Правая</th>
                         <!-- Новая Земля Верхняя -->
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №6</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №7</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">Кусок №8</th>
-                        <th class="cat-newland" title="Новая Земля Верхняя">В.Рад №3</th>
+                        <th class="category-header" colspan="4">Новая Земля Верхняя</th>
                         <!-- Ядро -->
-                        <th class="cat-core" title="Ядро">Ядро</th>
+                        <th class="category-header" rowspan="2">Ядро</th>
+                    </tr>
+                    <tr>
+                        <th class="cat-bulldozer">Кусок №1</th>
+                        <th class="cat-bulldozer">Кусок №2</th>
+                        <th class="cat-bulldozer">В.Рад №1</th>
+                        <th class="cat-caravan">Кусок №3</th>
+                        <th class="cat-caravan">Кусок №4</th>
+                        <th class="cat-caravan">Кусок №5</th>
+                        <th class="cat-caravan">В.Рад №2</th>
+                        <th class="cat-newland">Кусок №6</th>
+                        <th class="cat-newland">Кусок №7</th>
+                        <th class="cat-newland">Кусок №8</th>
+                        <th class="cat-newland">В.Рад №3</th>
                     </tr>
                 </thead>
                 <tbody>
