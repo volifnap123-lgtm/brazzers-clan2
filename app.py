@@ -76,10 +76,10 @@ def dashboard():
     user = user_data.data[0] if user_data.data else None
     
     stats_data = supabase.table('stats') \
-        .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core') \
+        .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core,updated_at') \
         .eq('user_id', session['user_id']) \
         .order('updated_at', desc=True) \
-        .limit(1) \
+        .limit(10) \
         .execute()
     
     last_stats = stats_data.data[0] if stats_data.data else {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
