@@ -15,6 +15,11 @@
             --gray-900: #111827;
             --border-color: #bbf7d0;
             --red-border: #ef4444;
+            /* Категории */
+            --bulldozer: #f59e0b;
+            --caravan: #4ade80;
+            --newland: #3b82f6;
+            --core: #ef4444;
         }
         body {
             background: var(--white);
@@ -61,10 +66,32 @@
         }
         .table-container table { min-width: 900px; }
         .chunk-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 12px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
         }
-        .chunk-item label { display: block; margin-bottom: 4px; font-size: 13px; }
-        .chunk-item input { width: 100%; padding: 6px; }
+        .chunk-item label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .cat-bulldozer { background: var(--bulldozer); color: white; }
+        .cat-caravan { background: var(--caravan); color: white; }
+        .cat-newland { background: var(--newland); color: white; }
+        .cat-core { background: var(--core); color: white; }
+
+        .dark-theme .cat-bulldozer { background: #d97706; }
+        .dark-theme .cat-caravan { background: #22c55e; }
+        .dark-theme .cat-newland { background: #2563eb; }
+        .dark-theme .cat-core { background: #dc2626; }
+
+        .chunk-item input {
+            width: 100%;
+            padding: 6px;
+        }
         
         /* Новости */
         .news-section {
@@ -101,52 +128,56 @@
             {% endfor %}
         </select>
         <div class="chunk-grid">
+            <!-- Бульдозер Левая -->
             <div class="chunk-item">
-                <label>Кусок №1</label>
+                <label class="cat-bulldozer" title="Бульдозер Левая (Шанс: 25%)">Кусок №1</label>
                 <input type="number" step="0.1" name="chunk1" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №2</label>
+                <label class="cat-bulldozer" title="Бульдозер Левая (Шанс: 25%)">Кусок №2</label>
                 <input type="number" step="0.1" name="chunk2" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №3</label>
+                <label class="cat-bulldozer" title="Бульдозер Левая (Шанс: 20%)">В.Рад №1</label>
+                <input type="number" step="0.1" name="vr1" value="0">
+            </div>
+            <!-- Караван Правая -->
+            <div class="chunk-item">
+                <label class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №3</label>
                 <input type="number" step="0.1" name="chunk3" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №4</label>
+                <label class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №4</label>
                 <input type="number" step="0.1" name="chunk4" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №5</label>
+                <label class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №5</label>
                 <input type="number" step="0.1" name="chunk5" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №6</label>
+                <label class="cat-caravan" title="Караван Правая (Шанс: 25%)">В.Рад №2</label>
+                <input type="number" step="0.1" name="vr2" value="0">
+            </div>
+            <!-- Новая Земля Верхняя -->
+            <div class="chunk-item">
+                <label class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №6</label>
                 <input type="number" step="0.1" name="chunk6" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №7</label>
+                <label class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №7</label>
                 <input type="number" step="0.1" name="chunk7" value="0">
             </div>
             <div class="chunk-item">
-                <label>Кусок №8</label>
+                <label class="cat-newland" title="Новая Земля Верхняя (Шанс: 20%)">Кусок №8</label>
                 <input type="number" step="0.1" name="chunk8" value="0">
             </div>
             <div class="chunk-item">
-                <label>В.Рад №1</label>
-                <input type="number" step="0.1" name="vr1" value="0">
-            </div>
-            <div class="chunk-item">
-                <label>В.Рад №2</label>
-                <input type="number" step="0.1" name="vr2" value="0">
-            </div>
-            <div class="chunk-item">
-                <label>В.Рад №3</label>
+                <label class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">В.Рад №3</label>
                 <input type="number" step="0.1" name="vr3" value="0">
             </div>
+            <!-- Ядро -->
             <div class="chunk-item">
-                <label>Ядро</label>
+                <label class="cat-core" title="Ядро">Ядро</label>
                 <input type="number" step="0.1" name="core" value="0">
             </div>
         </div>
@@ -164,18 +195,22 @@
             {% endfor %}
         </select>
         <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 8px;">
-            <option value="chunk1">Кусок №1</option>
-            <option value="chunk2">Кусок №2</option>
-            <option value="chunk3">Кусок №3</option>
-            <option value="chunk4">Кусок №4</option>
-            <option value="chunk5">Кусок №5</option>
-            <option value="chunk6">Кусок №6</option>
-            <option value="chunk7">Кусок №7</option>
-            <option value="chunk8">Кусок №8</option>
-            <option value="vr1">В.Рад №1</option>
-            <option value="vr2">В.Рад №2</option>
-            <option value="vr3">В.Рад №3</option>
-            <option value="core">Ядро</option>
+            <!-- Бульдозер -->
+            <option value="chunk1" title="Бульдозер Левая (Шанс: 25%)">Кусок №1</option>
+            <option value="chunk2" title="Бульдозер Левая (Шанс: 25%)">Кусок №2</option>
+            <option value="vr1" title="Бульдозер Левая (Шанс: 20%)">В.Рад №1</option>
+            <!-- Караван -->
+            <option value="chunk3" title="Караван Правая (Шанс: 25%)">Кусок №3</option>
+            <option value="chunk4" title="Караван Правая (Шанс: 25%)">Кусок №4</option>
+            <option value="chunk5" title="Караван Правая (Шанс: 25%)">Кусок №5</option>
+            <option value="vr2" title="Караван Правая (Шанс: 25%)">В.Рад №2</option>
+            <!-- Новая Земля -->
+            <option value="chunk6" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №6</option>
+            <option value="chunk7" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №7</option>
+            <option value="chunk8" title="Новая Земля Верхняя (Шанс: 20%)">Кусок №8</option>
+            <option value="vr3" title="Новая Земля Верхняя (Шанс: 25%)">В.Рад №3</option>
+            <!-- Ядро -->
+            <option value="core" title="Ядро">Ядро</option>
         </select>
         <button class="btn" type="submit" style="margin-top: 10px;">Разделить 100%</button>
     </form>
@@ -196,18 +231,22 @@
             {% endfor %}
         </select>
         <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
-            <option value="chunk1">Кусок №1</option>
-            <option value="chunk2">Кусок №2</option>
-            <option value="chunk3">Кусок №3</option>
-            <option value="chunk4">Кусок №4</option>
-            <option value="chunk5">Кусок №5</option>
-            <option value="chunk6">Кусок №6</option>
-            <option value="chunk7">Кусок №7</option>
-            <option value="chunk8">Кусок №8</option>
-            <option value="vr1">В.Рад №1</option>
-            <option value="vr2">В.Рад №2</option>
-            <option value="vr3">В.Рад №3</option>
-            <option value="core">Ядро</option>
+            <!-- Бульдозер -->
+            <option value="chunk1" title="Бульдозер Левая (Шанс: 25%)">Кусок №1</option>
+            <option value="chunk2" title="Бульдозер Левая (Шанс: 25%)">Кусок №2</option>
+            <option value="vr1" title="Бульдозер Левая (Шанс: 20%)">В.Рад №1</option>
+            <!-- Караван -->
+            <option value="chunk3" title="Караван Правая (Шанс: 25%)">Кусок №3</option>
+            <option value="chunk4" title="Караван Правая (Шанс: 25%)">Кусок №4</option>
+            <option value="chunk5" title="Караван Правая (Шанс: 25%)">Кусок №5</option>
+            <option value="vr2" title="Караван Правая (Шанс: 25%)">В.Рад №2</option>
+            <!-- Новая Земля -->
+            <option value="chunk6" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №6</option>
+            <option value="chunk7" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №7</option>
+            <option value="chunk8" title="Новая Земля Верхняя (Шанс: 20%)">Кусок №8</option>
+            <option value="vr3" title="Новая Земля Верхняя (Шанс: 25%)">В.Рад №3</option>
+            <!-- Ядро -->
+            <option value="core" title="Ядро">Ядро</option>
         </select>
         <input type="number" step="0.1" name="amount" placeholder="Сколько %" required style="width: 100%; max-width: 120px; padding: 6px; margin-top: 6px;">
         <button class="btn" type="submit" style="margin-top: 10px;">Передать</button>
@@ -224,18 +263,22 @@
             {% endfor %}
         </select>
         <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
-            <option value="chunk1">Кусок №1</option>
-            <option value="chunk2">Кусок №2</option>
-            <option value="chunk3">Кусок №3</option>
-            <option value="chunk4">Кусок №4</option>
-            <option value="chunk5">Кусок №5</option>
-            <option value="chunk6">Кусок №6</option>
-            <option value="chunk7">Кусок №7</option>
-            <option value="chunk8">Кусок №8</option>
-            <option value="vr1">В.Рад №1</option>
-            <option value="vr2">В.Рад №2</option>
-            <option value="vr3">В.Рад №3</option>
-            <option value="core">Ядро</option>
+            <!-- Бульдозер -->
+            <option value="chunk1" title="Бульдозер Левая (Шанс: 25%)">Кусок №1</option>
+            <option value="chunk2" title="Бульдозер Левая (Шанс: 25%)">Кусок №2</option>
+            <option value="vr1" title="Бульдозер Левая (Шанс: 20%)">В.Рад №1</option>
+            <!-- Караван -->
+            <option value="chunk3" title="Караван Правая (Шанс: 25%)">Кусок №3</option>
+            <option value="chunk4" title="Караван Правая (Шанс: 25%)">Кусок №4</option>
+            <option value="chunk5" title="Караван Правая (Шанс: 25%)">Кусок №5</option>
+            <option value="vr2" title="Караван Правая (Шанс: 25%)">В.Рад №2</option>
+            <!-- Новая Земля -->
+            <option value="chunk6" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №6</option>
+            <option value="chunk7" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №7</option>
+            <option value="chunk8" title="Новая Земля Верхняя (Шанс: 20%)">Кусок №8</option>
+            <option value="vr3" title="Новая Земля Верхняя (Шанс: 25%)">В.Рад №3</option>
+            <!-- Ядро -->
+            <option value="core" title="Ядро">Ядро</option>
         </select>
         <button class="btn" type="submit" onclick="return confirm('Вычесть 100% у игрока?')" style="margin-top: 10px;">Выдать кусок</button>
     </form>
@@ -255,26 +298,22 @@
                 </tr>
             </thead>
             <tbody>
-                {% for chunk in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'] %}
-                <tr>
-                    <td>{{ chunk|replace('chunk','Кусок №')|replace('vr','В.Рад №')|replace('core','Ядро') }}</td>
-                    <td>{{ "%.1f"|format(common_fund.get(chunk, 0)) }}</td>
-                    <td>
-                        <form method="POST" action="/api/common-add" style="display:inline;">
-                            <input type="hidden" name="chunk" value="{{ chunk }}">
-                            <input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;">
-                            <button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method="POST" action="/api/common-remove" style="display:inline;">
-                            <input type="hidden" name="chunk" value="{{ chunk }}">
-                            <input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;">
-                            <button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
+                <!-- Бульдозер -->
+                <tr><td class="cat-bulldozer" title="Бульдозер Левая (Шанс: 25%)">Кусок №1</td><td>{{ "%.1f"|format(common_fund.get('chunk1', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk1"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk1"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-bulldozer" title="Бульдозер Левая (Шанс: 25%)">Кусок №2</td><td>{{ "%.1f"|format(common_fund.get('chunk2', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk2"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk2"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-bulldozer" title="Бульдозер Левая (Шанс: 20%)">В.Рад №1</td><td>{{ "%.1f"|format(common_fund.get('vr1', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="vr1"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="vr1"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <!-- Караван -->
+                <tr><td class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №3</td><td>{{ "%.1f"|format(common_fund.get('chunk3', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk3"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk3"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №4</td><td>{{ "%.1f"|format(common_fund.get('chunk4', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk4"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk4"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-caravan" title="Караван Правая (Шанс: 25%)">Кусок №5</td><td>{{ "%.1f"|format(common_fund.get('chunk5', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk5"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk5"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-caravan" title="Караван Правая (Шанс: 25%)">В.Рад №2</td><td>{{ "%.1f"|format(common_fund.get('vr2', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="vr2"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="vr2"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <!-- Новая Земля -->
+                <tr><td class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №6</td><td>{{ "%.1f"|format(common_fund.get('chunk6', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk6"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk6"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">Кусок №7</td><td>{{ "%.1f"|format(common_fund.get('chunk7', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk7"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk7"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-newland" title="Новая Земля Верхняя (Шанс: 20%)">Кусок №8</td><td>{{ "%.1f"|format(common_fund.get('chunk8', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="chunk8"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="chunk8"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <tr><td class="cat-newland" title="Новая Земля Верхняя (Шанс: 25%)">В.Рад №3</td><td>{{ "%.1f"|format(common_fund.get('vr3', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="vr3"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="vr3"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                <!-- Ядро -->
+                <tr><td class="cat-core" title="Ядро">Ядро</td><td>{{ "%.1f"|format(common_fund.get('core', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="core"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="core"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
             </tbody>
         </table>
     </div>
@@ -304,6 +343,10 @@ function applyTheme() {
                 --gray-900: #e2e8f0;
                 --border-color: #4ade80;
                 --red-border: #f87171;
+                --bulldozer: #d97706;
+                --caravan: #22c55e;
+                --newland: #2563eb;
+                --core: #dc2626;
             }
             body {
                 background: var(--white);
@@ -352,10 +395,30 @@ function applyTheme() {
             }
             .table-container table { min-width: 900px; }
             .chunk-grid {
-                display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 12px 0;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                margin: 12px 0;
             }
-            .chunk-item label { display: block; margin-bottom: 4px; font-size: 13px; color: #e2e8f0; }
-            .chunk-item input { width: 100%; padding: 6px; background: rgba(30, 41, 59, 0.8); color: #e2e8f0; border: 1px solid var(--border-color); }
+            .chunk-item label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 13px;
+                padding: 4px;
+                border-radius: 4px;
+                color: #e2e8f0;
+            }
+            .cat-bulldozer { background: var(--bulldozer); color: white; }
+            .cat-caravan { background: var(--caravan); color: white; }
+            .cat-newland { background: var(--newland); color: white; }
+            .cat-core { background: var(--core); color: white; }
+            .chunk-item input {
+                width: 100%;
+                padding: 6px;
+                background: rgba(30, 41, 59, 0.8);
+                color: #e2e8f0;
+                border: 1px solid var(--border-color);
+            }
             .news-section {
                 margin-top: 25px;
             }
@@ -379,6 +442,10 @@ function applyTheme() {
                 --gray-900: #111827;
                 --border-color: #bbf7d0;
                 --red-border: #ef4444;
+                --bulldozer: #f59e0b;
+                --caravan: #4ade80;
+                --newland: #3b82f6;
+                --core: #ef4444;
             }
             body {
                 background: var(--white);
@@ -425,10 +492,26 @@ function applyTheme() {
             }
             .table-container table { min-width: 900px; }
             .chunk-grid {
-                display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 12px 0;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                margin: 12px 0;
             }
-            .chunk-item label { display: block; margin-bottom: 4px; font-size: 13px; }
-            .chunk-item input { width: 100%; padding: 6px; }
+            .chunk-item label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 13px;
+                padding: 4px;
+                border-radius: 4px;
+            }
+            .cat-bulldozer { background: var(--bulldozer); color: white; }
+            .cat-caravan { background: var(--caravan); color: white; }
+            .cat-newland { background: var(--newland); color: white; }
+            .cat-core { background: var(--core); color: white; }
+            .chunk-item input {
+                width: 100%;
+                padding: 6px;
+            }
             .news-section {
                 margin-top: 25px;
             }
