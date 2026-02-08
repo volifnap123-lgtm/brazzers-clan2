@@ -81,8 +81,9 @@ def dashboard():
         .order('updated_at', desc=True) \
         .limit(10) \
         .execute()
-    
-    last_stats = stats_data.data[0] if stats_data.data else {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+    stats_rows = stats_data.data if stats_data.data else []
+
+    last_stats = stats_rows[0] if stats_rows else {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
     total = last_stats
 
     given_data = supabase.table('transfers') \
@@ -123,7 +124,7 @@ def dashboard():
         author = all_users_dict.get(n['author_id'], {'username': 'Unknown'})
         news_with_authors.append({**n, 'author_name': author['username']})
 
-    return render_template('user_dashboard.html', user=user, stats_rows=[last_stats], total=total, given_percent=given,
+    return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
                            all_users=all_users, top5=top5, news=news_with_authors)
 
 @app.route('/admin-panel')
@@ -297,7 +298,8 @@ def api_common_add():
     cleanup_old_records()
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
-    supabase.table('common_fund').update({'amount': supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount'] + amount}).eq('chunk_name', chunk).execute()
+    current = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount']
+    supabase.table('common_fund').update({'amount': current + amount}).eq('chunk_name', chunk).execute()
     log_action(session['user_id'], 'common_add', f"{chunk}+{amount}")
     return redirect('/admin-panel')
 
@@ -308,7 +310,8 @@ def api_common_remove():
     cleanup_old_records()
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
-    supabase.table('common_fund').update({'amount': supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount'] - amount}).eq('chunk_name', chunk).execute()
+    current = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount']
+    supabase.table('common_fund').update({'amount': current - amount}).eq('chunk_name', chunk).execute()
     log_action(session['user_id'], 'common_remove', f"{chunk}-{amount}")
     return redirect('/admin-panel')
 
