@@ -643,35 +643,35 @@
                 <tbody>
                     {% for row in stats_rows %}
                     <tr>
-                        <td>{{ row.updated_at[:16] }}</td>
-                        <td>{{ "%.1f"|format(row.chunk1) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk2) }}%</td>
-                        <td>{{ "%.1f"|format(row.vr1) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk3) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk4) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk5) }}%</td>
-                        <td>{{ "%.1f"|format(row.vr2) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk6) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk7) }}%</td>
-                        <td>{{ "%.1f"|format(row.chunk8) }}%</td>
-                        <td>{{ "%.1f"|format(row.vr3) }}%</td>
-                        <td>{{ "%.1f"|format(row.core) }}%</td>
+                        <td>{{ row.get('updated_at', '')[:16] if row.get('updated_at') else '' }}</td>
+                        <td>{{ "%.1f"|format(row.get('chunk1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('vr1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk4', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk5', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('vr2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk6', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk7', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('chunk8', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('vr3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(row.get('core', 0)) }}%</td>
                     </tr>
                     {% endfor %}
                     <tr style="background: var(--green-100);">
                         <td><strong>Общее кол-во</strong></td>
-                        <td>{{ "%.1f"|format(total.chunk1) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk2) }}%</td>
-                        <td>{{ "%.1f"|format(total.vr1) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk3) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk4) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk5) }}%</td>
-                        <td>{{ "%.1f"|format(total.vr2) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk6) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk7) }}%</td>
-                        <td>{{ "%.1f"|format(total.chunk8) }}%</td>
-                        <td>{{ "%.1f"|format(total.vr3) }}%</td>
-                        <td>{{ "%.1f"|format(total.core) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('vr1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk4', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk5', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('vr2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk6', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk7', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('chunk8', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('vr3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(total.get('core', 0)) }}%</td>
                     </tr>
                 </tbody>
             </table>
@@ -731,18 +731,18 @@
                     {% for u in all_users %}
                     <tr>
                         <td>{{ u.username }}</td>
-                        <td>{{ "%.1f"|format(u.chunk1) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk2) }}%</td>
-                        <td>{{ "%.1f"|format(u.vr1) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk3) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk4) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk5) }}%</td>
-                        <td>{{ "%.1f"|format(u.vr2) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk6) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk7) }}%</td>
-                        <td>{{ "%.1f"|format(u.chunk8) }}%</td>
-                        <td>{{ "%.1f"|format(u.vr3) }}%</td>
-                        <td>{{ "%.1f"|format(u.core) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('vr1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk4', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk5', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('vr2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk6', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk7', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('chunk8', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('vr3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(u.get('core', 0)) }}%</td>
                     </tr>
                     {% endfor %}
                     <tr style="background: var(--green-100);">
@@ -778,7 +778,7 @@
             <div class="news-item {% if item.role == 'admin' %}news-border-red{% elif item.role == 'admin2' %}news-border-yellow{% endif %}">
                 <div class="news-author">{{ item.author_name }}</div>
                 <div>{{ item.message }}</div>
-                <div class="news-date">{{ item.created_at[:16] }}</div>
+                <div class="news-date">{{ item.get('created_at', '')[:16] if item.get('created_at') else '' }}</div>
             </div>
             {% endfor %}
         {% else %}
