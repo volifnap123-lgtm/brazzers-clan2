@@ -26,11 +26,14 @@ def cleanup_old_records():
         supabase.table(table).delete().lt(col, one_year_ago).execute()
 
 def log_action(admin_id, action, details):
-    supabase.table('audit_log').insert({
-        'admin_id': admin_id,
-        'action': action,
-        'details': str(details)
-    }).execute()
+    try:
+        supabase.table('audit_log').insert({
+            'admin_id': admin_id,
+            'action': action,
+            'details': str(details)
+        }).execute()
+    except Exception as e:
+        print(f"Ошибка логирования: {e}")
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -74,6 +77,7 @@ def dashboard():
     user_data = supabase.table('users').select('*').eq('id', session['user_id']).execute()
     user = user_data.data[0] if user_data.data else None
     
+    # Получаем историю статистики
     stats_data = supabase.table('stats') \
         .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core,updated_at') \
         .eq('user_id', session['user_id']) \
@@ -85,12 +89,14 @@ def dashboard():
     last_stats = stats_rows[0] if stats_rows else {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
     total = last_stats
 
+    # Рассчитываем отданные проценты
     given_data = supabase.table('transfers') \
         .select('amount') \
         .eq('from_user_id', session['user_id']) \
         .execute()
     given = sum(row['amount'] for row in given_data.data) if given_data.data else 0
 
+    # Загружаем всех пользователей и их последнюю статистику
     all_users_data = supabase.table('users').select('id,username,login,role').execute()
     all_users_dict = {u['id']: u for u in all_users_data.data} if all_users_data.data else {}
 
@@ -111,20 +117,26 @@ def dashboard():
             'vr1': s['vr1'], 'vr2': s['vr2'], 'vr3': s['vr3'], 'core': s['core']
         })
 
+    # Топ-5 по сумме всех кусков
     top5 = []
     for u in all_users:
         total_val = sum(u[k] for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'])
         top5.append({'username': u['username'], 'total': round(total_val, 1)})
     top5 = sorted(top5, key=lambda x: x['total'], reverse=True)[:5]
 
+    # Новости
     news_data = supabase.table('news').select('*').order('created_at', desc=True).execute()
     news_with_authors = []
     for n in news_data.data or []:
         author = all_users_dict.get(n['author_id'], {'username': 'Unknown'})
         news_with_authors.append({**n, 'author_name': author['username']})
 
+    # Общак для отображения в общей таблице
+    common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
+    common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data} if common_fund_data.data else {}
+
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, given_percent=given,
-                           all_users=all_users, top5=top5, news=news_with_authors)
+                           all_users=all_users, top5=top5, news=news_with_authors, common_fund=common_fund)
 
 @app.route('/admin-panel')
 def admin_panel():
@@ -367,7 +379,7 @@ def api_delete_user():
     user_id = request.form['user_id']
     supabase.table('users').delete().eq('id', user_id).execute()
     supabase.table('stats').delete().eq('user_id', user_id).execute()
-    # Удаляем передачи вручную (Supabase не поддерживает OR в delete)
+    # Удаляем передачи
     transfers_out = supabase.table('transfers').select('id').eq('from_user_id', user_id).execute()
     for t in transfers_out.data or []:
         supabase.table('transfers').delete().eq('id', t['id']).execute()
