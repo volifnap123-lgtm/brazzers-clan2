@@ -566,12 +566,13 @@
 
         @media (max-width: 768px) {
             .nav-buttons {
-                flex-direction: column;
-                align-items: center;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
             }
             .nav-btn {
-                width: 100%;
-                max-width: 200px;
+                min-width: auto;
+                padding: 6px 10px;
             }
             th, td {
                 font-size: 11px;
@@ -745,21 +746,23 @@
                         <td>{{ "%.1f"|format(u.get('core', 0)) }}%</td>
                     </tr>
                     {% endfor %}
+                    {% if common_fund %}
                     <tr style="background: var(--green-100);">
                         <td><strong>Общак</strong></td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
-                        <td>0.0%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('vr1', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk4', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk5', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('vr2', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk6', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk7', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('chunk8', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('vr3', 0)) }}%</td>
+                        <td>{{ "%.1f"|format(common_fund.get('core', 0)) }}%</td>
                     </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
