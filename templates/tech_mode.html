@@ -198,9 +198,9 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td>{{ log.timestamp[:16] if log.timestamp else '' }}</td>
-                    <td>{{ log.action }}</td>
-                    <td>{{ log.details }}</td>
+                    <td>{{ log.get('timestamp', '')[:16] if log.get('timestamp') else '' }}</td>
+                    <td>{{ log.get('action', '') }}</td>
+                    <td>{{ log.get('details', '') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -225,11 +225,11 @@
     {% if requests %}
         {% for req in requests %}
         <div class="request-item">
-            <div><strong>{{ req.user_name }}</strong> ({{ req.user_login }})</div>
-            {% if req.new_login %}
+            <div><strong>{{ req.get('user_name', 'Unknown') }}</strong> ({{ req.get('user_login', 'unknown') }})</div>
+            {% if req.get('new_login') %}
                 <div>Новый логин: {{ req.new_login }}</div>
             {% endif %}
-            {% if req.new_password_hash %}
+            {% if req.get('new_password_hash') %}
                 <div>Новый пароль: задан</div>
             {% endif %}
             <div style="margin-top: 8px;">
