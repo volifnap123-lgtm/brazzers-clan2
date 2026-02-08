@@ -15,7 +15,6 @@ SUPABASE_KEY = os.environ['SUPABASE_ANON_KEY']
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def cleanup_old_records():
-    # Удаляем старые записи (12 месяцев)
     tables_and_columns = [
         ('stats', 'updated_at'),
         ('audit_log', 'timestamp'),
@@ -137,7 +136,9 @@ def admin_panel():
     
     chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
     common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
-    common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data} if common_fund_data.data else {}
+    common_fund = {}
+    for row in common_fund_data.data or []:
+        common_fund[row['chunk_name']] = row['amount']
     
     return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund)
 
@@ -298,7 +299,8 @@ def api_common_add():
     cleanup_old_records()
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
-    current = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount']
+    fund_data = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute()
+    current = fund_data.data[0]['amount'] if fund_data.data else 0
     supabase.table('common_fund').update({'amount': current + amount}).eq('chunk_name', chunk).execute()
     log_action(session['user_id'], 'common_add', f"{chunk}+{amount}")
     return redirect('/admin-panel')
@@ -310,7 +312,8 @@ def api_common_remove():
     cleanup_old_records()
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
-    current = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute().data[0]['amount']
+    fund_data = supabase.table('common_fund').select('amount').eq('chunk_name', chunk).execute()
+    current = fund_data.data[0]['amount'] if fund_data.data else 0
     supabase.table('common_fund').update({'amount': current - amount}).eq('chunk_name', chunk).execute()
     log_action(session['user_id'], 'common_remove', f"{chunk}-{amount}")
     return redirect('/admin-panel')
@@ -364,7 +367,13 @@ def api_delete_user():
     user_id = request.form['user_id']
     supabase.table('users').delete().eq('id', user_id).execute()
     supabase.table('stats').delete().eq('user_id', user_id).execute()
-    supabase.table('transfers').delete().or_('from_user_id.eq.' + str(user_id), 'to_user_id.eq.' + str(user_id)).execute()
+    # Удаляем передачи вручную (Supabase не поддерживает OR в delete)
+    transfers_out = supabase.table('transfers').select('id').eq('from_user_id', user_id).execute()
+    for t in transfers_out.data or []:
+        supabase.table('transfers').delete().eq('id', t['id']).execute()
+    transfers_in = supabase.table('transfers').select('id').eq('to_user_id', user_id).execute()
+    for t in transfers_in.data or []:
+        supabase.table('transfers').delete().eq('id', t['id']).execute()
     log_action(session['user_id'], 'delete_user', f"user_id={user_id}")
     return redirect('/tech-mode')
 
@@ -455,12 +464,15 @@ def api_post_news():
         return redirect('/')
     cleanup_old_records()
     message = request.form['message']
-    supabase.table('news').insert({
-        'author_id': session['user_id'],
-        'message': message,
-        'role': session['role']
-    }).execute()
-    log_action(session['user_id'], 'post_news', f"message='{message[:50]}...'")
+    try:
+        supabase.table('news').insert({
+            'author_id': session['user_id'],
+            'message': message,
+            'role': session['role']
+        }).execute()
+        log_action(session['user_id'], 'post_news', f"message='{message[:50]}...'")
+    except Exception as e:
+        print(f"Ошибка при публикации новости: {e}")
     return redirect('/admin-panel' if session['role'] == 'admin' else '/tech-mode')
 
 @app.route('/api/admin-change-login', methods=['POST'])
