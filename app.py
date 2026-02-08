@@ -86,8 +86,9 @@ def dashboard():
         .execute()
     stats_rows = stats_data.data if stats_data.data else []
 
-    last_stats = stats_rows[0] if stats_rows else {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
-    total = last_stats
+    # Рассчитываем ОБЩЕЕ количество как СУММУ всех записей
+    chunks = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']
+    total = {k: sum(row.get(k, 0) for row in stats_rows) for k in chunks}
 
     # Рассчитываем отданные проценты
     given_data = supabase.table('transfers') \
@@ -96,20 +97,23 @@ def dashboard():
         .execute()
     given = sum(row['amount'] for row in given_data.data) if given_data.data else 0
 
-    # Загружаем всех пользователей и их последнюю статистику
+    # Загружаем всех пользователей и их полную историю
     all_users_data = supabase.table('users').select('id,username,login,role').execute()
     all_users_dict = {u['id']: u for u in all_users_data.data} if all_users_data.data else {}
 
+    # Для каждого пользователя считаем сумму по всем его записям
+    all_users_stats = {}
     stats_all = supabase.table('stats').select('*').execute()
-    stats_by_user = {}
     for s in stats_all.data or []:
         uid = s['user_id']
-        if uid not in stats_by_user or s['updated_at'] > stats_by_user[uid]['updated_at']:
-            stats_by_user[uid] = s
+        if uid not in all_users_stats:
+            all_users_stats[uid] = {k: 0 for k in chunks}
+        for k in chunks:
+            all_users_stats[uid][k] += s.get(k, 0)
 
     all_users = []
     for uid, user_info in all_users_dict.items():
-        s = stats_by_user.get(uid, {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']})
+        s = all_users_stats.get(uid, {k: 0 for k in chunks})
         all_users.append({
             'username': user_info['username'],
             'chunk1': s['chunk1'], 'chunk2': s['chunk2'], 'chunk3': s['chunk3'], 'chunk4': s['chunk4'],
@@ -120,7 +124,7 @@ def dashboard():
     # Топ-5 по сумме всех кусков
     top5 = []
     for u in all_users:
-        total_val = sum(u[k] for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'])
+        total_val = sum(u[k] for k in chunks)
         top5.append({'username': u['username'], 'total': round(total_val, 1)})
     top5 = sorted(top5, key=lambda x: x['total'], reverse=True)[:5]
 
@@ -189,10 +193,10 @@ def export_db():
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
-        if data.data:
+        if data.
             columns = list(data.data[0].keys())
             writer.writerow(columns)
-            for row in data.data:
+            for row in data.
                 writer.writerow([row.get(col, '') for col in columns])
         writer.writerow([])
     
@@ -228,15 +232,10 @@ def api_give_percent_multiple():
     chunk = request.form['chunk']
     amount_per = round(100.0 / len(user_ids), 1)
     for uid in user_ids:
-        stats_data = supabase.table('stats') \
-            .select(chunk) \
-            .eq('user_id', uid) \
-            .order('updated_at', desc=True) \
-            .limit(1) \
-            .execute()
-        current = stats_data.data[0][chunk] if stats_data.data else 0
-        new_val = current + amount_per
-        supabase.table('stats').insert({'user_id': uid, chunk: new_val}).execute()
+        values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+        values[chunk] = amount_per
+        values['user_id'] = uid
+        supabase.table('stats').insert(values).execute()
     log_action(session['user_id'], 'give_percent_multi', f"chunk={chunk}, users={user_ids}, each={amount_per}")
     return redirect('/admin-panel')
 
@@ -250,28 +249,26 @@ def api_transfer_percent():
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
     
-    from_stats = supabase.table('stats') \
-        .select(chunk) \
-        .eq('user_id', from_id) \
-        .order('updated_at', desc=True) \
-        .limit(1) \
-        .execute()
+    # Проверяем баланс отправителя (суммируем все записи)
+    from_stats_all = supabase.table('stats').select(chunk).eq('user_id', from_id).execute()
+    balance = sum(row.get(chunk, 0) for row in from_stats_all.data) if from_stats_all.data else 0
     
-    if not from_stats.data or from_stats.data[0][chunk] < amount:
+    if balance < amount:
         return redirect('/admin-panel')
     
-    new_from = from_stats.data[0][chunk] - amount
-    supabase.table('stats').insert({'user_id': from_id, chunk: new_from}).execute()
+    # Создаём запись с отрицательным значением для отправителя
+    from_values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+    from_values[chunk] = -amount
+    from_values['user_id'] = from_id
+    supabase.table('stats').insert(from_values).execute()
     
-    to_stats = supabase.table('stats') \
-        .select(chunk) \
-        .eq('user_id', to_id) \
-        .order('updated_at', desc=True) \
-        .limit(1) \
-        .execute()
-    new_to = (to_stats.data[0][chunk] if to_stats.data else 0) + amount
-    supabase.table('stats').insert({'user_id': to_id, chunk: new_to}).execute()
+    # Создаём запись с положительным значением для получателя
+    to_values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+    to_values[chunk] = amount
+    to_values['user_id'] = to_id
+    supabase.table('stats').insert(to_values).execute()
     
+    # Логируем передачу
     supabase.table('transfers').insert({
         'from_user_id': from_id,
         'to_user_id': to_id,
@@ -290,16 +287,11 @@ def api_issue_chunk():
     user_id = request.form['user_id']
     chunk = request.form['chunk']
     
-    stats_data = supabase.table('stats') \
-        .select(chunk) \
-        .eq('user_id', user_id) \
-        .order('updated_at', desc=True) \
-        .limit(1) \
-        .execute()
-    current = stats_data.data[0][chunk] if stats_data.data else 0
-    new_val = current - 100.0
-    if new_val < 0: new_val = 0
-    supabase.table('stats').insert({'user_id': user_id, chunk: new_val}).execute()
+    # Вычитаем 100% через отрицательную запись
+    values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+    values[chunk] = -100.0
+    values['user_id'] = user_id
+    supabase.table('stats').insert(values).execute()
     
     log_action(session['user_id'], 'issue_chunk', f"user={user_id}, chunk={chunk}")
     return redirect('/admin-panel')
@@ -453,7 +445,7 @@ def api_approve_change():
             update_data['login'] = req['new_login']
         if req.get('new_password_hash'):
             update_data['password_hash'] = req['new_password_hash']
-        if update_data:
+        if update_
             supabase.table('users').update(update_data).eq('id', req['user_id']).execute()
         supabase.table('change_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         log_action(session['user_id'], 'approve_change', f"request_id={request_id}, user_id={req['user_id']}")
