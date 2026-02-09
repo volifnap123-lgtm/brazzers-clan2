@@ -426,6 +426,7 @@ def api_request_change():
         pwd_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode('utf-8')
         insert_data['new_password_hash'] = pwd_hash
     
+    insert_data['status'] = 'pending'
     supabase.table('change_requests').insert(insert_data).execute()
     details = f"login={new_login}" + (", password=***" if new_password else "")
     log_action(session['user_id'], 'request_change', details)
