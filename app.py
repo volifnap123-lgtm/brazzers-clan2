@@ -334,7 +334,7 @@ def api_issue_chunk():
         # Выдаем только если есть хотя бы 100%
         if current_balance >= 100:
             # Создаем новую запись с остатком (не добавляем -100, а сохраняем абсолютное значение)
-            new_balance = current_balance - 100.0
+            new_balance = current_balance - -100.0
             
             values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
             values[chunk] = new_balance
