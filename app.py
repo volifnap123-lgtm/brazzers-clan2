@@ -117,16 +117,22 @@ def dashboard():
     # Для каждого пользователя считаем сумму по всем его записям и 6б13
     all_users_stats = {}
     all_users_six_b13 = {}
-    stats_all = supabase.table('stats').select('*').execute()
     
-    # Собираем статистику
-    for s in stats_all.data or []:
-        uid = s['user_id']
-        if uid not in all_users_stats:
-            all_users_stats[uid] = {k: 0 for k in chunks}
-        for k in chunks:
-            all_users_stats[uid][k] += s.get(k, 0)
-    
+    # Получаем последние значения для каждого пользователя по каждому куску
+    for chunk in chunks:
+        latest_data = supabase.table('stats').select(f'user_id,{chunk},updated_at').order('updated_at', desc=True).execute()
+        
+        for record in latest_data.data or []:
+            uid = record['user_id']
+            value = record.get(chunk, 0)
+            
+            if uid not in all_users_stats:
+                all_users_stats[uid] = {k: 0 for k in chunks}
+            
+            # Обновляем значение только если оно не установлено (чтобы не перезаписать)
+            if all_users_stats[uid][chunk] == 0:
+                all_users_stats[uid][chunk] = value
+
     # Считаем 6б13 для всех
     for uid in all_users_dict:
         issued_counts_user = {}
