@@ -244,13 +244,21 @@
 <!-- Выдать кусок -->
 <div class="section">
     <h2>Выдать кусок (вычитает 100%)</h2>
-    <form method="POST" action="/api/issue-chunk">
+    <form method="POST" action="/api/issue-chunk" id="issue-form">
         <select name="user_id" required style="width: 100%; max-width: 200px; padding: 6px;">
             {% for u in users %}
                 <option value="{{ u.id }}">{{ u.username }}</option>
             {% endfor %}
         </select>
-        <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
+        
+        <!-- Галочка для мультивыдачи -->
+        <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="multi-issue" onchange="toggleMultiIssue()">
+            <label for="multi-issue" style="font-size: 14px;">☑️ Выдать несколько кусков сразу</label>
+        </div>
+        
+        <!-- Одиночный выбор (по умолчанию) -->
+        <select name="chunk" id="single-chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
             <option value="chunk1">Кусок №1</option>
             <option value="chunk2">Кусок №2</option>
             <option value="chunk3">Кусок №3</option>
@@ -264,7 +272,24 @@
             <option value="vr3">В.Рад №3</option>
             <option value="core">Ядро</option>
         </select>
-        <button class="btn" type="submit" onclick="return confirm('Вычесть 100% у игрока?')" style="margin-top: 10px;">Выдать кусок</button>
+        
+        <!-- Множественный выбор (скрыт по умолчанию) -->
+        <select name="chunks" id="multi-chunks" multiple size="6" style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px; display: none;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        
+        <button class="btn" type="submit" onclick="return confirmIssue()" style="margin-top: 10px;">Выдать кусок</button>
     </form>
 </div>
 
@@ -317,6 +342,42 @@
 </div>
 
 <script>
+function toggleMultiIssue() {
+    const checkbox = document.getElementById('multi-issue');
+    const single = document.getElementById('single-chunk');
+    const multi = document.getElementById('multi-chunks');
+    
+    if (checkbox.checked) {
+        single.style.display = 'none';
+        single.required = false;
+        single.name = '';
+        multi.style.display = 'block';
+        multi.required = true;
+        multi.name = 'chunks';
+    } else {
+        single.style.display = 'block';
+        single.required = true;
+        single.name = 'chunk';
+        multi.style.display = 'none';
+        multi.required = false;
+        multi.name = '';
+    }
+}
+
+function confirmIssue() {
+    const checkbox = document.getElementById('multi-issue');
+    if (checkbox.checked) {
+        const selected = document.querySelectorAll('#multi-chunks option:checked');
+        if (selected.length === 0) {
+            alert('Выберите хотя бы один кусок!');
+            return false;
+        }
+        return confirm(`Выдать ${selected.length} кусков?\nЭто вычтет 100% по каждому выбранному куску.`);
+    } else {
+        return confirm('Выдать кусок?\nЭто вычтет 100% у игрока.');
+    }
+}
+
 function applyTheme() {
     const isDark = localStorage.getItem('theme') === 'dark';
     const style = document.getElementById('theme-style');
