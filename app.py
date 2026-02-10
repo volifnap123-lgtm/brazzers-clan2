@@ -20,7 +20,7 @@ def cleanup_old_records():
         ('audit_log', 'timestamp'),
         ('change_requests', 'created_at'),
         ('news', 'created_at'),
-        ('issued_chunks', 'issued_at')  # ← добавил очистку issued_chunks
+        ('issued_chunks', 'issued_at')
     ]
     one_year_ago = datetime.now().replace(year=datetime.now().year - 1).isoformat()
     for table, col in tables_and_columns:
@@ -315,7 +315,10 @@ def api_issue_chunk():
         return redirect('/')
     cleanup_old_records()
     user_id = request.form['user_id']
-    chunks_to_issue = request.form.getlist('chunks')  # ← поддержка нескольких кусков
+    chunks_to_issue = request.form.getlist('chunks')
+    
+    if not chunks_to_issue:
+        chunks_to_issue = [request.form['chunk']]
     
     for chunk in chunks_to_issue:
         # Проверяем текущий баланс
@@ -334,9 +337,6 @@ def api_issue_chunk():
                 'user_id': user_id,
                 'chunk_name': chunk
             }).execute()
-        else:
-            # Недостаточно для выдачи
-            pass
     
     log_action(session['user_id'], 'issue_chunk', f"user={user_id}, chunks={chunks_to_issue}")
     return redirect('/admin-panel')
