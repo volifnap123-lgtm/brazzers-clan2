@@ -321,14 +321,17 @@ def api_issue_chunk():
         chunks_to_issue = [request.form['chunk']]
     
     for chunk in chunks_to_issue:
-        # Проверяем текущий баланс
+        # Получаем текущий баланс
         stats_data = supabase.table('stats').select(chunk).eq('user_id', user_id).execute()
         current_balance = sum(row.get(chunk, 0) for row in stats_data.data) if stats_data.data else 0
         
+        # Выдаем только если есть хотя бы 100%
         if current_balance >= 100:
-            # Вычитаем 100%
+            # Создаем новую запись с остатком (не добавляем -100, а сохраняем абсолютное значение)
+            new_balance = current_balance - 100.0
+            
             values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
-            values[chunk] = -100.0
+            values[chunk] = new_balance
             values['user_id'] = user_id
             supabase.table('stats').insert(values).execute()
             
