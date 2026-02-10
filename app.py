@@ -150,7 +150,7 @@ def dashboard():
             'six_b13': all_users_six_b13.get(uid, 0)
         })
 
-    # Топ-5 по сумме всех кусков
+    # Топ-5 по сумме всех кусков (динамический)
     top5 = []
     for u in all_users:
         total_val = sum(u[k] for k in chunks)
@@ -178,7 +178,7 @@ def admin_panel():
         return redirect('/')
     
     users_data = supabase.table('users').select('id,username,login').execute()
-    users = users_data.data if users_data.data else []
+    users = users_data.data if users_data else []
     
     chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
     common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
