@@ -229,10 +229,10 @@ def export_db():
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
-        if data.data:
+        if data.
             columns = list(data.data[0].keys())
             writer.writerow(columns)
-            for row in data.data:
+            for row in data.
                 writer.writerow([row.get(col, '') for col in columns])
         writer.writerow([])
     
@@ -333,11 +333,9 @@ def api_issue_chunk():
         
         # Выдаем только если есть хотя бы 100%
         if current_balance >= 100:
-            # Создаем новую запись с остатком (не добавляем -100, а сохраняем абсолютное значение)
-            new_balance = current_balance - -100.0
-            
+            # Вставляем дельту: -100
             values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
-            values[chunk] = new_balance
+            values[chunk] = -100.0
             values['user_id'] = user_id
             supabase.table('stats').insert(values).execute()
             
@@ -504,7 +502,7 @@ def api_approve_change():
             update_data['login'] = req['new_login']
         if req.get('new_password_hash'):
             update_data['password_hash'] = req['new_password_hash']
-        if update_data:
+        if update_
             supabase.table('users').update(update_data).eq('id', req['user_id']).execute()
         supabase.table('change_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         log_action(session['user_id'], 'approve_change', f"request_id={request_id}, user_id={req['user_id']}")
