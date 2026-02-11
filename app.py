@@ -225,7 +225,7 @@ def export_db():
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
-        if data.
+        if data.data:
             columns = list(data.data[0].keys())
             writer.writerow(columns)
             for row in data.data:
