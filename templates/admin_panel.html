@@ -105,6 +105,17 @@
             font-weight: bold;
             margin: 4px 0;
         }
+        
+        /* Ошибка при выдаче куска */
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border: 2px solid #fecaca;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -244,6 +255,14 @@
 <!-- Выдать кусок -->
 <div class="section">
     <h2>Выдать кусок (вычитает 100%)</h2>
+    
+    <!-- Плашка ошибки -->
+    {% if error_message %}
+    <div class="error-message" id="error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
+    
     <form method="POST" action="/api/issue-chunk" id="issue-form">
         <select name="user_id" required style="width: 100%; max-width: 200px; padding: 6px;">
             {% for u in users %}
@@ -254,7 +273,7 @@
         <!-- Галочка для мультивыдачи -->
         <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px;">
             <input type="checkbox" id="multi-issue" onchange="toggleMultiIssue()">
-            <label for="multi-issue" style="font-size: 14px;">☑️ Выдать несколько кусков сразу (НЕ ТРОГАТЬ НЕ РАБОТАЕТ)</label>
+            <label for="multi-issue" style="font-size: 14px;">☑️ Выдать несколько кусков сразу</label>
         </div>
         
         <!-- Одиночный выбор (по умолчанию) -->
@@ -378,6 +397,16 @@ function confirmIssue() {
     }
 }
 
+// Показать ошибку на 5 секунд
+document.addEventListener('DOMContentLoaded', function() {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        setTimeout(function() {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+});
+
 function applyTheme() {
     const isDark = localStorage.getItem('theme') === 'dark';
     const style = document.getElementById('theme-style');
@@ -475,6 +504,15 @@ function applyTheme() {
                 font-weight: bold;
                 margin: 4px 0;
             }
+            .error-message {
+                background: #fee2e2;
+                color: #b91c1c;
+                padding: 12px;
+                border-radius: 8px;
+                margin: 16px 0;
+                border: 2px solid #fecaca;
+                display: block;
+            }
         `;
     } else {
         style.innerHTML = `
@@ -563,6 +601,15 @@ function applyTheme() {
                 color: var(--red-border);
                 font-weight: bold;
                 margin: 4px 0;
+            }
+            .error-message {
+                background: #fee2e2;
+                color: #b91c1c;
+                padding: 12px;
+                border-radius: 8px;
+                margin: 16px 0;
+                border: 2px solid #fecaca;
+                display: block;
             }
         `;
     }
