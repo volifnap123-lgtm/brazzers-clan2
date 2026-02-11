@@ -78,18 +78,22 @@ def dashboard():
     user_data = supabase.table('users').select('*').eq('id', session['user_id']).execute()
     user = user_data.data[0] if user_data.data else None
     
-    # Получаем историю статистики
-    stats_data = supabase.table('stats') \
+    # Получаем историю статистики (только для отображения)
+    stats_history = supabase.table('stats') \
         .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core,updated_at') \
         .eq('user_id', session['user_id']) \
         .order('updated_at', desc=True) \
         .limit(10) \
         .execute()
-    stats_rows = stats_data.data if stats_data.data else []
+    stats_rows = stats_history.data if stats_history.data else []
 
-    # Рассчитываем ОБЩЕЕ количество как СУММУ всех записей
+    # Рассчитываем ОБЩЕЕ количество как СУММУ ВСЕХ записей (не только последних 10!)
     chunks = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']
-    total = {k: sum(row.get(k, 0) for row in stats_rows) for k in chunks}
+    full_stats = supabase.table('stats') \
+        .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core') \
+        .eq('user_id', session['user_id']) \
+        .execute()
+    total = {k: sum(row.get(k, 0) for row in full_stats.data) if full_stats.data else 0 for k in chunks}
 
     # Рассчитываем 6б13: сколько раз выдавали каждый кусок
     issued_counts = {}
@@ -221,7 +225,7 @@ def export_db():
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
-        if data.data:
+        if data.
             columns = list(data.data[0].keys())
             writer.writerow(columns)
             for row in data.data:
@@ -494,7 +498,7 @@ def api_approve_change():
             update_data['login'] = req['new_login']
         if req.get('new_password_hash'):
             update_data['password_hash'] = req['new_password_hash']
-        if update_data:
+        if update_
             supabase.table('users').update(update_data).eq('id', req['user_id']).execute()
         supabase.table('change_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         log_action(session['user_id'], 'approve_change', f"request_id={request_id}, user_id={req['user_id']}")
