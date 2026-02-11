@@ -498,7 +498,7 @@ def api_approve_change():
             update_data['login'] = req['new_login']
         if req.get('new_password_hash'):
             update_data['password_hash'] = req['new_password_hash']
-        if update__data:
+        if update_data:
             supabase.table('users').update(update_data).eq('id', req['user_id']).execute()
         supabase.table('change_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         log_action(session['user_id'], 'approve_change', f"request_id={request_id}, user_id={req['user_id']}")
