@@ -236,7 +236,7 @@ def export_db():
         if data.data:
             columns = list(data.data[0].keys())
             writer.writerow(columns)
-            for row in data.
+            for row in data.data:
                 writer.writerow([row.get(col, '') for col in columns])
         writer.writerow([])
     
