@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAZZERS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter  :wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style id="theme-style">
         :root {
             --green-500: #16a34a;
@@ -558,6 +558,29 @@
             border-color: #4ade80 !important;
         }
 
+        /* Кнопки запроса */
+        .request-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 4px;
+            width: 100%;
+        }
+        .request-btn:hover {
+            background: #d97706;
+        }
+        .dark-theme .request-btn {
+            background: #d97706;
+            color: #0f172a;
+        }
+        .dark-theme .request-btn:hover {
+            background: #b45309;
+        }
+
         @media (max-width: 768px) {
             .nav-buttons {
                 flex-direction: row;
@@ -676,11 +699,46 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Кнопки запроса под каждым куском -->
         <div style="margin-top: 20px;">
             <div class="extra-box">
                 <div>Полученных 6б13: {{ six_b13 }}</div>
                 <div>Отданных процентов: {{ "%.1f"|format(given_percent) }}%</div>
             </div>
+            
+            <!-- Кнопки запроса -->
+            <div class="extra-box">
+                <h3>Запросить выдачу куска</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px;">
+                    {% set chunks_info = [
+                        ('chunk1', 'Кусок №1'),
+                        ('chunk2', 'Кусок №2'),
+                        ('chunk3', 'Кусок №3'),
+                        ('chunk4', 'Кусок №4'),
+                        ('chunk5', 'Кусок №5'),
+                        ('chunk6', 'Кусок №6'),
+                        ('chunk7', 'Кусок №7'),
+                        ('chunk8', 'Кусок №8'),
+                        ('vr1', 'В.Рад №1'),
+                        ('vr2', 'В.Рад №2'),
+                        ('vr3', 'В.Рад №3'),
+                        ('core', 'Ядро')
+                    ] %}
+                    
+                    {% for chunk_key, chunk_name in chunks_info %}
+                        {% if total.get(chunk_key, 0) >= 100 %}
+                            <form method="POST" action="/api/request-chunk" style="margin: 0;">
+                                <input type="hidden" name="chunk" value="{{ chunk_key }}">
+                                <button type="submit" class="request-btn" title="При нажатии на кнопку вы запросите у админа выдачу вам данного куска">
+                                    Запросить {{ chunk_name }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
             <div class="extra-box">
                 <h3>Топ 5 игроков</h3>
                 {% for player in top5 %}
