@@ -105,6 +105,28 @@
             font-weight: bold;
             margin: 4px 0;
         }
+        
+        /* Запросы на выдачу кусков */
+        .request-item {
+            background: #fffbeb;
+            border-left: 4px solid #ca8a04;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+        }
+        .dark-theme .request-item {
+            background: rgba(234, 179, 8, 0.15);
+            border-left-color: #facc15;
+        }
+        .request-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-approve { background: #22c55e; }
+        .btn-reject { background: #ef4444; }
+        .btn-approve:hover { background: #16a34a; }
+        .btn-reject:hover { background: #dc2626; }
     </style>
 </head>
 <body>
@@ -241,7 +263,11 @@
     </form>
 </div>
 
-<!-- Выдать кусок -->
+<!--
+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+~ ЗАКОММЕНТИРОВАННЫЙ БЛОК "ВЫДАТЬ КУСОК" — РЕЗЕРВНАЯ КОПИЯ ~
+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+
 <div class="section">
     <h2>Выдать кусок (вычитает 100%)</h2>
     <form method="POST" action="/api/issue-chunk" id="issue-form">
@@ -293,6 +319,33 @@
     </form>
 </div>
 
+-->
+
+<!-- ЗАПРОСЫ НА ВЫДАЧУ КУСКОВ -->
+<div class="section">
+    <h2>Запросы на выдачу кусков</h2>
+    {% if chunk_requests %}
+        {% for req in chunk_requests %}
+        <div class="request-item">
+            <strong>{{ req.username }}</strong> запросил выдачу куска: <strong>{{ req.chunk_name }}</strong>
+            <div class="request-actions">
+                <form method="POST" action="/api/approve-chunk-request" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <button type="submit" class="btn btn-approve">Выдан</button>
+                </form>
+                <form method="POST" action="/api/reject-chunk-request" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="text" name="reason" placeholder="Причина отказа (опционально)" style="width: 150px; padding: 4px; font-size: 12px;">
+                    <button type="submit" class="btn btn-reject">Отказ</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет активных запросов.</p>
+    {% endif %}
+</div>
+
 <!-- Общак (обновлён!) -->
 <div class="section">
     <h2>Управление общаком</h2>
@@ -342,42 +395,6 @@
 </div>
 
 <script>
-function toggleMultiIssue() {
-    const checkbox = document.getElementById('multi-issue');
-    const single = document.getElementById('single-chunk');
-    const multi = document.getElementById('multi-chunks');
-    
-    if (checkbox.checked) {
-        single.style.display = 'none';
-        single.required = false;
-        single.name = '';
-        multi.style.display = 'block';
-        multi.required = true;
-        multi.name = 'chunks';
-    } else {
-        single.style.display = 'block';
-        single.required = true;
-        single.name = 'chunk';
-        multi.style.display = 'none';
-        multi.required = false;
-        multi.name = '';
-    }
-}
-
-function confirmIssue() {
-    const checkbox = document.getElementById('multi-issue');
-    if (checkbox.checked) {
-        const selected = document.querySelectorAll('#multi-chunks option:checked');
-        if (selected.length === 0) {
-            alert('Выберите хотя бы один кусок!');
-            return false;
-        }
-        return confirm(`Выдать ${selected.length} кусков?\nЭто вычтет 100% по каждому выбранному куску.`);
-    } else {
-        return confirm('Выдать кусок?\nЭто вычтет 100% у игрока.');
-    }
-}
-
 function applyTheme() {
     const isDark = localStorage.getItem('theme') === 'dark';
     const style = document.getElementById('theme-style');
@@ -475,6 +492,17 @@ function applyTheme() {
                 font-weight: bold;
                 margin: 4px 0;
             }
+            .request-item {
+                background: rgba(234, 179, 8, 0.15);
+                border-left: 4px solid #facc15;
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+            }
+            .btn-approve { background: #4ade80; }
+            .btn-reject { background: #f87171; }
+            .btn-approve:hover { background: #22c55e; }
+            .btn-reject:hover { background: #ef4444; }
         `;
     } else {
         style.innerHTML = `
@@ -564,6 +592,17 @@ function applyTheme() {
                 font-weight: bold;
                 margin: 4px 0;
             }
+            .request-item {
+                background: #fffbeb;
+                border-left: 4px solid #ca8a04;
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+            }
+            .btn-approve { background: #22c55e; }
+            .btn-reject { background: #ef4444; }
+            .btn-approve:hover { background: #16a34a; }
+            .btn-reject:hover { background: #dc2626; }
         `;
     }
 }
