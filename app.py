@@ -20,7 +20,8 @@ def cleanup_old_records():
         ('audit_log', 'timestamp'),
         ('change_requests', 'created_at'),
         ('news', 'created_at'),
-        ('issued_chunks', 'issued_at')
+        ('issued_chunks', 'issued_at'),
+        ('chunk_requests', 'created_at')  # ← добавил очистку запросов
     ]
     one_year_ago = datetime.now().replace(year=datetime.now().year - 1).isoformat()
     for table, col in tables_and_columns:
@@ -188,7 +189,14 @@ def admin_panel():
     for row in common_fund_data.data or []:
         common_fund[row['chunk_name']] = row['amount']
     
-    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund)
+    # Получаем активные запросы на выдачу кусков
+    chunk_requests_data = supabase.table('chunk_requests').select('*').eq('status', 'pending').execute()
+    chunk_requests = []
+    for r in chunk_requests_data.data or []:
+        user_info = next((u for u in users if u['id'] == r['user_id']), {'username': 'Unknown'})
+        chunk_requests.append({**r, 'username': user_info['username']})
+    
+    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, chunk_requests=chunk_requests)
 
 @app.route('/tech-mode')
 def tech_mode():
@@ -221,14 +229,14 @@ def export_db():
     output = io.StringIO()
     writer = csv.writer(output)
     
-    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks']
+    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks', 'chunk_requests']
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
-        if data.data:
+        if data.
             columns = list(data.data[0].keys())
             writer.writerow(columns)
-            for row in data.data:
+            for row in data.
                 writer.writerow([row.get(col, '') for col in columns])
         writer.writerow([])
     
@@ -311,37 +319,95 @@ def api_transfer_percent():
     log_action(session['user_id'], 'transfer', f"{from_id}->{to_id}, {chunk}={amount}")
     return redirect('/admin-panel')
 
-@app.route('/api/issue-chunk', methods=['POST'])
-def api_issue_chunk():
-    if 'role' not in session:
-        return redirect('/')
+# НОВЫЙ ЭНДПОИНТ: Запрос на выдачу куска
+@app.route('/api/request-chunk', methods=['POST'])
+def api_request_chunk():
+    if 'user_id' not in session:
+        return redirect('/dashboard')
     cleanup_old_records()
-    user_id = request.form['user_id']
-    chunks_to_issue = request.form.getlist('chunks')
+    user_id = session['user_id']
+    chunk = request.form['chunk']
     
-    if not chunks_to_issue:
-        chunks_to_issue = [request.form['chunk']]
+    # Проверяем текущий баланс
+    stats_data = supabase.table('stats').select(chunk).eq('user_id', user_id).execute()
+    current_balance = sum(row.get(chunk, 0) for row in stats_data.data) if stats_data.data else 0
     
-    for chunk in chunks_to_issue:
-        # Получаем текущий баланс
-        stats_data = supabase.table('stats').select(chunk).eq('user_id', user_id).execute()
-        current_balance = sum(row.get(chunk, 0) for row in stats_data.data) if stats_data.data else 0
+    # Можно запросить только если есть хотя бы 100%
+    if current_balance >= 100:
+        # Резервируем 100% (вычитаем сразу)
+        values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+        values[chunk] = -100.0
+        values['user_id'] = user_id
+        supabase.table('stats').insert(values).execute()
         
-        # Выдаем только если есть хотя бы 100%
-        if current_balance >= 100:
-            # Вставляем дельту: -100
-            values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
-            values[chunk] = -100.0
-            values['user_id'] = user_id
-            supabase.table('stats').insert(values).execute()
-            
-            # Записываем факт выдачи
-            supabase.table('issued_chunks').insert({
-                'user_id': user_id,
-                'chunk_name': chunk
-            }).execute()
+        # Создаём запрос
+        supabase.table('chunk_requests').insert({
+            'user_id': user_id,
+            'chunk_name': chunk,
+            'status': 'pending'
+        }).execute()
+        
+        log_action(user_id, 'chunk_request_created', f"user={user_id}, chunk={chunk}, status=pending")
     
-    log_action(session['user_id'], 'issue_chunk', f"user={user_id}, chunks={chunks_to_issue}")
+    return redirect('/dashboard')
+
+# НОВЫЙ ЭНДПОИНТ: Подтвердить запрос
+@app.route('/api/approve-chunk-request', methods=['POST'])
+def api_approve_chunk_request():
+    if 'role' not in session or session['role'] not in ('admin', 'admin2'):
+        return redirect('/admin-panel')
+    cleanup_old_records()
+    request_id = request.form['request_id']
+    
+    # Получаем запрос
+    req_data = supabase.table('chunk_requests').select('*').eq('id', request_id).execute()
+    req = req_data.data[0] if req_data.data else None
+    
+    if req:
+        user_id = req['user_id']
+        chunk = req['chunk_name']
+        
+        # Записываем факт выдачи
+        supabase.table('issued_chunks').insert({
+            'user_id': user_id,
+            'chunk_name': chunk
+        }).execute()
+        
+        # Обновляем статус запроса
+        supabase.table('chunk_requests').update({'status': 'approved'}).eq('id', request_id).execute()
+        
+        log_action(session['user_id'], 'chunk_request_approved', f"user={user_id}, chunk={chunk}, status=approved")
+    
+    return redirect('/admin-panel')
+
+# НОВЫЙ ЭНДПОИНТ: Отклонить запрос
+@app.route('/api/reject-chunk-request', methods=['POST'])
+def api_reject_chunk_request():
+    if 'role' not in session or session['role'] not in ('admin', 'admin2'):
+        return redirect('/admin-panel')
+    cleanup_old_records()
+    request_id = request.form['request_id']
+    reason = request.form.get('reason', '')
+    
+    # Получаем запрос
+    req_data = supabase.table('chunk_requests').select('*').eq('id', request_id).execute()
+    req = req_data.data[0] if req_data.data else None
+    
+    if req:
+        user_id = req['user_id']
+        chunk = req['chunk_name']
+        
+        # Возвращаем 100%
+        values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
+        values[chunk] = 100.0
+        values['user_id'] = user_id
+        supabase.table('stats').insert(values).execute()
+        
+        # Обновляем статус запроса
+        supabase.table('chunk_requests').update({'status': 'rejected', 'reason': reason}).eq('id', request_id).execute()
+        
+        log_action(session['user_id'], 'chunk_request_rejected', f"user={user_id}, chunk={chunk}, status=rejected, reason={reason}")
+    
     return redirect('/admin-panel')
 
 @app.route('/api/common-add', methods=['POST'])
