@@ -326,20 +326,34 @@
     <h2>Запросы на выдачу кусков</h2>
     {% if chunk_requests %}
         {% for req in chunk_requests %}
-        <div class="request-item">
-            <strong>{{ req.username }}</strong> запросил выдачу куска: <strong>{{ req.chunk_name }}</strong>
-            <div class="request-actions">
-                <form method="POST" action="/api/approve-chunk-request" style="display: inline;">
-                    <input type="hidden" name="request_id" value="{{ req.id }}">
-                    <button type="submit" class="btn btn-approve">Выдан</button>
-                </form>
-                <form method="POST" action="/api/reject-chunk-request" style="display: inline;">
-                    <input type="hidden" name="request_id" value="{{ req.id }}">
-                    <input type="text" name="reason" placeholder="Причина отказа (опционально)" style="width: 150px; padding: 4px; font-size: 12px;">
-                    <button type="submit" class="btn btn-reject">Отказ</button>
-                </form>
+            {% set chunk_labels = {
+                'chunk1': 'Кусок №1',
+                'chunk2': 'Кусок №2',
+                'chunk3': 'Кусок №3',
+                'chunk4': 'Кусок №4',
+                'chunk5': 'Кусок №5',
+                'chunk6': 'Кусок №6',
+                'chunk7': 'Кусок №7',
+                'chunk8': 'Кусок №8',
+                'vr1': 'Внутренний Радиус №1',
+                'vr2': 'Внутренний Радиус №2',
+                'vr3': 'Внутренний Радиус №3',
+                'core': 'Ядро'
+            } %}
+            <div class="request-item">
+                <strong>{{ req.username }}</strong> запросил выдачу куска: <strong>{{ chunk_labels.get(req.chunk_name, req.chunk_name) }}</strong>
+                <div class="request-actions">
+                    <form method="POST" action="/api/approve-chunk-request" style="display: inline;">
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <button type="submit" class="btn btn-approve">Выдан</button>
+                    </form>
+                    <form method="POST" action="/api/reject-chunk-request" style="display: inline;">
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <input type="text" name="reason" placeholder="Причина отказа (опционально)" style="width: 150px; padding: 4px; font-size: 12px;">
+                        <button type="submit" class="btn btn-reject">Отказ</button>
+                    </form>
+                </div>
             </div>
-        </div>
         {% endfor %}
     {% else %}
         <p>Нет активных запросов.</p>
