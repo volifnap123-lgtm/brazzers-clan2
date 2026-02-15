@@ -177,18 +177,18 @@
                 <tbody>
                     <tr>
                         <td><strong>Проценты</strong></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk1" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk2" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="vr1" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk3" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk4" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk5" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="vr2" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk6" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk7" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="chunk8" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="vr3" value="0"></td>
-                        <td class="chunk-cell"><input type="number" step="0.1" name="core" value="0"></td>
+                        <td><input type="number" step="0.1" name="chunk1" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk2" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="vr1" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk3" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk4" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk5" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="vr2" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk6" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk7" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="chunk8" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="vr3" value="0" class="chunk-input"></td>
+                        <td><input type="number" step="0.1" name="core" value="0" class="chunk-input"></td>
                     </tr>
                 </tbody>
             </table>
@@ -198,22 +198,18 @@
 </div>
 
 <style>
-.chunk-cell {
-    padding: 4px !important;
-    text-align: center !important;
-}
-.chunk-cell input {
+.chunk-input {
     width: 100%;
     height: 32px;
-    padding: 0 6px;
+    padding: 0 3px;
+    text-align: center;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 14px;
-    text-align: center;
 }
 </style>
-
+    
 <!-- Выдать проценты группе -->
 <div class="section">
     <h2>Выдать проценты группе игроков (100% делится поровну)</h2>
