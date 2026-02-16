@@ -388,6 +388,21 @@
                 <!-- Ядро -->
                 <tr><td colspan="4" style="background: var(--core); color: white; font-weight: bold; text-align: center;">Ядро</td></tr>
                 <tr><td>Ядро</td><td>{{ "%.1f"|format(common_fund.get('core', 0)) }}</td><td><form method="POST" action="/api/common-add" style="display:inline;"><input type="hidden" name="chunk" value="core"><input type="number" step="0.1" name="amount" placeholder="+" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">+</button></form></td><td><form method="POST" action="/api/common-remove" style="display:inline;"><input type="hidden" name="chunk" value="core"><input type="number" step="0.1" name="amount" placeholder="-" style="width:60px; padding:4px;"><button class="btn" type="submit" style="padding:3px 6px;font-size:11px;">-</button></form></td></tr>
+                
+                <!-- ОСТАТОК -->
+                <tr><td colspan="4" style="background: var(--green-500); color: white; font-weight: bold; text-align: center;">ОСТАТОК</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №1</td><td>{{ "%.1f"|format(remainder.get('chunk1', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №2</td><td>{{ "%.1f"|format(remainder.get('chunk2', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 20%">В.Рад №1</td><td>{{ "%.1f"|format(remainder.get('vr1', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №3</td><td>{{ "%.1f"|format(remainder.get('chunk3', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №4</td><td>{{ "%.1f"|format(remainder.get('chunk4', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №5</td><td>{{ "%.1f"|format(remainder.get('chunk5', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">В.Рад №2</td><td>{{ "%.1f"|format(remainder.get('vr2', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №6</td><td>{{ "%.1f"|format(remainder.get('chunk6', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">Кусок №7</td><td>{{ "%.1f"|format(remainder.get('chunk7', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 20%">Кусок №8</td><td>{{ "%.1f"|format(remainder.get('chunk8', 0)) }}</td><td></td><td></td></tr>
+                <tr><td title="Шанс: 25%">В.Рад №3</td><td>{{ "%.1f"|format(remainder.get('vr3', 0)) }}</td><td></td><td></td></tr>
+                <tr><td>Ядро</td><td>{{ "%.1f"|format(remainder.get('core', 0)) }}</td><td></td><td></td></tr>
             </tbody>
         </table>
     </div>
@@ -544,7 +559,8 @@ function applyTheme() {
             .btn {
                 background: var(--green-500); color: white;
                 border: none; padding: 8px 16px;
-                border-radius: 6px; cursor: pointer;
+                border-radius: 6px;
+                cursor: pointer;
                 font-weight: 600;
                 font-size: 14px;
             }
