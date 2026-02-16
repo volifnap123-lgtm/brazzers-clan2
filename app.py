@@ -88,7 +88,7 @@ def dashboard():
         .execute()
     stats_rows = stats_history.data if stats_history.data else []
 
-    # Рассчитываем ОБЩЕЕ количество как СУММУ ВСЕХ записей (не только последних 10!)
+    # Рассчитываем ОБЩЕЕ количество как СУММУ ВСЕХ записей
     chunks = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']
     full_stats = supabase.table('stats') \
         .select('chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,vr1,vr2,vr3,core') \
@@ -96,7 +96,7 @@ def dashboard():
         .execute()
     total = {k: sum(row.get(k, 0) for row in full_stats.data) if full_stats.data else 0 for k in chunks}
 
-    # Рассчитываем 6б13: сколько раз выдавали каждый кусок
+    # Рассчитываем 6б13
     issued_counts = {}
     for chunk in chunks:
         count_data = supabase.table('issued_chunks') \
@@ -105,7 +105,6 @@ def dashboard():
             .eq('chunk_name', chunk) \
             .execute()
         issued_counts[chunk] = count_data.count if hasattr(count_data, 'count') else len(count_data.data)
-    
     six_b13 = min(issued_counts.values()) if issued_counts else 0
 
     # Рассчитываем отданные проценты
@@ -115,11 +114,11 @@ def dashboard():
         .execute()
     given = sum(row['amount'] for row in given_data.data) if given_data.data else 0
 
-    # Загружаем всех пользователей и их полную историю
+    # Загружаем всех пользователей
     all_users_data = supabase.table('users').select('id,username,login,role').execute()
     all_users_dict = {u['id']: u for u in all_users_data.data} if all_users_data.data else {}
 
-    # Для каждого пользователя считаем сумму по всем его записям
+    # Считаем сумму по всем игрокам для общака
     all_users_stats = {}
     stats_all = supabase.table('stats').select('*').execute()
     for s in stats_all.data or []:
@@ -153,7 +152,7 @@ def dashboard():
             'six_b13': all_users_six_b13.get(uid, 0)
         })
 
-    # Топ-5 по сумме всех кусков (динамический)
+    # Топ-5
     top5 = []
     for u in all_users:
         total_val = sum(u[k] for k in chunks)
@@ -167,9 +166,11 @@ def dashboard():
         author = all_users_dict.get(n['author_id'], {'username': 'Unknown'})
         news_with_authors.append({**n, 'author_name': author['username']})
 
-    # Общак для отображения в общей таблице
-    common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
-    common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data} if common_fund_data.data else {}
+    # === ОБЩАК: СУММА ПО ВСЕМ ПОЛЬЗОВАТЕЛЯМ ===
+    common_fund = {chunk: 0.0 for chunk in chunks}
+    for uid, stats in all_users_stats.items():
+        for chunk in chunks:
+            common_fund[chunk] += stats[chunk]
 
     return render_template('user_dashboard.html', user=user, stats_rows=stats_rows, total=total, 
                           six_b13=six_b13, given_percent=given,
@@ -184,14 +185,13 @@ def admin_panel():
     users = users_data.data if users_data else []
     
     chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
-    common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
-    common_fund = {}
-    for row in common_fund_data.data or []:
-        common_fund[row['chunk_name']] = row['amount']
     
-    # Получаем остатки
-    remainder_data = supabase.table('remainder').select('chunk_name,amount').execute()
-    remainder = {row['chunk_name']: row['amount'] for row in remainder_data.data} if remainder_data.data else {}
+    # === ОБЩАК: СУММА ПО ВСЕМ ПОЛЬЗОВАТЕЛЯМ ===
+    common_fund = {chunk: 0.0 for chunk in chunks}
+    stats_all = supabase.table('stats').select('*').execute()
+    for record in stats_all.data or []:
+        for chunk in chunks:
+            common_fund[chunk] += record.get(chunk, 0)
     
     # Получаем активные запросы на выдачу кусков
     chunk_requests_data = supabase.table('chunk_requests').select('*').eq('status', 'pending').execute()
@@ -200,7 +200,7 @@ def admin_panel():
         user_info = next((u for u in users if u['id'] == r['user_id']), {'username': 'Unknown'})
         chunk_requests.append({**r, 'username': user_info['username']})
     
-    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, remainder=remainder, chunk_requests=chunk_requests)
+    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, chunk_requests=chunk_requests)
 
 @app.route('/tech-mode')
 def tech_mode():
@@ -233,7 +233,7 @@ def export_db():
     output = io.StringIO()
     writer = csv.writer(output)
     
-    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks', 'chunk_requests', 'remainder']
+    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks', 'chunk_requests']
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
@@ -274,12 +274,11 @@ def api_give_percent_multiple():
     cleanup_old_records()
     user_ids = request.form.getlist('user_ids')
     chunk = request.form['chunk']
-    total_amount = 100.0
-    amount_per = round(total_amount / len(user_ids), 1)
+    amount_per = round(100.0 / len(user_ids), 1)
     
     # Вычисляем остаток
     distributed_total = amount_per * len(user_ids)
-    remainder_amount = round(total_amount - distributed_total, 1)
+    remainder_amount = round(100.0 - distributed_total, 1)
     
     # Выдаём проценты игрокам
     for uid in user_ids:
@@ -289,7 +288,7 @@ def api_give_percent_multiple():
         supabase.table('stats').insert(values).execute()
     
     # Добавляем остаток в таблицу remainder
-    if abs(remainder_amount) > 0.01:  # избегаем нулевых остатков из-за погрешности
+    if abs(remainder_amount) > 0.01:
         remainder_data = supabase.table('remainder').select('amount').eq('chunk_name', chunk).execute()
         current_remainder = remainder_data.data[0]['amount'] if remainder_data.data else 0
         new_remainder = current_remainder + remainder_amount
@@ -311,7 +310,7 @@ def api_transfer_percent():
     chunk = request.form['chunk']
     amount = float(request.form['amount'])
     
-    # Проверяем баланс отправителя (суммируем все записи)
+    # Проверяем баланс отправителя
     from_stats_all = supabase.table('stats').select(chunk).eq('user_id', from_id).execute()
     balance = sum(row.get(chunk, 0) for row in from_stats_all.data) if from_stats_all.data else 0
     
@@ -341,7 +340,7 @@ def api_transfer_percent():
     log_action(session['user_id'], 'transfer', f"{from_id}->{to_id}, {chunk}={amount}")
     return redirect('/admin-panel')
 
-# НОВЫЙ ЭНДПОИНТ: Запрос на выдачу куска
+# Запрос на выдачу куска
 @app.route('/api/request-chunk', methods=['POST'])
 def api_request_chunk():
     if 'user_id' not in session:
@@ -350,19 +349,15 @@ def api_request_chunk():
     user_id = session['user_id']
     chunk = request.form['chunk']
     
-    # Проверяем текущий баланс
     stats_data = supabase.table('stats').select(chunk).eq('user_id', user_id).execute()
     current_balance = sum(row.get(chunk, 0) for row in stats_data.data) if stats_data.data else 0
     
-    # Можно запросить только если есть хотя бы 100%
     if current_balance >= 100:
-        # Резервируем 100% (вычитаем сразу)
         values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
         values[chunk] = -100.0
         values['user_id'] = user_id
         supabase.table('stats').insert(values).execute()
         
-        # Создаём запрос
         supabase.table('chunk_requests').insert({
             'user_id': user_id,
             'chunk_name': chunk,
@@ -373,7 +368,7 @@ def api_request_chunk():
     
     return redirect('/dashboard')
 
-# НОВЫЙ ЭНДПОИНТ: Подтвердить запрос
+# Подтвердить запрос
 @app.route('/api/approve-chunk-request', methods=['POST'])
 def api_approve_chunk_request():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
@@ -381,7 +376,6 @@ def api_approve_chunk_request():
     cleanup_old_records()
     request_id = request.form['request_id']
     
-    # Получаем запрос
     req_data = supabase.table('chunk_requests').select('*').eq('id', request_id).execute()
     req = req_data.data[0] if req_data.data else None
     
@@ -389,20 +383,18 @@ def api_approve_chunk_request():
         user_id = req['user_id']
         chunk = req['chunk_name']
         
-        # Записываем факт выдачи
         supabase.table('issued_chunks').insert({
             'user_id': user_id,
             'chunk_name': chunk
         }).execute()
         
-        # Обновляем статус запроса
         supabase.table('chunk_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         
         log_action(session['user_id'], 'chunk_request_approved', f"user={user_id}, chunk={chunk}, status=approved")
     
     return redirect('/admin-panel')
 
-# НОВЫЙ ЭНДПОИНТ: Отклонить запрос
+# Отклонить запрос
 @app.route('/api/reject-chunk-request', methods=['POST'])
 def api_reject_chunk_request():
     if 'role' not in session or session['role'] not in ('admin', 'admin2'):
@@ -411,7 +403,6 @@ def api_reject_chunk_request():
     request_id = request.form['request_id']
     reason = request.form.get('reason', '')
     
-    # Получаем запрос
     req_data = supabase.table('chunk_requests').select('*').eq('id', request_id).execute()
     req = req_data.data[0] if req_data.data else None
     
@@ -419,13 +410,11 @@ def api_reject_chunk_request():
         user_id = req['user_id']
         chunk = req['chunk_name']
         
-        # Возвращаем 100%
         values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
         values[chunk] = 100.0
         values['user_id'] = user_id
         supabase.table('stats').insert(values).execute()
         
-        # Обновляем статус запроса
         supabase.table('chunk_requests').update({'status': 'rejected', 'reason': reason}).eq('id', request_id).execute()
         
         log_action(session['user_id'], 'chunk_request_rejected', f"user={user_id}, chunk={chunk}, status=rejected, reason={reason}")
@@ -586,7 +575,7 @@ def api_approve_change():
             update_data['login'] = req['new_login']
         if req.get('new_password_hash'):
             update_data['password_hash'] = req['new_password_hash']
-        if update__data:
+        if update_data:
             supabase.table('users').update(update_data).eq('id', req['user_id']).execute()
         supabase.table('change_requests').update({'status': 'approved'}).eq('id', request_id).execute()
         log_action(session['user_id'], 'approve_change', f"request_id={request_id}, user_id={req['user_id']}")
