@@ -21,7 +21,7 @@ def cleanup_old_records():
         ('change_requests', 'created_at'),
         ('news', 'created_at'),
         ('issued_chunks', 'issued_at'),
-        ('chunk_requests', 'created_at')  # ← добавил очистку запросов
+        ('chunk_requests', 'created_at')
     ]
     one_year_ago = datetime.now().replace(year=datetime.now().year - 1).isoformat()
     for table, col in tables_and_columns:
@@ -189,6 +189,10 @@ def admin_panel():
     for row in common_fund_data.data or []:
         common_fund[row['chunk_name']] = row['amount']
     
+    # Получаем остатки
+    remainder_data = supabase.table('remainder').select('chunk_name,amount').execute()
+    remainder = {row['chunk_name']: row['amount'] for row in remainder_data.data} if remainder_data.data else {}
+    
     # Получаем активные запросы на выдачу кусков
     chunk_requests_data = supabase.table('chunk_requests').select('*').eq('status', 'pending').execute()
     chunk_requests = []
@@ -196,7 +200,7 @@ def admin_panel():
         user_info = next((u for u in users if u['id'] == r['user_id']), {'username': 'Unknown'})
         chunk_requests.append({**r, 'username': user_info['username']})
     
-    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, chunk_requests=chunk_requests)
+    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, remainder=remainder, chunk_requests=chunk_requests)
 
 @app.route('/tech-mode')
 def tech_mode():
@@ -229,7 +233,7 @@ def export_db():
     output = io.StringIO()
     writer = csv.writer(output)
     
-    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks', 'chunk_requests']
+    tables = ['users', 'stats', 'transfers', 'common_fund', 'audit_log', 'change_requests', 'news', 'issued_chunks', 'chunk_requests', 'remainder']
     for table in tables:
         writer.writerow([f'=== TABLE: {table} ==='])
         data = supabase.table(table).select('*').execute()
@@ -270,13 +274,31 @@ def api_give_percent_multiple():
     cleanup_old_records()
     user_ids = request.form.getlist('user_ids')
     chunk = request.form['chunk']
-    amount_per = round(100.0 / len(user_ids), 1)
+    total_amount = 100.0
+    amount_per = round(total_amount / len(user_ids), 1)
+    
+    # Вычисляем остаток
+    distributed_total = amount_per * len(user_ids)
+    remainder_amount = round(total_amount - distributed_total, 1)
+    
+    # Выдаём проценты игрокам
     for uid in user_ids:
         values = {k: 0 for k in ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core']}
         values[chunk] = amount_per
         values['user_id'] = uid
         supabase.table('stats').insert(values).execute()
-    log_action(session['user_id'], 'give_percent_multi', f"chunk={chunk}, users={user_ids}, each={amount_per}")
+    
+    # Добавляем остаток в таблицу remainder
+    if abs(remainder_amount) > 0.01:  # избегаем нулевых остатков из-за погрешности
+        remainder_data = supabase.table('remainder').select('amount').eq('chunk_name', chunk).execute()
+        current_remainder = remainder_data.data[0]['amount'] if remainder_data.data else 0
+        new_remainder = current_remainder + remainder_amount
+        if remainder_data.data:
+            supabase.table('remainder').update({'amount': new_remainder}).eq('chunk_name', chunk).execute()
+        else:
+            supabase.table('remainder').insert({'chunk_name': chunk, 'amount': new_remainder}).execute()
+    
+    log_action(session['user_id'], 'give_percent_multi', f"chunk={chunk}, users={user_ids}, each={amount_per}, remainder={remainder_amount}")
     return redirect('/admin-panel')
 
 @app.route('/api/transfer-percent', methods=['POST'])
