@@ -190,7 +190,7 @@ def admin_panel():
     common_fund = {}
     try:
         common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
-        if common_fund_data.
+        if common_fund_data.data:
             common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data}
     except Exception as e:
         print(f"Ошибка загрузки общака: {e}")
