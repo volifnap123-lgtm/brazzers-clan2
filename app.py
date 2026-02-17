@@ -186,14 +186,12 @@ def admin_panel():
     
     chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
     
-    # Загружаем общак
-    common_fund = {}
-    try:
-        common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
-        if common_fund_data.data:
-            common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data}
-    except Exception as e:
-        print(f"Ошибка загрузки общака: {e}")
+    # === ОБЩАК: СУММА ПО ВСЕМ ПОЛЬЗОВАТЕЛЯМ ===
+    common_fund = {chunk: 0.0 for chunk in chunks}
+    stats_all = supabase.table('stats').select('*').execute()
+    for record in stats_all.data or []:
+        for chunk in chunks:
+            common_fund[chunk] += record.get(chunk, 0)
     
     # Загружаем остатки С БЕЗОПАСНОЙ ОБРАБОТКОЙ
     remainder = {}
