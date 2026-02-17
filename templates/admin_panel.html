@@ -329,22 +329,53 @@
                 <tr><td colspan="2" style="background: var(--core); color: white; font-weight: bold; text-align: center;">Ядро</td></tr>
                 <tr><td>Ядро</td><td>{{ "%.1f"|format(common_fund.get('core', 0)) }}</td></tr>
                 
-                <!-- ОСТАТОК -->
-                <tr style="background: var(--green-100);">
-                    <td><strong>ОСТАТОК</strong></td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk1', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk2', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('vr1', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk3', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk4', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk5', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('vr2', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk6', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk7', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('chunk8', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('vr3', 0)) }}</td>
-                    <td>{{ "%.1f"|format(remainder.get('core', 0)) }}</td>
-                </tr>
+                <!-- Остаток -->
+                <div class="section">
+                    <h2>Остаток</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Категория</th>
+                                    <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
+                                    <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
+                                    <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
+                                    <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
+                                </tr>
+                                <tr>
+                                    <th>Кусок №1</th>
+                                    <th>Кусок №2</th>
+                                    <th>В.Рад №1</th>
+                                    <th>Кусок №3</th>
+                                    <th>Кусок №4</th>
+                                    <th>Кусок №5</th>
+                                    <th>В.Рад №2</th>
+                                    <th>Кусок №6</th>
+                                    <th>Кусок №7</th>
+                                    <th>Кусок №8</th>
+                                    <th>В.Рад №3</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Проценты</strong></td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk1', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk2', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr1', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk3', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk4', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk5', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr2', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk6', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk7', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk8', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr3', 0)) }}</td>
+                                    <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('core', 0)) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </tbody>
         </table>
     </div>
