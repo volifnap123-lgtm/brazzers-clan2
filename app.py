@@ -186,21 +186,43 @@ def admin_panel():
     
     chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
     
-    # === ОБЩАК: СУММА ПО ВСЕМ ПОЛЬЗОВАТЕЛЯМ ===
-    common_fund = {chunk: 0.0 for chunk in chunks}
-    stats_all = supabase.table('stats').select('*').execute()
-    for record in stats_all.data or []:
-        for chunk in chunks:
-            common_fund[chunk] += record.get(chunk, 0)
+    # Загружаем общак
+    common_fund = {}
+    try:
+        common_fund_data = supabase.table('common_fund').select('chunk_name,amount').execute()
+        if common_fund_data.
+            common_fund = {row['chunk_name']: row['amount'] for row in common_fund_data.data}
+    except Exception as e:
+        print(f"Ошибка загрузки общака: {e}")
     
-    # Получаем активные запросы на выдачу кусков
-    chunk_requests_data = supabase.table('chunk_requests').select('*').eq('status', 'pending').execute()
+    # Загружаем остатки С БЕЗОПАСНОЙ ОБРАБОТКОЙ
+    remainder = {}
+    try:
+        remainder_data = supabase.table('remainder').select('chunk_name,amount').execute()
+        if remainder_data.data and hasattr(remainder_data, 'data'):
+            remainder = {row['chunk_name']: float(row['amount']) for row in remainder_data.data}
+    except Exception as e:
+        print(f"Ошибка загрузки остатков (таблица может быть пустой или отсутствовать): {e}")
+        remainder = {chunk: 0.0 for chunk in chunks}  # Гарантируем передачу всех ключей
+    
+    # Загружаем запросы
     chunk_requests = []
-    for r in chunk_requests_data.data or []:
-        user_info = next((u for u in users if u['id'] == r['user_id']), {'username': 'Unknown'})
-        chunk_requests.append({**r, 'username': user_info['username']})
+    try:
+        chunk_requests_data = supabase.table('chunk_requests').select('*').eq('status', 'pending').execute()
+        for r in chunk_requests_data.data or []:
+            user_info = next((u for u in users if u['id'] == r['user_id']), {'username': 'Unknown'})
+            chunk_requests.append({**r, 'username': user_info['username']})
+    except Exception as e:
+        print(f"Ошибка загрузки запросов: {e}")
     
-    return render_template('admin_panel.html', users=users, chunks=chunks, common_fund=common_fund, chunk_requests=chunk_requests)
+    return render_template(
+        'admin_panel.html',
+        users=users,
+        chunks=chunks,
+        common_fund=common_fund,
+        remainder=remainder,  # ВСЕГДА передаём, даже если пустой
+        chunk_requests=chunk_requests
+    )
 
 @app.route('/tech-mode')
 def tech_mode():
