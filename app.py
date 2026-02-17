@@ -360,6 +360,49 @@ def api_transfer_percent():
     log_action(session['user_id'], 'transfer', f"{from_id}->{to_id}, {chunk}={amount}")
     return redirect('/admin-panel')
 
+@app.route('/api/give-from-remainder', methods=['POST'])
+def api_give_from_remainder():
+    if 'role' not in session or session['role'] not in ('admin', 'admin2'):
+        return redirect('/admin-panel')
+    
+    cleanup_old_records()
+    user_id = request.form['user_id']
+    chunks = ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'vr1', 'vr2', 'vr3', 'core']
+    
+    # Загружаем текущие остатки
+    remainder_data = supabase.table('remainder').select('chunk_name,amount').execute()
+    remainder = {row['chunk_name']: float(row['amount']) for row in remainder_data.data} if remainder_data.data else {c: 0.0 for c in chunks}
+    
+    # Проверяем, достаточно ли остатка по каждому куску
+    for chunk in chunks:
+        amount = float(request.form.get(chunk, 0))
+        if amount > 0:
+            if remainder.get(chunk, 0) < amount:
+                # Можно добавить flash-сообщение, но пока просто редирект
+                log_action(session['user_id'], 'give_from_remainder_error', f"Insufficient remainder for {chunk}: requested {amount}, available {remainder.get(chunk, 0)}")
+                return redirect('/admin-panel')
+    
+    # Выдаём проценты пользователю и вычитаем из остатка
+    for chunk in chunks:
+        amount = float(request.form.get(chunk, 0))
+        if amount > 0:
+            # Выдача игроку
+            values = {k: 0 for k in chunks}
+            values[chunk] = amount
+            values['user_id'] = user_id
+            supabase.table('stats').insert(values).execute()
+            
+            # Уменьшение остатка
+            new_remainder = remainder.get(chunk, 0) - amount
+            existing = supabase.table('remainder').select('chunk_name').eq('chunk_name', chunk).execute()
+            if existing.data:
+                supabase.table('remainder').update({'amount': new_remainder}).eq('chunk_name', chunk).execute()
+            else:
+                supabase.table('remainder').insert({'chunk_name': chunk, 'amount': new_remainder}).execute()
+    
+    log_action(session['user_id'], 'give_from_remainder', f"user={user_id}, chunks={ {c: request.form.get(c, 0) for c in chunks if float(request.form.get(c, 0)) > 0} }")
+    return redirect('/admin-panel')
+
 # Запрос на выдачу куска
 @app.route('/api/request-chunk', methods=['POST'])
 def api_request_chunk():
