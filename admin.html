@@ -218,7 +218,8 @@
 
     <script src="js/config.js"></script>
     <script>
-        const { createClient } = supabase;
+        const _supabase = window.supabase;
+        const { createClient } = _supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         const CHUNK_LABELS = { chunk1:'Кусок №1',chunk2:'Кусок №2',chunk3:'Кусок №3',chunk4:'Кусок №4',chunk5:'Кусок №5',chunk6:'Кусок №6',chunk7:'Кусок №7',chunk8:'Кусок №8',vr1:'В.Рад №1',vr2:'В.Рад №2',vr3:'В.Рад №3',core:'Ядро' };

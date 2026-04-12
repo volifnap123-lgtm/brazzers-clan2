@@ -140,7 +140,8 @@
 
     <script src="js/config.js"></script>
     <script>
-        const { createClient } = supabase;
+        const _supabase = window.supabase;
+        const { createClient } = _supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let currentUser = null;

@@ -349,7 +349,7 @@
         
         <div id="directChangeSection"></div>
         
-        <button class="nav-btn" style="width: 100%; margin-top: 20px;" id="adminBtn" onclick="goToAdmin()">Админ-панель</button>
+        <button class="nav-btn" style="width: 100%; margin-top: 20px;" id="adminBtn">Админ-панель</button>
     </div>
     
     <div id="overlay" class="overlay"></div>
@@ -361,9 +361,9 @@
     <script src="js/config.js"></script>
     <script>
         console.log('CONFIG:', CONFIG);
-        console.log('CHUNK_LABELS:', CHUNK_LABELS);
         
-        const { createClient } = supabase;
+        const _supabase = window.supabase;
+        const { createClient } = _supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let currentUser = null;
@@ -390,10 +390,10 @@
                 document.getElementById('requestChangeForm').style.display = 'block';
             } else if (session.role === 'admin') {
                 document.getElementById('adminBtn').textContent = 'Админ-панель';
-                document.getElementById('adminBtn').onclick = function() { window.location.href = 'admin.html'; };
+                document.getElementById('adminBtn').onclick = function() { console.log('Go to admin'); window.location.href = 'admin.html'; };
             } else if (session.role === 'admin2') {
                 document.getElementById('adminBtn').textContent = 'Тех. режим';
-                document.getElementById('adminBtn').onclick = function() { window.location.href = 'tech.html'; };
+                document.getElementById('adminBtn').onclick = function() { console.log('Go to tech'); window.location.href = 'tech.html'; };
             }
             
             await loadStats();
@@ -534,7 +534,7 @@
                 newsList.appendChild(div);
             }
             
-            if (!news || news.length === 0) newsList.innerHTML = '<p>Нет новостей</p>';
+            if (!news || news.length === 0) newsList.innerHTML = '<p>Новостей пока нет. Скоро появятся!</p>';
         }
         
         async function requestChunk(chunk) {
