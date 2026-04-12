@@ -996,17 +996,54 @@ setInterval(() => {
 }, 9 * 60 * 1000);
 <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
 <script>
+console.log('[DASHBOARD] Страница загружена');
 const SU='https://qjgzhtkpwamounnpgepr.supabase.co';
 const SK='sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
-const s=supabase.createClient(SU,SK);
 const CH=['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
-async function init(){
-    let ss=JSON.parse(localStorage.getItem('session'));
-    if(!ss){location.href='login.html';return}
-    if(ss.role==='admin')location.href='admin.html';
-    else if(ss.role==='admin2')location.href='tech.html';
+
+function waitForSupabase() {
+    console.log('[DASHBOARD] Ждём supabase...');
+    if (typeof supabase === 'undefined') {
+        setTimeout(waitForSupabase, 100);
+        return;
+    }
+    console.log('[DASHBOARD] Supabase готов!');
+    startApp();
 }
-init();
+
+function startApp() {
+    const s = supabase.createClient(SU, SK);
+    console.log('[DASHBOARD] Клиент создан');
+    
+    async function init() {
+        console.log('[DASHBOARD] Проверяем сессию...');
+        let ss = JSON.parse(localStorage.getItem('session'));
+        if(!ss) {
+            console.log('[DASHBOARD] Нет сессии -> login');
+            location.href='login.html';
+            return;
+        }
+        console.log('[DASHBOARD] Сессия есть, юзер:', ss.username, 'роль:', ss.role);
+        
+        // Кнопки
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => console.log('[DASHBOARD] Нажата кнопка:', btn.textContent));
+        });
+        document.querySelector('.logout-btn').addEventListener('click', () => console.log('[DASHBOARD] Выход'));
+        
+        // Загрузка статистики
+        try {
+            console.log('[DASHBOARD] Загружаем статистику...');
+            const { data } = await s.from('stats').select('*').eq('user_id', ss.id);
+            console.log('[DASHBOARD] Статистика получена:', data);
+        } catch(e) {
+            console.log('[DASHBOARD] Ошибка статистики:', e);
+        }
+    }
+    init();
+}
+
+waitForSupabase();
 </script>
 </body>
 </html>

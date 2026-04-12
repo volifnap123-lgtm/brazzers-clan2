@@ -17,63 +17,86 @@
 <body>
     <div class="form">
         <h1>BRAZZERS</h1>
-        <div id="err" class="error" style="display:none;"></div>
+        <div id="err" class="error" style="display:none;">Ошибка</div>
         <form id="f">
             <input type="text" id="l" placeholder="Логин" required autocomplete="username">
             <input type="password" id="p" placeholder="Пароль" required autocomplete="current-password">
-            <button type="submit">Войти</button>
+            <button type="submit" id="btn">Войти</button>
         </form>
     </div>
     <script>
+    console.log('[LOGIN] Страница загружена');
+    
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     
-    // Ждём пока загрузится supabase
     function init() {
+        console.log('[LOGIN] Проверяем supabase...');
         if (typeof supabase === 'undefined') {
+            console.log('[LOGIN] Supabase не загружен, ждём...');
             setTimeout(init, 100);
             return;
         }
+        console.log('[LOGIN] Supabase загружен!');
         
         const s = supabase.createClient(SU, SK);
+        console.log('[LOGIN] Клиент создан');
         
         document.getElementById('f').onsubmit = async function(e) {
             e.preventDefault();
+            console.log('[LOGIN] Нажата кнопка Войти');
+            
             const l = document.getElementById('l').value;
             const p = document.getElementById('p').value;
+            console.log('[LOGIN] Логин:', l);
+            
             const err = document.getElementById('err');
             err.style.display = 'none';
             
             try {
+                console.log('[LOGIN] Запрос к БД...');
                 const { data, error } = await s.from('users').select('*').eq('login', l).single();
+                console.log('[LOGIN] Ответ:', data, error);
                 
                 if (error || !data) {
+                    console.log('[LOGIN] Пользователь не найден');
                     err.textContent = 'Пользователь не найден';
                     err.style.display = 'block';
                     return;
                 }
                 
+                console.log('[LOGIN] Пользователь найден, роль:', data.role);
+                
                 let ok = false;
                 if (data.role === 'admin2' && p === 'admin2') {
+                    console.log('[LOGIN] admin2 + фиксированный пароль');
                     ok = true;
                 } else if (data.password_hash === p) {
+                    console.log('[LOGIN] Пароль совпал');
                     ok = true;
+                } else {
+                    console.log('[LOGIN] Пароль неверный');
                 }
                 
                 if (!ok) {
+                    console.log('[LOGIN] Ошибка пароля');
                     err.textContent = 'Неверный пароль';
                     err.style.display = 'block';
                     return;
                 }
                 
+                console.log('[LOGIN] Сохраняем сессию...');
                 localStorage.setItem('session', JSON.stringify(data));
+                console.log('[LOGIN] Переходим на dashboard');
                 location.href = 'dashboard.html';
             } catch(x) {
-                console.error(x);
+                console.log('[LOGIN] ОШИБКА:', x);
                 err.textContent = 'Ошибка: ' + x.message;
                 err.style.display = 'block';
             }
         };
+        
+        console.log('[LOGIN] Форма готова');
     }
     
     init();
