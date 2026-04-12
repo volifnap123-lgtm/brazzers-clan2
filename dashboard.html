@@ -58,6 +58,12 @@
         body.dark .s h3{color:#4ade80}
         body.dark .profile{background:rgba(15,23,42,0.95);border-color:#4ade80}
         body.dark #playerName{color:#fff;font-size:32px;font-weight:bold}
+        
+        /* Тёмные цвета столбцов в.dark */
+        body.dark th[style*="bulldozer"]{background:#c77a00 !important}
+        body.dark th[style*="caravan"]{background:#3aba68 !important}
+        body.dark th[style*="newland"]{background:#2d6bc4 !important}
+        body.dark th[style*="core"]{background:#cc3333 !important}
     </style>
 </head>
 <body>
@@ -173,7 +179,7 @@
         let t = {}; for (let c of CH) t[c] = 0;
         for (let x of (data || [])) for (let c of CH) t[c] += x[c] || 0;
         
-        let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style=background:var(--bulldozer)>Бульдозер</th><th colspan=4 style=background:var(--caravan)>Караван</th><th colspan=4 style=background:var(--newland)>Новая Земля</th><th rowspan=2 style=background:var(--core)>Ядро</th></tr><tr><th>1</th><th>2</th><th>ВР1</th><th>3</th><th>4</th><th>5</th><th>ВР2</th><th>6</th><th>7</th><th>8</th><th>ВР3</th></tr></thead><tbody>';
+        let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style=background:var(--bulldozer)>Бульдозер</th><th colspan=4 style=background:var(--caravan)>Караван</th><th colspan=4 style=background:var(--newland)>Новая Земля</th><th rowspan=2 style=background:var(--core)>Ядро</th></tr><tr><th style="background:var(--bulldozer)">1</th><th style="background:var(--bulldozer)">2</th><th style="background:var(--bulldozer)">ВР1</th><th style="background:var(--caravan)">3</th><th style="background:var(--caravan)">4</th><th style="background:var(--caravan)">5</th><th style="background:var(--caravan)">ВР2</th><th style="background:var(--newland)">6</th><th style="background:var(--newland)">7</th><th style="background:var(--newland)">8</th><th style="background:var(--newland)">ВР3</th></tr></thead><tbody>';
         for (let x of (data || []).slice(0,10)) {
             h += '<tr><td>' + (x.updated_at||'').slice(0,16) + '</td>';
             for (let c of CH) h += '<td>' + (x[c]||0).toFixed(1) + '</td>';
