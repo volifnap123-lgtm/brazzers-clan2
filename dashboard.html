@@ -360,11 +360,11 @@
 
     <script src="js/config.js"></script>
     <script>
+        console.log('CONFIG:', CONFIG);
+        console.log('CHUNK_LABELS:', CHUNK_LABELS);
+        
         const { createClient } = supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        
-        const CHUNK_LABELS = { chunk1:'Кусок №1',chunk2:'Кусок №2',chunk3:'Кусок №3',chunk4:'Кусок №4',chunk5:'Кусок №5',chunk6:'Кусок №6',chunk7:'Кусок №7',chunk8:'Кусок №8',vr1:'В.Рад №1',vr2:'В.Рад №2',vr3:'В.Рад №3',core:'Ядро' };
-        const ROLE_LABELS = { user:'Пользователь', admin:'Администратор', admin2:'Главный админ' };
         
         let currentUser = null;
         let currentStats = [];
@@ -372,9 +372,15 @@
         let allUsers = [];
         
         async function init() {
+            console.log('Init started');
             const session = JSON.parse(localStorage.getItem('session'));
-            if (!session) { window.location.href = 'login.html'; return; }
+            if (!session) { 
+                console.log('No session, redirecting...');
+                window.location.href = 'login.html'; 
+                return; 
+            }
             currentUser = session;
+            console.log('User:', currentUser);
             
             document.getElementById('playerName').textContent = 'Игрок: ' + session.username;
             document.getElementById('profileLogin').textContent = session.login;
@@ -570,6 +576,7 @@
             document.getElementById('overlay').classList.remove('active');
         }
         function toggleProfile() {
+            console.log('toggleProfile clicked');
             const panel = document.getElementById('profile-panel');
             const overlay = document.getElementById('overlay');
             if (panel.classList.contains('open')) {
@@ -581,11 +588,13 @@
             }
         }
         document.getElementById('overlay').onclick = function() {
+            console.log('overlay clicked');
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.getElementById('profile-panel').classList.remove('open');
             this.classList.remove('active');
         };
         function toggleTheme() {
+            console.log('toggleTheme clicked');
             const isDark = document.body.classList.contains('dark-theme');
             if (isDark) {
                 document.body.classList.remove('dark-theme');
@@ -596,6 +605,7 @@
             }
         }
         function logout() {
+            console.log('logout clicked');
             localStorage.removeItem('session');
             window.location.href = 'login.html';
         }
