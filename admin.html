@@ -62,12 +62,25 @@
     }
     
     async function loadRequests(s) {
-        const { data: chunkReqs } = await s.from('chunk_requests').select('*,users(username)').eq('status', 'pending');
+        console.log('Загружаю chunk_requests...');
+        let chunkReqs = [];
+        try {
+            const result = await s.from('chunk_requests').select('*').eq('status', 'pending');
+            console.log('chunk result:', result);
+            if (result.error) {
+                console.error('Ошибка chunk:', result.error);
+            } else {
+                chunkReqs = result.data || [];
+            }
+        } catch (e) {
+            console.error('Исключение chunk:', e);
+        }
+        
         let h = '';
         if (!chunkReqs || chunkReqs.length === 0) h = 'Нет запросов';
         for (let req of chunkReqs) {
             h += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
-            h += req.users?.username || 'Unknown';
+            h += 'User ID: ' + req.user_id;
             h += ' хочет ' + req.chunk_name;
             h += ' <button onclick="approveChunk('+req.id+')">Выдать</button>';
             h += ' <button onclick="rejectChunk('+req.id+')">Отказ</button>';
@@ -75,12 +88,25 @@
         }
         document.getElementById('chunkRequests').innerHTML = h;
         
-        const { data: changeReqs } = await s.from('change_requests').select('*,users(username)').eq('status', 'pending');
+        console.log('Загружаю change_requests...');
+        let changeReqs = [];
+        try {
+            const result2 = await s.from('change_requests').select('*').eq('status', 'pending');
+            console.log('change result:', result2);
+            if (result2.error) {
+                console.error('Ошибка change:', result2.error);
+            } else {
+                changeReqs = result2.data || [];
+            }
+        } catch (e) {
+            console.error('Исключение change:', e);
+        }
+        
         let h2 = '';
         if (!changeReqs || changeReqs.length === 0) h2 = 'Нет запросов';
         for (let req of changeReqs) {
             h2 += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
-            h2 += req.users?.username || 'Unknown';
+            h2 += 'User ID: ' + req.user_id;
             if (req.new_login) h2 += ' хочет логин: ' + req.new_login;
             h2 += ' <button onclick="approveChange('+req.id+')">Одобрить</button>';
             h2 += ' <button onclick="rejectChange('+req.id+')">Отказ</button>';
