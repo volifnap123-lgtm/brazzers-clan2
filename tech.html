@@ -8,20 +8,33 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0}
-        body{background:#f0fdf4;color:var(--gray);font-family:Arial,sans-serif;min-height:100vh;padding:15px}
-        body.dark{background:#0f172a;color:#e2e8f0}
+        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6}
+        body{background:var(--g50);color:var(--gray);font-family:Arial,sans-serif;padding:15px;min-height:100vh}
         .h{display:flex;justify-content:space-between;margin-bottom:25px;padding-bottom:12px;border-bottom:2px solid var(--g);flex-wrap:wrap;gap:10px}
+        .h h1{color:var(--g2)}
         .btn{background:var(--g);color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+        .btn:hover{background:var(--g2)}
+        .btn-red{background:#ef4444}
+        .btn-red:hover{background:#dc2626}
         .section{background:var(--g50);padding:18px;border-radius:12px;margin-bottom:20px;border:1px solid var(--b)}
-        body.dark .section{background:rgba(74,222,128,0.1);border-color:#4ade80}
-        body.dark .h{border-color:#4ade80}
-        body.dark .btn{background:#4ade80;color:#0f172a}
         table{width:100%;border-collapse:collapse;margin:12px 0}
-        th,td{padding:8px;border:1px solid var(--b)}
-        body.dark th,body.dark td{border-color:#4ade80}
+        th,td{padding:8px;text-align:center;border:1px solid var(--b)}
         th{background:var(--g100)}
-        input,select{width:100%;padding:8px;margin:4px 0;border:1px solid var(--b);border-radius:4px}
+        input,select,textarea{width:100%;padding:8px;margin:4px 0;border:1px solid var(--b);border-radius:4px}
+        
+        /* Тёмная тема */
+        body.dark{background:#0f172a;color:#e2e8f0}
+        body.dark .h{border-color:#4ade80}
+        body.dark .h h1{color:#4ade80}
+        body.dark .btn{background:#4ade80;color:#0f172a}
+        body.dark .btn-red{background:#ef4444;color:white}
+        body.dark .section{background:rgba(74,222,128,0.1);border-color:#4ade80}
+        body.dark th,body.dark td{border-color:#4ade80}
+        body.dark th{background:rgba(74,222,128,0.15)}
+        body.dark input,body.dark select,body.dark textarea{border-color:#4ade80;background:rgba(30,41,59,0.8);color:#e2e8f0}
+        
+        .row{display:flex;gap:8px;margin-top:8px}
+        .col{flex:1}
     </style>
 </head>
 <body>
@@ -29,70 +42,139 @@
         <h1>ТЕХ. РЕЖИМ (admin2)</h1>
         <div>
             <button onclick="location.href='dashboard.html'">← Назад</button>
+            <button onclick="toggleTheme()">🌓 Тема</button>
             <button onclick="logout()">Выйти</button>
         </div>
     </div>
+    
     <div class="section">
         <h2>Создать пользователя</h2>
-        <input id="newUsername" placeholder="Никнейм">
-        <input id="newLogin" placeholder="Логин">
-        <input id="newPassword" placeholder="Пароль">
-        <button onclick="createUser()">Создать</button>
+        <div class="row">
+            <input id="newUsername" placeholder="Никнейм" class="col">
+            <input id="newLogin" placeholder="Логин" class="col">
+            <input id="newPassword" placeholder="Пароль" class="col">
+        </div>
+        <button onclick="createUser()" style="margin-top:8px">Создать</button>
     </div>
+    
     <div class="section">
         <h2>Удалить пользователя</h2>
-        <select id="deleteUser"><option value="">Выберите</option></select>
-        <button onclick="deleteUser()">Удалить</button>
+        <select id="deleteUser"><option value="">Выберите пользователя</option></select>
+        <button onclick="deleteUser()" class="btn-red" style="margin-top:8px">Удалить</button>
     </div>
+    
     <div class="section">
         <h2>Назначить админа</h2>
-        <select id="promoteUser"><option value="">Выберите</option></select>
-        <button onclick="promoteToAdmin()">Сделать админом</button>
+        <select id="promoteUser"><option value="">Выберите пользователя (роль: user)</option></select>
+        <button onclick="promoteToAdmin()" style="margin-top:8px">Сделать админом</button>
     </div>
+    
     <div class="section">
         <h2>Снять админа</h2>
-        <select id="demoteAdmin"><option value="">Выберите</option></select>
-        <button onclick="demoteAdmin()">Снять</button>
+        <select id="demoteUser"><option value="">Выберите админа</option></select>
+        <button onclick="demoteAdmin()" class="btn-red" style="margin-top:8px">Снять админа</button>
     </div>
+    
     <div class="section">
         <h2>Логины пользователей</h2>
-        <div id="usersTable">Загрузка...</div>
+        <div id="usersTable" style="max-height:300px;overflow-y:auto">Загрузка...</div>
+        <p style="color:#ef4444;margin-top:10px">⚠️ Пароли не отображаются</p>
     </div>
+    
+    <div class="section">
+        <h2>Аудит-логи</h2>
+        <div id="auditLogs" style="max-height:300px;overflow-y:auto">Загрузка...</div>
+    </div>
+    
+    <div class="section">
+        <h2>Заявки на смену учётных данных</h2>
+        <div id="changeRequests">Загрузка...</div>
+    </div>
+    
+    <div class="section">
+        <h2>Изменить логин/пароль</h2>
+        <select id="changeUser"><option value="">Выберите пользователя</option></select>
+        <div class="row">
+            <input id="adminNewLogin" placeholder="Новый логин" class="col">
+            <button onclick="adminChangeLogin()" style="margin-top:8px">Сменить логин</button>
+        </div>
+        <div class="row">
+            <input id="adminNewPassword" placeholder="Новый пароль" class="col">
+            <button onclick="adminChangePassword()" class="btn-red" style="margin-top:8px">Сменить пароль</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Новости</h2>
+        <textarea id="newsMessage" placeholder="Введите сообщение..." style="height:100px"></textarea>
+        <button onclick="postNews()" style="margin-top:8px">Опубликовать</button>
+    </div>
+    
     <script>
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
     
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-    
     function init() {
+        console.log('🔧 Тех. режим загружен');
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
-        const s = supabase.createClient(SU, SK);
+        
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
         const user = JSON.parse(localStorage.getItem('session'));
         if (!user || user.role !== 'admin2') { location.href = 'login.html'; return; }
-        loadUsers(s);
+        
+        const s = supabase.createClient(SU, SK);
+        loadAll(s);
     }
     
-    async function loadUsers(s) {
+    async function loadAll(s) {
         const { data: users } = await s.from('users').select('*');
+        const { data: audit } = await s.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
+        const { data: changes } = await s.from('change_requests').select('*,users(username,login)').eq('status', 'pending');
         
+        // Заполняем селекты
         let delSel = document.getElementById('deleteUser');
         let proSel = document.getElementById('promoteUser');
-        let demSel = document.getElementById('demoteAdmin');
+        let demSel = document.getElementById('demoteUser');
+        let chgSel = document.getElementById('changeUser');
         
         delSel.innerHTML = '<option value="">Выберите</option>';
         proSel.innerHTML = '<option value="">Выберите (user)</option>';
         demSel.innerHTML = '<option value="">Выберите (admin)</option>';
+        chgSel.innerHTML = '<option value="">Выберите</option>';
         
-        let table = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
+        let table = '<table><tr><th>Никнейм</th><th>Логин</th><th>Роль</th></tr>';
         for (let u of (users || [])) {
             delSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
             if (u.role === 'user') proSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
             if (u.role === 'admin') demSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+            chgSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
             table += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
         }
         table += '</table>';
         document.getElementById('usersTable').innerHTML = table;
+        
+        // Аудит
+        let auditHtml = '<table><tr><th>Время</th><th>Действие</th><th>Детали</th></tr>';
+        for (let a of (audit || [])) {
+            auditHtml += '<tr><td>'+(a.timestamp||'').slice(0,16)+'</td><td>'+a.action+'</td><td>'+(a.details||'')+'</td></tr>';
+        }
+        auditHtml += '</table>';
+        document.getElementById('auditLogs').innerHTML = auditHtml;
+        
+        // Изменения
+        let changeHtml = '';
+        if (!changes || changes.length === 0) changeHtml = 'Нет заявок';
+        for (let c of changes) {
+            changeHtml += '<div style="background:white;padding:12px;border-radius:8px;margin:8px 0">';
+            changeHtml += '<strong>'+(c.users?.username||'Unknown')+'</strong> ('+(c.users?.login||'unknown')+')';
+            if (c.new_login) changeHtml += '<br>Новый логин: '+c.new_login;
+            changeHtml += '<br><button onclick="approveChange('+c.id+')">Одобрить</button> ';
+            changeHtml += '<button onclick="rejectChange('+c.id+')">Отклонить</button>';
+            changeHtml += '</div>';
+        }
+        document.getElementById('changeRequests').innerHTML = changeHtml;
     }
     
     async function createUser() {
@@ -100,21 +182,21 @@
         const username = document.getElementById('newUsername').value;
         const login = document.getElementById('newLogin').value;
         const password = document.getElementById('newPassword').value;
-        if (!username || !login || !password) return alert('Заполните все поля');
+        if (!username || !login || !password) return alert('Заполните все поля!');
         await s.from('users').insert({ username, login, password_hash: password, role: 'user' });
         alert('Создан!');
-        loadUsers(s);
+        loadAll(s);
     }
     
     async function deleteUser() {
         const s = supabase.createClient(SU, SK);
         const id = document.getElementById('deleteUser').value;
         if (!id) return;
-        if (!confirm('Удалить?')) return;
+        if (!confirm('Удалить пользователя и все его данные?')) return;
         await s.from('users').delete().eq('id', id);
         await s.from('stats').delete().eq('user_id', id);
         alert('Удалён!');
-        loadUsers(s);
+        loadAll(s);
     }
     
     async function promoteToAdmin() {
@@ -123,16 +205,66 @@
         if (!id) return;
         await s.from('users').update({ role: 'admin' }).eq('id', id).eq('role', 'user');
         alert('Сделан админом!');
-        loadUsers(s);
+        loadAll(s);
     }
     
     async function demoteAdmin() {
         const s = supabase.createClient(SU, SK);
-        const id = document.getElementById('demoteAdmin').value;
+        const id = document.getElementById('demoteUser').value;
         if (!id) return;
         await s.from('users').update({ role: 'user' }).eq('id', id);
         alert('Снят!');
-        loadUsers(s);
+        loadAll(s);
+    }
+    
+    async function adminChangeLogin() {
+        const s = supabase.createClient(SU, SK);
+        const id = document.getElementById('changeUser').value;
+        const newLogin = document.getElementById('adminNewLogin').value;
+        if (!id || !newLogin) return;
+        await s.from('users').update({ login: newLogin }).eq('id', id);
+        alert('Логин изменён!');
+        document.getElementById('adminNewLogin').value = '';
+        loadAll(s);
+    }
+    
+    async function adminChangePassword() {
+        const s = supabase.createClient(SU, SK);
+        const id = document.getElementById('changeUser').value;
+        const newPass = document.getElementById('adminNewPassword').value;
+        if (!id || !newPass) return;
+        await s.from('users').update({ password_hash: newPass }).eq('id', id);
+        alert('Пароль изменён!');
+        document.getElementById('adminNewPassword').value = '';
+    }
+    
+    async function approveChange(id) {
+        const s = supabase.createClient(SU, SK);
+        const { data: req } = await s.from('change_requests').select('*').eq('id', id).single();
+        if (req.new_login) await s.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        await s.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        location.reload();
+    }
+    
+    async function rejectChange(id) {
+        const s = supabase.createClient(SU, SK);
+        await s.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        location.reload();
+    }
+    
+    async function postNews() {
+        const s = supabase.createClient(SU, SK);
+        const user = JSON.parse(localStorage.getItem('session'));
+        const msg = document.getElementById('newsMessage').value;
+        if (!msg) return;
+        await s.from('news').insert({ author_id: user.id, message: msg, role: user.role });
+        alert('Опубликовано!');
+        document.getElementById('newsMessage').value = '';
+    }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
     }
     
     function logout() { localStorage.removeItem('session'); location.href = 'login.html'; }
