@@ -132,29 +132,30 @@
     async function loadAll() {
         console.log('Загрузка данных...');
         try {
-            const { data: users, error: usersErr } = await supabaseClient.from('users').select('*');
-            if (usersErr) console.error('Ошибка users:', usersErr);
+            const { data: users } = await supabaseClient.from('users').select('*');
+            console.log('users:', users);
             
-            const { data: audit, error: auditErr } = await supabaseClient.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
-            if (auditErr) console.error('Ошибка audit:', auditErr);
+            const { data: audit } = await supabaseClient.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
+            console.log('audit:', audit);
             
             console.log('Загружаю change_requests...');
             let changes = [];
             try {
                 const result = await supabaseClient.from('change_requests').select('*').eq('status', 'pending');
+                console.log('result:', result);
                 if (result.error) {
                     console.error('Ошибка changes:', result.error);
+                    changes = [];
                 } else {
                     changes = result.data || [];
                     console.log('Changes:', changes);
                 }
             } catch (e) {
                 console.error('Исключение changes:', e);
+                changes = [];
             }
             
-            // Заполняем селекты
-            console.log('users:', users);
-            console.log('audit:', audit);
+            console.log('Заполняю селекты...');
             let delSel = document.getElementById('deleteUser');
             let proSel = document.getElementById('promoteUser');
             let demSel = document.getElementById('demoteUser');
@@ -200,9 +201,10 @@
             }
             document.getElementById('changeRequests').innerHTML = changeHtml;
             
-            console.log('Данные загружены успешно');
+            console.log('Данные загружены успешно!');
         } catch (e) {
             console.error('Ошибка loadAll:', e);
+            alert('Ошибка загрузки: ' + e.message);
         }
     }
     
