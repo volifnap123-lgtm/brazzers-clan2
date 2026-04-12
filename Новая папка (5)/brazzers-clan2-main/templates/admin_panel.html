@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAZZERS | Админ-панель</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="theme-style">
+        :root {
+            --green-500: #16a34a;
+            --green-600: #15803d;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gray-900: #111827;
+            --border-color: #bbf7d0;
+            --red-border: #ef4444;
+            /* Категории */
+            --bulldozer: #f59e0b;
+            --caravan: #4ade80;
+            --newland: #3b82f6;
+            --core: #ef4444;
+        }
+        body {
+            background: var(--white);
+            color: var(--gray-900);
+            font-family: 'Inter', sans-serif;
+            padding: 15px;
+        }
+        .header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 25px; padding-bottom: 12px;
+            border-bottom: 2px solid var(--green-500);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            background: var(--green-500); color: white;
+            border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .btn:hover { background: var(--green-600); }
+        .section {
+            background: var(--green-50);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        th { background: var(--green-100); }
+        select, input, textarea {
+            padding: 6px; margin: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 12px 0;
+            border-radius: 8px;
+        }
+        .table-container table { min-width: 900px; }
+        .chunk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .chunk-item label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .cat-bulldozer { background: var(--bulldozer); color: white; }
+        .cat-caravan { background: var(--caravan); color: white; }
+        .cat-newland { background: var(--newland); color: white; }
+        .cat-core { background: var(--core); color: white; }
+
+        .dark-theme .cat-bulldozer { background: #d97706; }
+        .dark-theme .cat-caravan { background: #22c55e; }
+        .dark-theme .cat-newland { background: #2563eb; }
+        .dark-theme .cat-core { background: #dc2626; }
+
+        .chunk-item input {
+            width: 100%;
+            padding: 6px;
+        }
+        
+        /* Новости */
+        .news-section {
+            margin-top: 25px;
+        }
+        .news-border::before,
+        .news-border::after {
+            content: "--------------------------------------------------";
+            display: block;
+            color: var(--red-border);
+            font-weight: bold;
+            margin: 4px 0;
+        }
+        
+        /* Запросы на выдачу кусков */
+        .request-item {
+            background: #fffbeb;
+            border-left: 4px solid #ca8a04;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+        }
+        .dark-theme .request-item {
+            background: rgba(234, 179, 8, 0.15);
+            border-left-color: #facc15;
+        }
+        .request-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-approve { background: #22c55e; }
+        .btn-reject { background: #ef4444; }
+        .btn-approve:hover { background: #16a34a; }
+        .btn-reject:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>АДМИН-ПАНЕЛЬ</h1>
+    <div>
+        <button class="btn" onclick="location.href='/dashboard'">← Назад</button>
+        <button class="btn" onclick="location.href='/logout'">Выйти</button>
+    </div>
+</div>
+
+<!-- Выдать проценты одному -->
+<div class="section">
+    <h2>Выдать проценты одному игроку</h2>
+    <form method="POST" action="/api/give-percent-single">
+        <select name="user_id" required style="width: 100%; max-width: 200px; padding: 6px; margin-bottom: 16px;">
+            <option value="">Выберите игрока</option>
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Категория</th>
+                        <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
+                        <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
+                        <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
+                        <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
+                    </tr>
+                    <tr>
+                        <th>Кусок №1</th>
+                        <th>Кусок №2</th>
+                        <th>В.Рад №1</th>
+                        <th>Кусок №3</th>
+                        <th>Кусок №4</th>
+                        <th>Кусок №5</th>
+                        <th>В.Рад №2</th>
+                        <th>Кусок №6</th>
+                        <th>Кусок №7</th>
+                        <th>Кусок №8</th>
+                        <th>В.Рад №3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Проценты</strong></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk1" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk2" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr1" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk3" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk4" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk5" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr2" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk6" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk7" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk8" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr3" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="core" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn" type="submit" style="margin-top: 16px;">Выдать проценты</button>
+    </form>
+</div>
+    
+<!-- Выдать проценты группе -->
+<div class="section">
+    <h2>Выдать проценты группе игроков (100% делится поровну)</h2>
+    <form method="POST" action="/api/give-percent-multiple">
+        <select name="user_ids" multiple size="5" required style="width: 100%; max-width: 200px; height: 100px; padding: 6px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 8px;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <button class="btn" type="submit" style="margin-top: 10px;">Разделить 100%</button>
+    </form>
+</div>
+
+<!-- Передача процентов -->
+<div class="section">
+    <h2>Передать проценты от одного игрока другому</h2>
+    <form method="POST" action="/api/transfer-percent">
+        <select name="from_user" required style="width: 100%; max-width: 180px; padding: 6px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }} (от кого)</option>
+            {% endfor %}
+        </select>
+        <select name="to_user" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }} (кому)</option>
+            {% endfor %}
+        </select>
+        <select name="chunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
+            <option value="chunk1">Кусок №1</option>
+            <option value="chunk2">Кусок №2</option>
+            <option value="chunk3">Кусок №3</option>
+            <option value="chunk4">Кусок №4</option>
+            <option value="chunk5">Кусок №5</option>
+            <option value="chunk6">Кусок №6</option>
+            <option value="chunk7">Кусок №7</option>
+            <option value="chunk8">Кусок №8</option>
+            <option value="vr1">В.Рад №1</option>
+            <option value="vr2">В.Рад №2</option>
+            <option value="vr3">В.Рад №3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <input type="number" step="0.1" name="amount" placeholder="Сколько %" required style="width: 100%; max-width: 120px; padding: 6px; margin-top: 6px;">
+        <button class="btn" type="submit" style="margin-top: 10px;">Передать</button>
+    </form>
+</div>
+
+<!-- ЗАПРОСЫ НА ВЫДАЧУ КУСКОВ -->
+<div class="section">
+    <h2>Запросы на выдачу кусков</h2>
+    {% if chunk_requests %}
+        {% for req in chunk_requests %}
+            {% set chunk_labels = {
+                'chunk1': 'Кусок №1',
+                'chunk2': 'Кусок №2',
+                'chunk3': 'Кусок №3',
+                'chunk4': 'Кусок №4',
+                'chunk5': 'Кусок №5',
+                'chunk6': 'Кусок №6',
+                'chunk7': 'Кусок №7',
+                'chunk8': 'Кусок №8',
+                'vr1': 'Внутренний Радиус №1',
+                'vr2': 'Внутренний Радиус №2',
+                'vr3': 'Внутренний Радиус №3',
+                'core': 'Ядро'
+            } %}
+            <div class="request-item">
+                <strong>{{ req.username }}</strong> запросил выдачу куска: <strong>{{ chunk_labels.get(req.chunk_name, req.chunk_name) }}</strong>
+                <div class="request-actions">
+                    <form method="POST" action="/api/approve-chunk-request" style="display: inline;">
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <button type="submit" class="btn btn-approve">Выдан</button>
+                    </form>
+                    <form method="POST" action="/api/reject-chunk-request" style="display: inline;">
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <input type="text" name="reason" placeholder="Причина отказа (опционально)" style="width: 150px; padding: 4px; font-size: 12px;">
+                        <button type="submit" class="btn btn-reject">Отказ</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет активных запросов.</p>
+    {% endif %}
+</div>
+
+<!-- Общак (обновлён!) -->
+<div class="section">
+    <h2>Общак</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Элемент</th>
+                    <th>Проценты в общаке</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Бульдозер Левая -->
+                <tr><td colspan="2" style="background: var(--bulldozer); color: white; font-weight: bold; text-align: center;">Бульдозер Левая</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №1</td><td>{{ "%.1f"|format(common_fund.get('chunk1', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №2</td><td>{{ "%.1f"|format(common_fund.get('chunk2', 0)) }}</td></tr>
+                <tr><td title="Шанс: 20%">В.Рад №1</td><td>{{ "%.1f"|format(common_fund.get('vr1', 0)) }}</td></tr>
+                <!-- Караван Правая -->
+                <tr><td colspan="2" style="background: var(--caravan); color: white; font-weight: bold; text-align: center;">Караван Правая</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №3</td><td>{{ "%.1f"|format(common_fund.get('chunk3', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №4</td><td>{{ "%.1f"|format(common_fund.get('chunk4', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №5</td><td>{{ "%.1f"|format(common_fund.get('chunk5', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">В.Рад №2</td><td>{{ "%.1f"|format(common_fund.get('vr2', 0)) }}</td></tr>
+                <!-- Новая Земля Верхняя -->
+                <tr><td colspan="2" style="background: var(--newland); color: white; font-weight: bold; text-align: center;">Новая Земля Верхняя</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №6</td><td>{{ "%.1f"|format(common_fund.get('chunk6', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">Кусок №7</td><td>{{ "%.1f"|format(common_fund.get('chunk7', 0)) }}</td></tr>
+                <tr><td title="Шанс: 20%">Кусок №8</td><td>{{ "%.1f"|format(common_fund.get('chunk8', 0)) }}</td></tr>
+                <tr><td title="Шанс: 25%">В.Рад №3</td><td>{{ "%.1f"|format(common_fund.get('vr3', 0)) }}</td></tr>
+                <!-- Ядро -->
+                <tr><td colspan="2" style="background: var(--core); color: white; font-weight: bold; text-align: center;">Ядро</td></tr>
+                <tr><td>Ядро</td><td>{{ "%.1f"|format(common_fund.get('core', 0)) }}</td></tr>
+                
+                <!-- Остаток -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Категория</th>
+                                <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
+                                <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
+                                <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
+                                <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
+                            </tr>
+                            <tr>
+                                <th>Кусок №1</th>
+                                <th>Кусок №2</th>
+                                <th>В.Рад №1</th>
+                                <th>Кусок №3</th>
+                                <th>Кусок №4</th>
+                                <th>Кусок №5</th>
+                                <th>В.Рад №2</th>
+                                <th>Кусок №6</th>
+                                <th>Кусок №7</th>
+                                <th>Кусок №8</th>
+                                <th>В.Рад №3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Проценты</strong></td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk1', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk2', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr1', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk3', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk4', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk5', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr2', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk6', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk7', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('chunk8', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('vr3', 0)) }}</td>
+                                <td style="padding: 8px; text-align: center;">{{ "%.1f"|format(remainder.get('core', 0)) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Выдать из остатка -->
+<div class="section">
+    <h2>Выдать из остатка</h2>
+    <form method="POST" action="/api/give-from-remainder">
+        <select name="user_id" required style="width: 100%; max-width: 200px; padding: 6px; margin-bottom: 16px;">
+            <option value="">Выберите игрока</option>
+            {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Категория</th>
+                        <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
+                        <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
+                        <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
+                        <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
+                    </tr>
+                    <tr>
+                        <th>Кусок №1</th>
+                        <th>Кусок №2</th>
+                        <th>В.Рад №1</th>
+                        <th>Кусок №3</th>
+                        <th>Кусок №4</th>
+                        <th>Кусок №5</th>
+                        <th>В.Рад №2</th>
+                        <th>Кусок №6</th>
+                        <th>Кусок №7</th>
+                        <th>Кусок №8</th>
+                        <th>В.Рад №3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Проценты</strong></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk1" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk2" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr1" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk3" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk4" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk5" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr2" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk6" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk7" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="chunk8" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="vr3" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                        <td style="padding: 4px;"><input type="number" step="0.1" name="core" value="0" style="width: 96%; height: 32px; padding: 0 4px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn" type="submit" style="margin-top: 16px;">Выдать из остатка</button>
+    </form>
+</div>
+
+<!-- Новости -->
+<div class="section news-section">
+    <h2>Сообщение на доску обновлений</h2>
+    <form method="POST" action="/api/post-news">
+        <textarea name="message" placeholder="Введите сообщение..." required style="width: 100%; height: 100px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px;"></textarea>
+        <button type="submit" class="btn">Опубликовать</button>
+    </form>
+</div>
+
+<script>
+function applyTheme() {
+    const isDark = localStorage.getItem('theme') === 'dark';
+    const style = document.getElementById('theme-style');
+    if (isDark) {
+        style.innerHTML = `
+            :root {
+                --green-500: #4ade80;
+                --green-600: #22d3ee;
+                --green-100: rgba(74, 222, 128, 0.15);
+                --green-50: rgba(15, 23, 42, 0.95);
+                --white: #0f172a;
+                --gray-900: #e2e8f0;
+                --border-color: #4ade80;
+                --red-border: #f87171;
+                --bulldozer: #d97706;
+                --caravan: #22c55e;
+                --newland: #2563eb;
+                --core: #dc2626;
+            }
+            body {
+                background: var(--white);
+                color: var(--gray-900);
+                font-family: 'Inter', sans-serif;
+                padding: 15px;
+            }
+            .header {
+                display: flex; justify-content: space-between;
+                margin-bottom: 25px; padding-bottom: 12px;
+                border-bottom: 2px solid var(--green-500);
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .btn {
+                background: var(--green-500); color: #0f172a;
+                border: none; padding: 8px 16px;
+                border-radius: 6px; cursor: pointer;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .btn:hover { background: var(--green-600); }
+            .section {
+                background: var(--green-50);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 18px;
+                margin-bottom: 20px;
+            }
+            table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+            th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+            th { background: var(--green-100); color: var(--green-500); }
+            select, input, textarea {
+                padding: 6px; margin: 4px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                font-size: 14px;
+                background: rgba(30, 41, 59, 0.8);
+                color: #e2e8f0;
+            }
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                margin: 12px 0;
+                border-radius: 8px;
+            }
+            .table-container table { min-width: 900px; }
+            .chunk-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                margin: 12px 0;
+            }
+            .chunk-item label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 13px;
+                padding: 4px;
+                border-radius: 4px;
+                color: #e2e8f0;
+            }
+            .chunk-item input {
+                width: 100%;
+                padding: 6px;
+                background: rgba(30, 41, 59, 0.8);
+                color: #e2e8f0;
+                border: 1px solid var(--border-color);
+            }
+            .news-section {
+                margin-top: 25px;
+            }
+            .news-border::before,
+            .news-border::after {
+                content: "--------------------------------------------------";
+                display: block;
+                color: var(--red-border);
+                font-weight: bold;
+                margin: 4px 0;
+            }
+            .request-item {
+                background: rgba(234, 179, 8, 0.15);
+                border-left: 4px solid #facc15;
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+            }
+            .btn-approve { background: #4ade80; }
+            .btn-reject { background: #f87171; }
+            .btn-approve:hover { background: #22c55e; }
+            .btn-reject:hover { background: #ef4444; }
+        `;
+    } else {
+        style.innerHTML = `
+            :root {
+                --green-500: #16a34a;
+                --green-600: #15803d;
+                --green-100: #dcfce7;
+                --green-50: #f0fdf4;
+                --white: #ffffff;
+                --gray-900: #111827;
+                --border-color: #bbf7d0;
+                --red-border: #ef4444;
+                --bulldozer: #f59e0b;
+                --caravan: #4ade80;
+                --newland: #3b82f6;
+                --core: #ef4444;
+            }
+            body {
+                background: var(--white);
+                color: var(--gray-900);
+                font-family: 'Inter', sans-serif;
+                padding: 15px;
+            }
+            .header {
+                display: flex; justify-content: space-between;
+                margin-bottom: 25px; padding-bottom: 12px;
+                border-bottom: 2px solid var(--green-500);
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .btn {
+                background: var(--green-500); color: white;
+                border: none; padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .btn:hover { background: var(--green-600); }
+            .section {
+                background: var(--green-50);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 18px;
+                margin-bottom: 20px;
+            }
+            table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+            th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+            th { background: var(--green-100); }
+            select, input, textarea {
+                padding: 6px; margin: 4px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+                margin: 12px 0;
+                border-radius: 8px;
+            }
+            .table-container table { min-width: 900px; }
+            .chunk-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                margin: 12px 0;
+            }
+            .chunk-item label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 13px;
+                padding: 4px;
+                border-radius: 4px;
+            }
+            .chunk-item input {
+                width: 100%;
+                padding: 6px;
+            }
+            .news-section {
+                margin-top: 25px;
+            }
+            .news-border::before,
+            .news-border::after {
+                content: "--------------------------------------------------";
+                display: block;
+                color: var(--red-border);
+                font-weight: bold;
+                margin: 4px 0;
+            }
+            .request-item {
+                background: #fffbeb;
+                border-left: 4px solid #ca8a04;
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+            }
+            .btn-approve { background: #22c55e; }
+            .btn-reject { background: #ef4444; }
+            .btn-approve:hover { background: #16a34a; }
+            .btn-reject:hover { background: #dc2626; }
+        `;
+    }
+}
+applyTheme();
+</script>
+</body>
+</html>

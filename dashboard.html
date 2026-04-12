@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAZZERS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
     <style id="theme-style">
         :root {
@@ -40,7 +40,7 @@
         }
         body.dark-theme {
             background-image: url('static/images/dark-bg.jpg');
-            color: #e2e8f0;
+            color: #e2e8f0 !important;
         }
         .header {
             display: flex;
@@ -55,7 +55,7 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .dark-theme .header { background: rgba(15, 23, 42, 0.95); }
+        .dark-theme .header { background: rgba(15, 23, 42, 0.95) !important; }
         .logo {
             font-weight: 700;
             font-size: 24px;
@@ -65,7 +65,7 @@
             border-radius: 8px;
             background: var(--green-50);
         }
-        .dark-theme .logo { color: #4ade80; border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+        .dark-theme .logo { color: #4ade80 !important; border-color: #4ade80 !important; background: rgba(74, 222, 128, 0.1) !important; }
         .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 auto; }
         .nav-btn {
             background: transparent;
@@ -81,9 +81,9 @@
             border-radius: 6px;
             min-width: 100px;
         }
-        .dark-theme .nav-btn { color: #4ade80; }
+        .dark-theme .nav-btn { color: #4ade80 !important; }
         .nav-btn:hover { background: var(--green-50); color: var(--green-700); transform: translateY(-1px); }
-        .dark-theme .nav-btn:hover { background: rgba(74, 222, 128, 0.2); }
+        .dark-theme .nav-btn:hover { background: rgba(74, 222, 128, 0.2) !important; }
         .logout-btn {
             margin-left: auto;
             color: #ef4444;
@@ -113,7 +113,7 @@
             position: relative;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
-        .dark-theme .modal-content { background: rgba(15, 23, 42, 0.95); }
+        .dark-theme .modal-content { background: rgba(15, 23, 42, 0.95) !important; }
         .close-btn {
             position: absolute;
             top: 16px;
@@ -130,23 +130,23 @@
             align-items: center;
             justify-content: center;
         }
-        .dark-theme .close-btn { background: #4ade80; color: #0f172a; }
+        .dark-theme .close-btn { background: #4ade80 !important; color: #0f172a !important; }
         .close-btn:hover { background: var(--green-600); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
-        .dark-theme .modal-header { border-color: #4ade80; }
+        .dark-theme .modal-header { border-color: #4ade80 !important; }
         .modal-title { font-size: 20px; font-weight: 700; color: var(--green-600); }
-        .dark-theme .modal-title { color: #4ade80; }
+        .dark-theme .modal-title { color: #4ade80 !important; }
         
         .table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .table-container table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 11px 8px; text-align: center; border: 1px solid var(--border-color); white-space: nowrap; font-size: 13px; }
-        .dark-theme th, .dark-theme td { border-color: #4ade80; }
+        .dark-theme th, .dark-theme td { border-color: #4ade80 !important; }
         tbody tr { transition: background 0.2s; }
         tbody tr:hover { background: var(--green-50); }
-        .dark-theme tbody tr:hover { background: rgba(74, 222, 128, 0.1); }
+        .dark-theme tbody tr:hover { background: rgba(74, 222, 128, 0.1) !important; }
         
         .player-info { margin-bottom: 16px; font-size: 18px; color: var(--gray-900); text-align: center; }
-        .dark-theme .player-info { color: #e2e8f0; }
+        .dark-theme .player-info { color: #e2e8f0 !important; }
         .extra-box {
             background: var(--green-50);
             border: 1px solid var(--border-color);
@@ -154,13 +154,13 @@
             padding: 16px;
             margin-top: 20px;
         }
-        .dark-theme .extra-box { background: rgba(74, 222, 128, 0.1); border-color: #4ade80; }
+        .dark-theme .extra-box { background: rgba(74, 222, 128, 0.1) !important; border-color: #4ade80 !important; }
         .extra-box h3 { font-size: 16px; font-weight: 600; color: var(--green-700); margin-bottom: 12px; }
-        .dark-theme .extra-box h3 { color: #4ade80; }
+        .dark-theme .extra-box h3 { color: #4ade80 !important; }
         
         .top-player { display: flex; justify-content: space-between; padding: 10px; border-radius: 8px; margin: 6px 0; }
         .top-player:hover { background: var(--white); }
-        .dark-theme .top-player:hover { background: rgba(255, 255, 255, 0.1); }
+        .dark-theme .top-player:hover { background: rgba(255, 255, 255, 0.1) !important; }
         .rank-badge { font-weight: 700; margin-right: 10px; }
         .rank-1 { color: #ca8a04; }
         .rank-2 { color: #6b7280; }
@@ -180,47 +180,45 @@
             z-index: 1001;
             padding: 24px;
         }
-        .dark-theme .profile-panel { background: rgba(15, 23, 42, 0.95); border-color: #4ade80; }
+        .dark-theme .profile-panel { background: rgba(15, 23, 42, 0.95) !important; border-color: #4ade80 !important; }
         .profile-panel.open { display: block; }
         .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .profile-title { font-size: 20px; font-weight: 700; color: var(--green-600); }
-        .dark-theme .profile-title { color: #4ade80; }
+        .dark-theme .profile-title { color: #4ade80 !important; }
         .profile-field { margin-bottom: 20px; }
         .profile-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--green-700); margin-bottom: 8px; }
-        .dark-theme .profile-label { color: #4ade80; }
+        .dark-theme .profile-label { color: #4ade80 !important; }
         .profile-value { background: var(--green-50); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-family: monospace; color: var(--gray-900); }
-        .dark-theme .profile-value { background: rgba(74, 222, 128, 0.1); border-color: #4ade80; color: #e2e8f0; }
+        .dark-theme .profile-value { background: rgba(74, 222, 128, 0.1) !important; border-color: #4ade80 !important; color: #e2e8f0 !important; }
         .profile-actions { display: flex; gap: 8px; margin-top: 8px; }
         .btn-small { padding: 6px 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
         .btn-edit { background: var(--green-500); color: white; }
-        .dark-theme .btn-edit { background: #4ade80; color: #0f172a; }
+        .dark-theme .btn-edit { background: #4ade80 !important; color: #0f172a !important; }
         .btn-edit:hover { background: var(--green-600); }
         .btn-cancel { background: var(--gray-100); color: var(--gray-700); }
-        .dark-theme .btn-cancel { background: rgba(71, 85, 105, 0.3); color: #cbd5e1; }
+        .dark-theme .btn-cancel { background: rgba(71, 85, 105, 0.3) !important; color: #cbd5e1 !important; }
         .role-info { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); color: var(--green-700); font-weight: 600; }
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.2); z-index: 999; }
         .overlay.active { display: block; }
         
         .news-item { background: var(--green-50); border-radius: 8px; padding: 12px; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; line-height: 1.4; }
-        .dark-theme .news-item { background: rgba(74, 222, 128, 0.1); }
+        .dark-theme .news-item { background: rgba(74, 222, 128, 0.1) !important; }
         .news-border-red::before, .news-border-red::after { content: "--------------------------------------------------"; display: block; color: var(--red-border); font-weight: bold; margin: 4px 0; }
         .news-border-yellow::before, .news-border-yellow::after { content: "--------------------------------------------------"; display: block; color: var(--yellow-border); font-weight: bold; margin: 4px 0; }
         .news-author { font-weight: bold; margin-bottom: 6px; color: var(--green-700); }
-        .dark-theme .news-author { color: #4ade80; }
+        .dark-theme .news-author { color: #4ade80 !important; }
         .news-date { font-size: 12px; color: var(--gray-600); margin-top: 6px; }
-        .dark-theme .news-date { color: #94a3b8; }
+        .dark-theme .news-date { color: #94a3b8 !important; }
         
         .request-form { background: var(--green-50); padding: 16px; border-radius: 12px; margin-top: 20px; }
-        .dark-theme .request-form { background: rgba(74, 222, 128, 0.1); }
+        .dark-theme .request-form { background: rgba(74, 222, 128, 0.1) !important; }
         .request-form input { width: 100%; padding: 8px; margin: 6px 0; border: 1px solid var(--border-color); border-radius: 6px; }
         
         .request-btn { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 4px; width: 100%; }
         .request-btn:hover { background: #d97706; }
         .dark-theme .request-btn { background: #d97706; color: #0f172a; }
         .dark-theme .request-btn:hover { background: #b45309; }
-        
-        .reject-notice { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fee2e2; color: #b91c1c; padding: 12px 20px; border-radius: 8px; z-index: 2000; border: 2px solid #fecaca; display: flex; align-items: center; gap: 10px; }
         
         @media (max-width: 768px) {
             .nav-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -328,7 +326,7 @@
     </div>
     
     <!-- Profile Panel -->
-    <div id="profile-panel" class="profile-panel">
+    <div id="profile-panel">
         <div class="profile-header">
             <div class="profile-title">Ваш профиль</div>
             <button class="close-btn" style="width:28px;height:28px;" onclick="toggleProfile()">×</button>
@@ -347,9 +345,9 @@
             <button class="btn-small btn-edit" style="width:100%;" onclick="submitChangeRequest()">Отправить запрос</button>
         </div>
         
-        <div id="directChangeSection"></div>
-        
-        <button class="nav-btn" style="width: 100%; margin-top: 20px;" id="adminBtn">Админ-панель</button>
+        <div id="adminBtnContainer">
+            <button class="nav-btn" style="width: 100%; margin-top: 20px;" id="adminBtn" onclick="goToAdminPanel()">Админ-панель</button>
+        </div>
     </div>
     
     <div id="overlay" class="overlay"></div>
@@ -360,40 +358,30 @@
 
     <script src="js/config.js"></script>
     <script>
-        console.log('CONFIG:', CONFIG);
-        
         const _supabase = window.supabase;
         const { createClient } = _supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let currentUser = null;
-        let currentStats = [];
         let totalStats = {};
         let allUsers = [];
         
         async function init() {
-            console.log('Init started');
+            console.log('Init...');
             const session = JSON.parse(localStorage.getItem('session'));
-            if (!session) { 
-                console.log('No session, redirecting...');
-                window.location.href = 'login.html'; 
-                return; 
-            }
+            if (!session) { window.location.href = 'login.html'; return; }
             currentUser = session;
-            console.log('User:', currentUser);
             
             document.getElementById('playerName').textContent = 'Игрок: ' + session.username;
             document.getElementById('profileLogin').textContent = session.login;
-            document.getElementById('profileRole').textContent = ROLE_LABELS[session.role] || session.role;
+            document.getElementById('profileRole').textContent = CHUNK_LABELS[session.role] || session.role;
             
             if (session.role === 'user') {
                 document.getElementById('requestChangeForm').style.display = 'block';
             } else if (session.role === 'admin') {
                 document.getElementById('adminBtn').textContent = 'Админ-панель';
-                document.getElementById('adminBtn').onclick = function() { console.log('Go to admin'); window.location.href = 'admin.html'; };
             } else if (session.role === 'admin2') {
                 document.getElementById('adminBtn').textContent = 'Тех. режим';
-                document.getElementById('adminBtn').onclick = function() { console.log('Go to tech'); window.location.href = 'tech.html'; };
             }
             
             await loadStats();
@@ -406,18 +394,17 @@
         
         async function loadStats() {
             const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false }).limit(10);
-            currentStats = stats || [];
             
             const tbody = document.getElementById('statsTableBody');
             tbody.innerHTML = '';
             
             totalStats = {};
             for (const chunk of CONFIG.CHUNKS) totalStats[chunk] = 0;
-            for (const row of currentStats) {
+            for (const row of (stats || [])) {
                 for (const chunk of CONFIG.CHUNKS) totalStats[chunk] += row[chunk] || 0;
             }
             
-            for (const row of currentStats) {
+            for (const row of (stats || [])) {
                 const tr = document.createElement('tr');
                 let html = `<td>${(row.updated_at || '').slice(0, 16)}</td>`;
                 for (const chunk of CONFIG.CHUNKS) html += `<td>${((row[chunk] || 0)).toFixed(1)}%</td>`;
@@ -436,7 +423,8 @@
             const counts = {};
             for (const chunk of CONFIG.CHUNKS) counts[chunk] = 0;
             for (const i of (issued || [])) counts[i.chunk_name] = (counts[i.chunk_name] || 0) + 1;
-            const minCount = Math.min(...Object.values(counts));
+            const countsArr = Object.values(counts);
+            const minCount = countsArr.length > 0 ? Math.min(...countsArr) : 0;
             document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + (isFinite(minCount) ? minCount : 0);
             
             const { data: transfers } = await supabaseClient.from('transfers').select('amount').eq('from_user_id', currentUser.id);
@@ -450,7 +438,7 @@
                     const btn = document.createElement('button');
                     btn.className = 'request-btn';
                     btn.textContent = 'Запросить ' + CHUNK_LABELS[chunk];
-                    btn.onclick = () => requestChunk(chunk);
+                    btn.onclick = function() { requestChunk(chunk); };
                     reqBtns.appendChild(btn);
                 }
             }
@@ -473,8 +461,10 @@
                 const userStats = {};
                 for (const chunk of CONFIG.CHUNKS) userStats[chunk] = 0;
                 for (const s of (stats || [])) {
-                    for (const chunk of CONFIG.CHUNKS) userStats[chunk] += s[chunk] || 0;
-                    for (const chunk of CONFIG.CHUNKS) commonFund[chunk] += s[chunk] || 0;
+                    for (const chunk of CONFIG.CHUNKS) {
+                        userStats[chunk] += s[chunk] || 0;
+                        commonFund[chunk] += s[chunk] || 0;
+                    }
                 }
                 
                 const tr = document.createElement('tr');
@@ -576,25 +566,25 @@
             document.getElementById('overlay').classList.remove('active');
         }
         function toggleProfile() {
-            console.log('toggleProfile clicked');
+            console.log('toggleProfile');
             const panel = document.getElementById('profile-panel');
             const overlay = document.getElementById('overlay');
-            if (panel.classList.contains('open')) {
-                panel.classList.remove('open');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
                 overlay.classList.remove('active');
             } else {
-                panel.classList.add('open');
+                panel.style.display = 'block';
                 overlay.classList.add('active');
             }
         }
         document.getElementById('overlay').onclick = function() {
-            console.log('overlay clicked');
+            console.log('overlay click');
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            document.getElementById('profile-panel').classList.remove('open');
+            document.getElementById('profile-panel').style.display = 'none';
             this.classList.remove('active');
         };
         function toggleTheme() {
-            console.log('toggleTheme clicked');
+            console.log('toggleTheme');
             const isDark = document.body.classList.contains('dark-theme');
             if (isDark) {
                 document.body.classList.remove('dark-theme');
@@ -605,9 +595,19 @@
             }
         }
         function logout() {
-            console.log('logout clicked');
+            console.log('logout');
             localStorage.removeItem('session');
             window.location.href = 'login.html';
+        }
+        function goToAdminPanel() {
+            console.log('goToAdminPanel', currentUser.role);
+            if (currentUser.role === 'admin2') {
+                window.location.href = 'tech.html';
+            } else if (currentUser.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                alert('У вас нет доступа');
+            }
         }
         
         init();
