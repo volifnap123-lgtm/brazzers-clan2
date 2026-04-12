@@ -3,490 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRAZZERS | Админ-панель</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
-    <style id="theme-style">
-        :root {
-            --green-500: #16a34a;
-            --green-600: #15803d;
-            --green-100: #dcfce7;
-            --green-50: #f0fdf4;
-            --white: #ffffff;
-            --gray-900: #111827;
-            --border-color: #bbf7d0;
-            --red-border: #ef4444;
-            --bulldozer: #f59e0b;
-            --caravan: #4ade80;
-            --newland: #3b82f6;
-            --core: #ef4444;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--white); color: var(--gray-900); font-family: 'Inter', sans-serif; padding: 15px; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 2px solid var(--green-500); flex-wrap: wrap; gap: 10px; }
-        .btn { background: var(--green-500); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
-        .btn:hover { background: var(--green-600); }
-        .section { background: var(--green-50); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
-        th { background: var(--green-100); }
-        select, input, textarea { padding: 6px; margin: 4px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
-        .table-container { width: 100%; overflow-x: auto; margin: 12px 0; border-radius: 8px; }
-        .table-container table { min-width: 900px; }
-        
-        .request-item { background: #fffbeb; border-left: 4px solid #ca8a04; padding: 12px; margin: 8px 0; border-radius: 8px; }
-        .request-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .btn-approve { background: #22c55e; }
-        .btn-reject { background: #ef4444; }
-        .btn-approve:hover { background: #16a34a; }
-        .btn-reject:hover { background: #dc2626; }
+    <title>Админ-панель | BRAZZERS</title>
+    <link rel="preconnect" href="https://unpkg.com">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0}
+        body{background:#f0fdf4;color:var(--gray);font-family:Arial,sans-serif;min-height:100vh;padding:15px}
+        body.dark{background:#0f172a;color:#e2e8f0}
+        .h{display:flex;justify-content:space-between;margin-bottom:25px;padding-bottom:12px;border-bottom:2px solid var(--g);flex-wrap:wrap;gap:10px}
+        .btn{background:var(--g);color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+        .section{background:var(--g50);padding:18px;border-radius:12px;margin-bottom:20px;border:1px solid var(--b)}
+        body.dark .section{background:rgba(74,222,128,0.1);border-color:#4ade80}
+        body.dark .h{border-color:#4ade80}
+        body.dark .btn{background:#4ade80;color:#0f172a}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:8px;text-align:center;border:1px solid var(--b)}
+        body.dark th,body.dark td{border-color:#4ade80}
+        th{background:var(--g100)}
+        body.dark th{background:rgba(74,222,128,0.15)}
+        input,select,textarea{width:100%;padding:8px;margin:4px 0;border:1px solid var(--b);border-radius:4px}
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="h">
         <h1>АДМИН-ПАНЕЛЬ</h1>
         <div>
-            <button class="btn" onclick="location.href='dashboard.html'">← Назад</button>
-            <button class="btn" onclick="logout()">Выйти</button>
+            <button onclick="location.href='dashboard.html'">← Назад</button>
+            <button onclick="logout()">Выйти</button>
         </div>
     </div>
-
     <div class="section">
-        <h2>Выдать проценты одному игроку</h2>
-        <form id="giveSingleForm">
-            <select id="singleUser" required style="width: 100%; max-width: 200px; padding: 6px; margin-bottom: 16px;">
-                <option value="">Выберите игрока</option>
-            </select>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Категория</th>
-                            <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
-                            <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
-                            <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
-                            <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
-                        </tr>
-                        <tr>
-                            <th>Кусок №1</th><th>Кусок №2</th><th>В.Рад №1</th>
-                            <th>Кусок №3</th><th>Кусок №4</th><th>Кусок №5</th><th>В.Рад №2</th>
-                            <th>Кусок №6</th><th>Кусок №7</th><th>Кусок №8</th><th>В.Рад №3</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Проценты</strong></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk1" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk2" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="vr1" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk3" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk4" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk5" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="vr2" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk6" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk7" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="chunk8" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="vr3" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="core" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <button class="btn" type="submit" style="margin-top: 16px;">Выдать проценты</button>
-        </form>
+        <h2>Запросы на куски</h2>
+        <div id="chunkRequests">Загрузка...</div>
     </div>
-
     <div class="section">
-        <h2>Выдать проценты группе игроков (100% делится поровну)</h2>
-        <form id="giveMultipleForm">
-            <select id="multipleUsers" multiple size="5" required style="width: 100%; max-width: 200px; height: 100px; padding: 6px;">
-            </select>
-            <select id="multipleChunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 8px;">
-                <option value="chunk1">Кусок №1</option>
-                <option value="chunk2">Кусок №2</option>
-                <option value="chunk3">Кусок №3</option>
-                <option value="chunk4">Кусок №4</option>
-                <option value="chunk5">Кусок №5</option>
-                <option value="chunk6">Кусок №6</option>
-                <option value="chunk7">Кусок №7</option>
-                <option value="chunk8">Кусок №8</option>
-                <option value="vr1">В.Рад №1</option>
-                <option value="vr2">В.Рад №2</option>
-                <option value="vr3">В.Рад №3</option>
-                <option value="core">Ядро</option>
-            </select>
-            <button class="btn" type="submit" style="margin-top: 10px;">Разделить 100%</button>
-        </form>
+        <h2>Запросы на смену данных</h2>
+        <div id="changeRequests">Загрузка...</div>
     </div>
-
     <div class="section">
-        <h2>Передать проценты от одного игрока другому</h2>
-        <form id="transferForm">
-            <select id="fromUser" required style="width: 100%; max-width: 180px; padding: 6px;">
-            </select>
-            <select id="toUser" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
-            </select>
-            <select id="transferChunk" required style="width: 100%; max-width: 180px; padding: 6px; margin-top: 6px;">
-                <option value="chunk1">Кусок №1</option>
-                <option value="chunk2">Кусок №2</option>
-                <option value="chunk3">Кусок №3</option>
-                <option value="chunk4">Кусок №4</option>
-                <option value="chunk5">Кусок №5</option>
-                <option value="chunk6">Кусок №6</option>
-                <option value="chunk7">Кусок №7</option>
-                <option value="chunk8">Кусок №8</option>
-                <option value="vr1">В.Рад №1</option>
-                <option value="vr2">В.Рад №2</option>
-                <option value="vr3">В.Рад №3</option>
-                <option value="core">Ядро</option>
-            </select>
-            <input type="number" step="0.1" id="transferAmount" placeholder="Сколько %" required style="width: 100%; max-width: 120px; padding: 6px; margin-top: 6px;">
-            <button class="btn" type="submit" style="margin-top: 10px;">Передать</button>
-        </form>
+        <h2>Пользователи</h2>
+        <div id="users">Загрузка...</div>
     </div>
-
-    <div class="section">
-        <h2>Запросы на выдачу кусков</h2>
-        <div id="chunkRequests"></div>
-    </div>
-
-    <div class="section">
-        <h2>Общак</h2>
-        <div class="table-container">
-            <table id="commonFundTable">
-                <thead>
-                    <tr>
-                        <th>Элемент</th>
-                        <th>Проценты в общаке</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>Выдать из остатка</h2>
-        <form id="giveRemainderForm">
-            <select id="remainderUser" required style="width: 100%; max-width: 200px; padding: 6px; margin-bottom: 16px;">
-                <option value="">Выберите игрока</option>
-            </select>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Категория</th>
-                            <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер</th>
-                            <th colspan="4" style="background: var(--caravan); color: white;">Караван</th>
-                            <th colspan="4" style="background: var(--newland); color: white;">Новая Земля</th>
-                            <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
-                        </tr>
-                        <tr>
-                            <th>№1</th><th>№2</th><th>ВР1</th><th>№3</th><th>№4</th><th>№5</th><th>ВР2</th><th>№6</th><th>№7</th><th>№8</th><th>ВР3</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Проценты</strong></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk1" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk2" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_vr1" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk3" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk4" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk5" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_vr2" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk6" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk7" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_chunk8" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_vr3" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                            <td style="padding: 4px;"><input type="number" step="0.1" name="r_core" value="0" style="width: 96%; height: 32px; text-align: center;"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <button class="btn" type="submit" style="margin-top: 16px;">Выдать из остатка</button>
-        </form>
-    </div>
-
-    <div class="section">
-        <h2>Сообщение на доску обновлений</h2>
-        <form id="postNewsForm">
-            <textarea id="newsMessage" placeholder="Введите сообщение..." required style="width: 100%; height: 100px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px;"></textarea>
-            <button type="submit" class="btn">Опубликовать</button>
-        </form>
-    </div>
-
-    <script src="js/config.js"></script>
     <script>
-        const _supabase = window.supabase;
-        const { createClient } = _supabase;
-        const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+    const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
+    const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
+    const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
+    
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+    
+    function init() {
+        if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
+        const s = supabase.createClient(SU, SK);
+        const user = JSON.parse(localStorage.getItem('session'));
+        if (!user || user.role !== 'admin') { location.href = 'login.html'; return; }
         
-        const CHUNK_LABELS = { chunk1:'Кусок №1',chunk2:'Кусок №2',chunk3:'Кусок №3',chunk4:'Кусок №4',chunk5:'Кусок №5',chunk6:'Кусок №6',chunk7:'Кусок №7',chunk8:'Кусок №8',vr1:'В.Рад №1',vr2:'В.Рад №2',vr3:'В.Рад №3',core:'Ядро' };
-        const CATEGORIES = { chunk1:'Бульдозер',chunk2:'Бульдозер',vr1:'Бульдозер',chunk3:'Караван',chunk4:'Караван',chunk5:'Караван',vr2:'Караван',chunk6:'Новая Земля',chunk7:'Новая Земля',chunk8:'Новая Земля',vr3:'Новая Земля',core:'Ядро' };
-        
-        let currentUser = null;
-        
-        async function init() {
-            const session = JSON.parse(localStorage.getItem('session'));
-            if (!session || !['admin', 'admin2'].includes(session.role)) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUser = session;
-            
-            if (session.role === 'admin2') {
-                window.location.href = 'tech.html';
-                return;
-            }
-            
-            await loadUsers();
-            await loadCommonFund();
-            await loadRemainder();
-            await loadChunkRequests();
+        loadRequests(s);
+    }
+    
+    async function loadRequests(s) {
+        const { data: chunkReqs } = await s.from('chunk_requests').select('*,users(username)').eq('status', 'pending');
+        let h = '';
+        if (!chunkReqs || chunkReqs.length === 0) h = 'Нет запросов';
+        for (let req of chunkReqs) {
+            h += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
+            h += req.users?.username || 'Unknown';
+            h += ' хочет ' + req.chunk_name;
+            h += ' <button onclick="approveChunk('+req.id+')">Выдать</button>';
+            h += ' <button onclick="rejectChunk('+req.id+')">Отказ</button>';
+            h += '</div>';
         }
+        document.getElementById('chunkRequests').innerHTML = h;
         
-        async function loadUsers() {
-            const { data: users } = await supabaseClient.from('users').select('id,username,role');
-            const selects = ['singleUser', 'multipleUsers', 'fromUser', 'toUser', 'remainderUser'];
-            
-            for (const selId of selects) {
-                const sel = document.getElementById(selId);
-                sel.innerHTML = selId === 'multipleUsers' ? '' : '<option value="">Выберите игрока</option>';
-                for (const u of (users || [])) {
-                    const opt = document.createElement('option');
-                    opt.value = u.id;
-                    opt.textContent = u.username;
-                    sel.appendChild(opt);
-                }
-            }
-            
-            const multiSel = document.getElementById('multipleUsers');
-            for (const u of (users || [])) {
-                const opt = document.createElement('option');
-                opt.value = u.id;
-                opt.textContent = u.username;
-                multiSel.appendChild(opt);
-            }
+        const { data: changeReqs } = await s.from('change_requests').select('*,users(username)').eq('status', 'pending');
+        let h2 = '';
+        if (!changeReqs || changeReqs.length === 0) h2 = 'Нет запросов';
+        for (let req of changeReqs) {
+            h2 += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
+            h2 += req.users?.username || 'Unknown';
+            if (req.new_login) h2 += ' хочет логин: ' + req.new_login;
+            h2 += ' <button onclick="approveChange('+req.id+')">Одобрить</button>';
+            h2 += ' <button onclick="rejectChange('+req.id+')">Отказ</button>';
+            h2 += '</div>';
         }
+        document.getElementById('changeRequests').innerHTML = h2;
         
-        async function loadCommonFund() {
-            const { data: stats } = await supabaseClient.from('stats').select('*');
-            const fund = {};
-            for (const chunk of CONFIG.CHUNKS) fund[chunk] = 0;
-            for (const s of (stats || [])) {
-                for (const chunk of CONFIG.CHUNKS) fund[chunk] += s[chunk] || 0;
-            }
-            
-            const tbody = document.querySelector('#commonFundTable tbody');
-            tbody.innerHTML = '';
-            
-            const cats = ['Бульдозер Левая', 'Караван Правая', 'Новая Земля Верхняя', 'Ядро'];
-            const catChunks = { 'Бульдозер Левая':['chunk1','chunk2','vr1'], 'Караван Правая':['chunk3','chunk4','chunk5','vr2'], 'Новая Земля Верхняя':['chunk6','chunk7','chunk8','vr3'], 'Ядро':['core'] };
-            
-            for (const cat of cats) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="2" style="background: ${cat === 'Бу��ьдозер Левая' ? 'var(--bulldozer)' : cat === 'Караван Правая' ? 'var(--caravan)' : cat === 'Новая Земля Верхняя' ? 'var(--newland)' : 'var(--core)'}; color: white; font-weight: bold; text-align: center;">${cat}</td>`;
-                tbody.appendChild(tr);
-                
-                for (const chunk of catChunks[cat]) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${CHUNK_LABELS[chunk]}</td><td>${(fund[chunk] || 0).toFixed(1)}</td>`;
-                    tbody.appendChild(tr);
-                }
-            }
+        const { data: users } = await s.from('users').select('*');
+        let h3 = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
+        for (let u of (users || [])) {
+            h3 += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
         }
-        
-        async function loadRemainder() {
-            const { data: rem } = await supabaseClient.from('remainder').select('chunk_name,amount');
-            const remainder = {};
-            for (const r of (rem || [])) remainder[r.chunk_name] = r.amount;
-            
-            // Already displayed in common table
-        }
-        
-        async function loadChunkRequests() {
-            const { data: requests } = await supabaseClient.from('chunk_requests').select('*,users(username)').eq('status', 'pending');
-            const container = document.getElementById('chunkRequests');
-            container.innerHTML = '';
-            
-            if (!requests || requests.length === 0) {
-                container.innerHTML = '<p>Нет активных запросов.</p>';
-                return;
-            }
-            
-            for (const req of requests) {
-                const div = document.createElement('div');
-                div.className = 'request-item';
-                div.innerHTML = `
-                    <strong>${req.users?.username || 'Unknown'}</strong> запросил выдачу куска: <strong>${CHUNK_LABELS[req.chunk_name] || req.chunk_name}</strong>
-                    <div class="request-actions">
-                        <button class="btn btn-approve" onclick="approveChunkRequest(${req.id})">Выдан</button>
-                        <button class="btn btn-reject" onclick="rejectChunkRequest(${req.id})">Отказ</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            }
-        }
-        
-        async function approveChunkRequest(requestId) {
-            try {
-                const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', requestId).single();
-                if (!req) return;
-                
-                await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
-                await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', requestId);
-                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'chunk_request_approved', details: `user=${req.user_id}` });
-                
-                alert('Запрос одобрен!');
-                await loadChunkRequests();
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        }
-        
-        async function rejectChunkRequest(requestId) {
-            const reason = prompt('Причина отказа (опционально):');
-            try {
-                const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', requestId).single();
-                if (!req) return;
-                
-                const values = { user_id: req.user_id };
-                for (const c of CONFIG.CHUNKS) values[c] = 0;
-                values[req.chunk_name] = 100;
-                await supabaseClient.from('stats').insert(values);
-                
-                await supabaseClient.from('chunk_requests').update({ status: 'rejected', reason: reason || '' }).eq('id', requestId);
-                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'chunk_request_rejected', details: `user=${req.user_id}` });
-                
-                alert('Запрос отклонён!');
-                await loadChunkRequests();
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        }
-        
-        document.getElementById('giveSingleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userId = document.getElementById('singleUser').value;
-            if (!userId) return;
-            
-            const chunks = {};
-            for (const chunk of CONFIG.CHUNKS) {
-                const val = parseFloat(document.querySelector(`[name="${chunk}"]`).value) || 0;
-                if (val > 0) chunks[chunk] = val;
-            }
-            
-            if (Object.keys(chunks).length === 0) return;
-            
-            try {
-                const values = { user_id: userId };
-                for (const c of CONFIG.CHUNKS) values[c] = chunks[c] || 0;
-                await supabaseClient.from('stats').insert(values);
-                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'give_percent_single', details: `user=${userId}` });
-                alert('Проценты выданы!');
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        });
-        
-        document.getElementById('giveMultipleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const sel = document.getElementById('multipleUsers');
-            const userIds = Array.from(sel.selectedOptions).map(o => o.value);
-            const chunk = document.getElementById('multipleChunk').value;
-            
-            if (userIds.length === 0) return;
-            
-            const amountPer = 100 / userIds.length;
-            const remainderAmount = 100 - (amountPer * userIds.length);
-            
-            try {
-                for (const userId of userIds) {
-                    const values = { user_id: userId };
-                    for (const c of CONFIG.CHUNKS) values[c] = 0;
-                    values[chunk] = amountPer;
-                    await supabaseClient.from('stats').insert(values);
-                }
-                
-                if (Math.abs(remainderAmount) > 0.01) {
-                    const { data: existing } = await supabaseClient.from('remainder').select('amount').eq('chunk_name', chunk).single();
-                    if (existing) {
-                        await supabaseClient.from('remainder').update({ amount: existing.amount + remainderAmount }).eq('chunk_name', chunk);
-                    } else {
-                        await supabaseClient.from('remainder').insert({ chunk_name: chunk, amount: remainderAmount });
-                    }
-                }
-                
-                alert(`Выдано! Остаток: ${remainderAmount.toFixed(1)}%`);
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        });
-        
-        document.getElementById('transferForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fromId = document.getElementById('fromUser').value;
-            const toId = document.getElementById('toUser').value;
-            const chunk = document.getElementById('transferChunk').value;
-            const amount = parseFloat(document.getElementById('transferAmount').value);
-            
-            if (!fromId || !toId || !amount) return;
-            
-            try {
-                const { data: fromStats } = await supabaseClient.from('stats').select(chunk).eq('user_id', fromId);
-                const balance = (fromStats || []).reduce((s, r) => s + (r[chunk] || 0), 0);
-                
-                if (balance < amount) { alert('Недостаточно средств'); return; }
-                
-                const fromValues = { user_id: fromId };
-                for (const c of CONFIG.CHUNKS) fromValues[c] = 0;
-                fromValues[chunk] = -amount;
-                await supabaseClient.from('stats').insert(fromValues);
-                
-                const toValues = { user_id: toId };
-                for (const c of CONFIG.CHUNKS) toValues[c] = 0;
-                toValues[chunk] = amount;
-                await supabaseClient.from('stats').insert(toValues);
-                
-                await supabaseClient.from('transfers').insert({ from_user_id: fromId, to_user_id: toId, chunk_name: chunk, amount: amount });
-                alert('Проценты переданы!');
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        });
-        
-        document.getElementById('giveRemainderForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userId = document.getElementById('remainderUser').value;
-            if (!userId) return;
-            
-            const chunks = {};
-            for (const chunk of CONFIG.CHUNKS) {
-                chunks[chunk] = parseFloat(document.querySelector(`[name="r_${chunk}"]`).value) || 0;
-            }
-            
-            try {
-                for (const chunk of CONFIG.CHUNKS) {
-                    if (chunks[chunk] > 0) {
-                        const values = { user_id: userId };
-                        for (const c of CONFIG.CHUNKS) values[c] = 0;
-                        values[chunk] = chunks[chunk];
-                        await supabaseClient.from('stats').insert(values);
-                    }
-                }
-                alert('Выдано из остатка!');
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        });
-        
-        document.getElementById('postNewsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = document.getElementById('newsMessage').value;
-            if (!message) return;
-            
-            try {
-                await supabaseClient.from('news').insert({ author_id: currentUser.id, message: message, role: currentUser.role });
-                alert('Опубликовано!');
-                document.getElementById('newsMessage').value = '';
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        });
-        
-        function logout() {
-            localStorage.removeItem('session');
-            window.location.href = 'login.html';
-        }
-        
-        init();
+        h3 += '</table>';
+        document.getElementById('users').innerHTML = h3;
+    }
+    
+    async function approveChunk(id) {
+        const s = supabase.createClient(SU, SK);
+        const { data: req } = await s.from('chunk_requests').select('*').eq('id', id).single();
+        await s.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
+        await s.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
+        location.reload();
+    }
+    
+    async function rejectChunk(id) {
+        const s = supabase.createClient(SU, SK);
+        const { data: req } = await s.from('chunk_requests').select('*').eq('id', id).single();
+        let vals = {}; for (let c of CH) vals[c] = 0;
+        vals[req.chunk_name] = 100;
+        await s.from('stats').insert({ user_id: req.user_id, ...vals });
+        await s.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
+        location.reload();
+    }
+    
+    async function approveChange(id) {
+        const s = supabase.createClient(SU, SK);
+        const { data: req } = await s.from('change_requests').select('*').eq('id', id).single();
+        if (req.new_login) await s.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        await s.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        location.reload();
+    }
+    
+    async function rejectChange(id) {
+        const s = supabase.createClient(SU, SK);
+        await s.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        location.reload();
+    }
+    
+    function logout() { localStorage.removeItem('session'); location.href = 'login.html'; }
+    
+    window.onload = init;
     </script>
 </body>
 </html>
