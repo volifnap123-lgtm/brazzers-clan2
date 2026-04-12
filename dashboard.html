@@ -220,7 +220,34 @@ async function loadCommon() {
         console.log('✅ Общая таблица загружена');
     }
     
-    function openModal(name) { console.log('📂 Открыть:', name); document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); }
+    async function loadNews() {
+        console.log('📰 Загрузка новостей...');
+        const { data: news } = await s.from('news').select('*').order('created_at', { ascending: false });
+        const { data: users } = await s.from('users').select('*');
+        
+        let usersMap = {};
+        for (let u of (users || [])) usersMap[u.id] = u;
+        
+        if (!news || news.length === 0) {
+            document.getElementById('newsList').innerHTML = '<div style="text-align:center;padding:40px;color:#888">📭 На данный момент новостей нету, в скором времени они появятся.</div>';
+            return;
+        }
+        
+        let h = '';
+        for (let n of news) {
+            let author = usersMap[n.author_id] || { username: 'Unknown' };
+            let borderClass = n.role === 'admin' ? 'border-left:4px solid #ef4444' : n.role === 'admin2' ? 'border-left:4px solid #eab308' : '';
+            h += '<div style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;' + borderClass + '">';
+            h += '<div style="font-weight:bold;color:var(--g2);margin-bottom:6px">' + author.username + '</div>';
+            h += '<div style="white-space:pre-wrap;line-height:1.4">' + n.message + '</div>';
+            h += '<div style="font-size:12px;color:#666;margin-top:6px">' + (n.created_at || '').slice(0, 16) + '</div>';
+            h += '</div>';
+        }
+        document.getElementById('newsList').innerHTML = h;
+        console.log('✅ Новости загружены');
+    }
+    
+    function openModal(name) { console.log('📂 Открыть:', name); document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); if(name === 'news') loadNews(); }
     function closeModal(name) { console.log('📕 Закрыть:', name); document.getElementById(name + '-modal').classList.remove('open'); }
     function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
