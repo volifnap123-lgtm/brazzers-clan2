@@ -8,83 +8,203 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:Arial,sans-serif;background:#f0fdf4;min-height:100vh}
-        .h{display:flex;align-items:center;padding:16px;background:white;border-bottom:2px solid #16a34a;gap:12px;flex-wrap:wrap}
-        .logo{font-weight:700;font-size:24px;color:#16a34a;border:2px solid #16a34a;padding:5px 12px;border-radius:8px}
-        .nav{flex:1;display:flex;gap:8px;justify-content:center}
-        .nav button{background:0;border:0;color:#16a34a;font-weight:600;cursor:pointer;padding:6px 12px}
-        .out{color:#ef4444;background:0;border:0;font-weight:600;cursor:pointer}
-        .m{padding:20px}
-        .s{background:white;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #bbf7d0}
-        .s h2{color:#16a34a;margin:0 0 12px}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:8px;text-align:center;border:1px solid #bbf7d0}
-        th{background:#dcfce7}
+        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--w:#fff;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
+        body{background:url('https://volifnap123-lgtm.github.io/brazzers-clan2/static/images/light-bg.jpg') fixed;background-size:cover;font-family:Inter,Arial,sans-serif;color:var(--gray);min-height:100vh}
+        body.dark{background:url('https://volifnap123-lgtm.github.io/brazzers-clan2/static/images/dark-bg.jpg') fixed;background-size:cover;color:#e2e8f0}
+        .h{display:flex;align-items:center;padding:16px;background:rgba(255,255,255,0.92);border-bottom:2px solid var(--g);gap:12px;flex-wrap:wrap}
+        .logo{font-weight:700;font-size:24px;color:var(--g);border:2px solid var(--g);padding:5px 12px;border-radius:8px;background:var(--g50)}
+        .nav{flex:1;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+        .nav button{background:0;border:0;color:var(--g);font-weight:600;font-size:14px;cursor:pointer;padding:6px 10px;border-radius:6px;min-width:100px}
+        .nav button:hover{background:var(--g50)}
+        .out{margin-left:auto;color:#ef4444;background:0;border:0;font-weight:600;cursor:pointer;font-size:14px}
+        .m{height:calc(100vh - 70px);display:flex;justify-content:center;align-items:center}
+        
+        .modal{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:1000;justify-content:center;align-items:center;backdrop-filter:blur(2px)}
+        .modal.open{display:flex}
+        .modal-content{background:rgba(255,255,255,0.95);border:2px solid var(--g);border-radius:16px;width:94%;max-width:1200px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--b)}
+        .modal-title{font-size:20px;font-weight:700;color:var(--g)}
+        .close-btn{background:var(--g);color:white;width:32px;height:32px;border:0;border-radius:50%;font-weight:bold;cursor:pointer}
+        
+        table{width:100%;border-collapse:collapse;margin:12px 0}
+        th,td{padding:11px 8px;text-align:center;border:1px solid var(--b);font-size:13px}
+        th{background:var(--g100)}
+        
+        .s{background:var(--g50);padding:16px;border-radius:12px;margin-top:16px;border:1px solid var(--b)}
+        .s h3{font-size:16px;color:var(--g2);margin-bottom:12px}
+        
+        .profile{position:fixed;top:0;right:0;height:100vh;width:320px;background:rgba(255,255,255,0.95);border-left:2px solid var(--g);padding:24px;z-index:1001;display:none}
+        .profile.open{display:block}
+        
+        .theme-btn{position:fixed;bottom:20px;right:20px;padding:8px 16px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer}
+        
+        .overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.2);z-index:999;display:none}
+        .overlay.open{display:block}
     </style>
 </head>
 <body>
     <div class="h">
         <div class="logo">BRAZZERS</div>
         <div class="nav">
-            <button onclick="loadStats()">📊 Статистика</button>
-            <button onclick="loadCommon()">📋 Общая</button>
-            <button onclick="loadNews()">📰 Новости</button>
+            <button onclick="openModal('stats')">📊 Статистика</button>
+            <button onclick="openModal('common')">📋 Общая таблица</button>
+            <button onclick="openModal('news')">📰 Новости</button>
+            <button onclick="toggleProfile()">👤 Профиль</button>
         </div>
         <button class="out" onclick="logout()">🚪 Выйти</button>
     </div>
-    <div class="m">
-        <div class="s">
-            <h2 id="w">Привет!</h2>
-            <div id="st">Загрузка...</div>
-        </div>
-        <div class="s" id="as" style="display:none;">
-            <h2>Админ-панель</h2>
-            <button onclick="goAdmin()" style="background:#16a34a;color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer">Перейти</button>
+    <div class="m"></div>
+    
+    <!-- Статистика -->
+    <div id="stats-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Статистика игрока</div>
+                <button class="close-btn" onclick="closeModal('stats')">×</button>
+            </div>
+            <div class="player-info" id="playerName">Игрок: ...</div>
+            <div class="table-container" id="statsTable"></div>
+            <div class="s" id="sixB13Info">Полученных 6б13: 0</div>
+            <div class="s" id="givenInfo">Отданных процентов: 0%</div>
+            <div class="s">
+                <h3>Запросить выдачу куска</h3>
+                <div id="requestBtns" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
+            </div>
         </div>
     </div>
+    
+    <!-- Общая -->
+    <div id="common-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Общая статистика</div>
+                <button class="close-btn" onclick="closeModal('common')">×</button>
+            </div>
+            <div class="table-container" id="commonTable"></div>
+        </div>
+    </div>
+    
+    <!-- Новости -->
+    <div id="news-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Новости</div>
+                <button class="close-btn" onclick="closeModal('news')">×</button>
+            </div>
+            <div id="newsList"></div>
+        </div>
+    </div>
+    
+    <!-- Профиль -->
+    <div class="overlay" onclick="closeAll()"></div>
+    <div class="profile" id="profile">
+        <div class="modal-header">
+            <div class="modal-title">Ваш профиль</div>
+            <button class="close-btn" onclick="toggleProfile()">×</button>
+        </div>
+        <div class="s"><span>Логин: </span><span id="profileLogin">-</span></div>
+        <div class="s"><span>Роль: </span><span id="profileRole">-</span></div>
+        <div id="requestChange" class="s" style="display:none;">
+            <h3>Сменить данные</h3>
+            <input id="newLogin" placeholder="Новый логин" style="width:100%;padding:8px;margin:4px 0">
+            <input id="newPass" type="password" placeholder="Новый пароль" style="width:100%;padding:8px;margin:4px 0">
+            <button onclick="reqChange()" style="background:var(--g);color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer">Отправить</button>
+        </div>
+        <div id="adminBtnContainer">
+            <button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>
+        </div>
+    </div>
+    
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Тема</button>
+    
     <script>
-    console.log('🚀 Dashboard запущен');
+    console.log('🚀 Главная страница загружена');
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
+    const C_LABELS = {chunk1:'Кусок1',chunk2:'Кусок2',chunk3:'Кусок3',chunk4:'Кусок4',chunk5:'Кусок5',chunk6:'Кусок6',chunk7:'Кусок7',chunk8:'Кусок8',vr1:'В.Рад1',vr2:'В.Рад2',vr3:'В.Рад3',core:'Ядро'};
+    let user = null, s = null;
     
     function init() {
         console.log('⏳ Инициализация...');
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
-        console.log('✅ Supabase готов');
+        s = supabase.createClient(SU, SK);
+        console.log('✅ Подключено');
         
-        const s = supabase.createClient(SU, SK);
-        console.log('🔗 Подключено');
+        user = JSON.parse(localStorage.getItem('session'));
+        if (!user) { console.log('❌ Нет сессии'); location.href = 'login.html'; return; }
+        console.log('✅ Сессия:', user.username);
         
-        const ss = JSON.parse(localStorage.getItem('session'));
-        if (!ss) { console.log('❌ Нет сессии'); location.href = 'login.html'; return; }
-        console.log('✅ Сессия есть:', ss.username);
+        document.getElementById('playerName').textContent = 'Игрок: ' + user.username;
+        document.getElementById('profileLogin').textContent = user.login;
+        document.getElementById('profileRole').textContent = user.role;
         
-        document.getElementById('w').textContent = 'Привет, ' + ss.username + '!';
-        if (ss.role === 'admin' || ss.role === 'admin2') document.getElementById('as').style.display = 'block';
+        if (user.role === 'user') document.getElementById('requestChange').style.display = 'block';
+        if (user.role === 'admin') document.getElementById('adminBtnContainer').querySelector('button').textContent = 'Админ-панель';
+        if (user.role === 'admin2') document.getElementById('adminBtnContainer').querySelector('button').textContent = 'Тех. режим';
         
-        loadStatsData(s, ss);
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
+        loadStats();
     }
     
-    async function loadStatsData(s, ss) {
+    async function loadStats() {
         console.log('📊 Загрузка статистики...');
-        const { data } = await s.from('stats').select('*').eq('user_id', ss.id);
-        let t = {};
-        for (let c of CH) t[c] = 0;
+        const { data } = await s.from('stats').select('*').eq('user_id', user.id);
+        
+        let t = {}; for (let c of CH) t[c] = 0;
         for (let x of (data || [])) for (let c of CH) t[c] += x[c] || 0;
         
-        let h = '<table><tr><th>Ку��ок</th><th>%</th></tr>';
-        for (let c of CH) h += '<tr><td>' + c + '</td><td>' + t[c].toFixed(1) + '%</td></tr>';
-        h += '</table>';
-        document.getElementById('st').innerHTML = h;
+        let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style=background:var(--bulldozer)>Бульдозер</th><th colspan=4 style=background:var(--caravan)>Караван</th><th colspan=4 style=background:var(--newland)>Новая Земля</th><th rowspan=2 style=background:var(--core)>Ядро</th></tr><tr><th>1</th><th>2</th><th>ВР1</th><th>3</th><th>4</th><th>5</th><th>ВР2</th><th>6</th><th>7</th><th>8</th><th>ВР3</th></tr></thead><tbody>';
+        for (let x of (data || []).slice(0,10)) {
+            h += '<tr><td>' + (x.updated_at||'').slice(0,16) + '</td>';
+            for (let c of CH) h += '<td>' + (x[c]||0).toFixed(1) + '</td>';
+            h += '</tr>';
+        }
+        h += '<tr style=background:var(--g100)><td><strong>Всего</strong></td>';
+        for (let c of CH) h += '<td>' + t[c].toFixed(1) + '</td>';
+        h += '</tr></tbody></table>';
+        document.getElementById('statsTable').innerHTML = h;
+        
+        // 6б13
+        const { data: issued } = await s.from('issued_chunks').select('chunk_name').eq('user_id', user.id);
+        let cts = {}; for (let c of CH) cts[c] = 0;
+        for (let i of (issued || [])) cts[i.chunk_name] = (cts[i.chunk_name] || 0) + 1;
+        let ctsArr = Object.values(cts); let min = ctsArr.length > 0 ? Math.min(...ctsArr) : 0;
+        document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + (isFinite(min)?min:0);
+        
         console.log('✅ Статистика загружена');
     }
     
-    function loadStats() { console.log('📊 Нажата статистика'); init(); }
-    function loadCommon() { console.log('📋 Нажата общая'); location.reload(); }
-    function loadNews() { console.log('📰 Нажаты новости'); alert('Новости'); }
-    function goAdmin() { console.log('➡️ Админ'); const ss = JSON.parse(localStorage.getItem('session')); location.href = ss.role === 'admin2' ? 'tech.html' : 'admin.html'; }
-    function logout() { console.log('🚪 Выход'); localStorage.removeItem('session'); location.href = 'login.html'; }
+    function openModal(name) { document.getElementById(name + '-modal').classList.add('open'); }
+    function closeModal(name) { document.getElementById(name + '-modal').classList.remove('open'); }
+    function toggleProfile() {
+        let p = document.getElementById('profile');
+        p.classList.toggle('open');
+        document.querySelector('.overlay').classList.toggle('open');
+    }
+    function closeAll() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+        document.getElementById('profile').classList.remove('open');
+        document.querySelector('.overlay').classList.remove('open');
+    }
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    function logout() {
+        localStorage.removeItem('session');
+        location.href = 'login.html';
+    }
+    function goAdmin() {
+        location.href = user.role === 'admin2' ? 'tech.html' : 'admin.html';
+    }
+    async function reqChange() {
+        let nl = document.getElementById('newLogin').value;
+        if (!nl) return alert('Введите логин');
+        await s.from('change_requests').insert({ user_id: user.id, new_login: nl, status: 'pending' });
+        alert('Запрос отправлен!');
+    }
     
     init();
     </script>
