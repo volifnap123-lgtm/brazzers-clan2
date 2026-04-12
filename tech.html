@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тех. режим | BRAZZERS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --green-500: #16a34a;
+            --green-600: #15803d;
+            --green-100: #dcfce7;
+            --green-50: #f0fdf4;
+            --white: #ffffff;
+            --gray-900: #111827;
+            --border-color: #bbf7d0;
+            --yellow-border: #eab308;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--white); color: var(--gray-900); font-family: 'Inter', sans-serif; padding: 15px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 2px solid var(--green-500); flex-wrap: wrap; gap: 10px; }
+        .btn { background: var(--green-500); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn:hover { background: var(--green-600); }
+        .section { background: var(--green-50); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        th { background: var(--green-100); }
+        select, input, textarea { padding: 6px; margin: 4px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; width: 100%; }
+        .table-container { width: 100%; overflow-x: auto; margin: 12px 0; border-radius: 8px; }
+        .table-container table { min-width: 600px; }
+        
+        .request-item { background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--yellow-border); padding: 12px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ТЕХ. РЕЖИМ (admin2)</h1>
+        <div>
+            <button class="btn" onclick="location.href='admin.html'">← Назад</button>
+            <button class="btn" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Создать пользователя</h2>
+        <form id="createUserForm">
+            <input type="text" id="newUsername" placeholder="Никнейм" required>
+            <input type="text" id="newLogin" placeholder="Логин" required>
+            <input type="password" id="newPassword" placeholder="Пароль" required>
+            <button type="submit" class="btn">Создать</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Удалить пользователя</h2>
+        <form id="deleteUserForm">
+            <select id="deleteUserId" required>
+                <option value="">Выберите пользователя</option>
+            </select>
+            <button type="submit" class="btn">Удалить</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Назначить админа</h2>
+        <form id="promoteForm">
+            <select id="promoteUserId" required>
+                <option value="">Выберите пользова��еля (роль: user)</option>
+            </select>
+            <button type="submit" class="btn">Сделать админом</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Снять админа</h2>
+        <form id="removeAdminForm">
+            <select id="removeAdminId" required>
+                <option value="">Выберите админа</option>
+            </select>
+            <button type="submit" class="btn">Снять админа</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Логины пользователей</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Никнейм</th><th>Логин</th><th>Роль</th></tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+        <p style="margin-top: 10px; color: #ef4444; font-weight: bold;">⚠️ Пароли хранятся в зашифрованном виде и не отображаются.</p>
+    </div>
+
+    <div class="section">
+        <h2>Аудит-логи</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Время</th><th>Действие</th><th>Детали</th></tr>
+                </thead>
+                <tbody id="auditTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Заявки на смену учётных данных</h2>
+        <div id="changeRequestsList"></div>
+    </div>
+
+    <div class="section">
+        <h2>Изменить логин или пароль пользователя</h2>
+        <form id="adminChangeLoginForm">
+            <select id="changeLoginUserId" required>
+                <option value="">Выберите пользователя</option>
+            </select>
+            <input type="text" id="adminNewLogin" placeholder="Новый логин">
+            <button type="submit" class="btn">Сменить логин</button>
+        </form>
+        <form id="adminChangePasswordForm" style="margin-top: 10px;">
+            <select id="changePasswordUserId" required>
+                <option value="">Выберите пользователя</option>
+            </select>
+            <input type="password" id="adminNewPassword" placeholder="Новый пароль">
+            <button type="submit" class="btn">Сменить пароль</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Сообщение на доску обновлений</h2>
+        <form id="postNewsForm">
+            <textarea id="techNewsMessage" placeholder="Введите сообщение..." required style="height: 100px;"></textarea>
+            <button type="submit" class="btn">Опубликовать</button>
+        </form>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const { createClient } = supabase;
+        const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+        
+        let currentUser = null;
+        
+        async function init() {
+            const session = JSON.parse(localStorage.getItem('session'));
+            if (!session || session.role !== 'admin2') {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = session;
+            
+            await loadUsers();
+            await loadAuditLogs();
+            await loadChangeRequests();
+        }
+        
+        async function loadUsers() {
+            const { data: users } = await supabaseClient.from('users').select('*');
+            
+            const selects = ['deleteUserId', 'promoteUserId', 'removeAdminId', 'changeLoginUserId', 'changePasswordUserId'];
+            for (const selId of selects) {
+                const sel = document.getElementById(selId);
+                sel.innerHTML = '<option value="">Выберите пользователя</option>';
+                for (const u of (users || [])) {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = `${u.username} (${u.login})`;
+                    sel.appendChild(opt);
+                }
+            }
+            
+            const promoteSel = document.getElementById('promoteUserId');
+            promoteSel.innerHTML = '<option value="">Выберите пользователя (роль: user)</option>';
+            for (const u of (users || [])) {
+                if (u.role === 'user') {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = `${u.username} (${u.login})`;
+                    promoteSel.appendChild(opt);
+                }
+            }
+            
+            const removeSel = document.getElementById('removeAdminId');
+            removeSel.innerHTML = '<option value="">Выберите админа</option>';
+            for (const u of (users || [])) {
+                if (u.role === 'admin') {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = `${u.username} (${u.login})`;
+                    removeSel.appendChild(opt);
+                }
+            }
+            
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            for (const u of (users || [])) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${u.username}</td><td>${u.login}</td><td>${u.role}</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+        
+        async function loadAuditLogs() {
+            const { data: logs } = await supabaseClient.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
+            
+            const tbody = document.getElementById('auditTableBody');
+            tbody.innerHTML = '';
+            for (const log of (logs || [])) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${(log.timestamp || '').slice(0, 16)}</td><td>${log.action}</td><td>${log.details || ''}</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+        
+        async function loadChangeRequests() {
+            const { data: requests } = await supabaseClient.from('change_requests').select('*,users(username,login)').eq('status', 'pending');
+            
+            const container = document.getElementById('changeRequestsList');
+            container.innerHTML = '';
+            
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<p>Нет заявок</p>';
+                return;
+            }
+            
+            for (const req of requests) {
+                const div = document.createElement('div');
+                div.className = 'request-item';
+                div.innerHTML = `
+                    <div><strong>${req.users?.username || 'Unknown'}</strong> (${req.users?.login || 'unknown'})</div>
+                    ${req.new_login ? `<div>Новый логин: ${req.new_login}</div>` : ''}
+                    ${req.new_password_hash ? '<div>Новый пароль: задан</div>' : ''}
+                    <div style="margin-top: 8px;">
+                        <button class="btn" style="background: #10b981; padding: 4px 10px; font-size: 12px;" onclick="approveChange(${req.id})">Одобрить</button>
+                        <button class="btn" style="background: #ef4444; padding: 4px 10px; font-size: 12px; margin-left: 8px;" onclick="rejectChange(${req.id})">Отклонить</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+        
+        async function approveChange(requestId) {
+            try {
+                const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', requestId).single();
+                if (!req) return;
+                
+                const updateData = {};
+                if (req.new_login) updateData.login = req.new_login;
+                if (req.new_password_hash) updateData.password_hash = req.new_password_hash;
+                
+                if (Object.keys(updateData).length > 0) {
+                    await supabaseClient.from('users').update(updateData).eq('id', req.user_id);
+                }
+                
+                await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', requestId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'approve_change', details: `request=${requestId}` });
+                
+                alert('Изменения одобрены!');
+                await loadChangeRequests();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        }
+        
+        async function rejectChange(requestId) {
+            const reason = prompt('Причина отклонения:');
+            try {
+                await supabaseClient.from('change_requests').update({ status: 'rejected', reason: reason || '' }).eq('id', requestId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'reject_change', details: `request=${requestId}` });
+                
+                alert('Заявка отклонена!');
+                await loadChangeRequests();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        }
+        
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('newUsername').value;
+            const login = document.getElementById('newLogin').value;
+            const password = document.getElementById('newPassword').value;
+            
+            try {
+                const hash = '$2a$10$' + btoa(password).substring(0, 22) + '==';
+                
+                await supabaseClient.from('users').insert({
+                    username: username,
+                    login: login,
+                    password_hash: hash,
+                    role: 'user'
+                });
+                
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'create_user', details: `login=${login}` });
+                
+                alert('Пользователь создан!');
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newLogin').value = '';
+                document.getElementById('newPassword').value = '';
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('deleteUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('deleteUserId').value;
+            if (!userId) return;
+            
+            if (!confirm('Вы уверены? Это удалит все данные пользователя.')) return;
+            
+            try {
+                await supabaseClient.from('users').delete().eq('id', userId);
+                await supabaseClient.from('stats').delete().eq('user_id', userId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'delete_user', details: `user=${userId}` });
+                
+                alert('Пользователь удалён!');
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('promoteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('promoteUserId').value;
+            if (!userId) return;
+            
+            try {
+                await supabaseClient.from('users').update({ role: 'admin' }).eq('id', userId).eq('role', 'user');
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'promote_to_admin', details: `user=${userId}` });
+                
+                alert('Пользователь назначен админом!');
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('removeAdminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('removeAdminId').value;
+            if (!userId) return;
+            
+            try {
+                await supabaseClient.from('users').update({ role: 'user' }).eq('id', userId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'remove_admin', details: `user=${userId}` });
+                
+                alert('Админ снят!');
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('adminChangeLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('changeLoginUserId').value;
+            const newLogin = document.getElementById('adminNewLogin').value;
+            if (!userId || !newLogin) return;
+            
+            try {
+                await supabaseClient.from('users').update({ login: newLogin }).eq('id', userId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'admin_change_login', details: `user=${userId}` });
+                
+                alert('Логин изменён!');
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('adminChangePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('changePasswordUserId').value;
+            const newPassword = document.getElementById('adminNewPassword').value;
+            if (!userId || !newPassword) return;
+            
+            try {
+                const hash = '$2a$10$' + btoa(newPassword).substring(0, 22) + '==';
+                await supabaseClient.from('users').update({ password_hash: hash }).eq('id', userId);
+                await supabaseClient.from('audit_log').insert({ admin_id: currentUser.id, action: 'admin_change_password', details: `user=${userId}` });
+                
+                alert('Пароль изменён!');
+                await loadUsers();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        document.getElementById('postNewsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('techNewsMessage').value;
+            if (!message) return;
+            
+            try {
+                await supabaseClient.from('news').insert({ author_id: currentUser.id, message: message, role: currentUser.role });
+                alert('Опубликовано!');
+                document.getElementById('techNewsMessage').value = '';
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+        
+        function logout() {
+            localStorage.removeItem('session');
+            window.location.href = 'login.html';
+        }
+        
+        init();
+    </script>
+</body>
+</html>

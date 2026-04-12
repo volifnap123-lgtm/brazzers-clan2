@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAZZERS — Вход</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0fdf4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .form {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            color: #16a34a;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        button:hover { background: #15803d; }
+        .error {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form">
+        <h1>BRAZZERS</h1>
+        <div id="error" class="error" style="display: none;"></div>
+        <form id="loginForm">
+            <input type="text" id="login" placeholder="Логин" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const { createClient } = supabase;
+        const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error');
+            errorEl.style.display = 'none';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('login', login)
+                    .single();
+                
+                if (error || !data) {
+                    errorEl.textContent = 'Пользователь не найден';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                const passwordMatch = bcrypt.hashpw(password, data.password_hash) === data.password_hash || 
+                                data.password_hash.startsWith('$2') && bcrypt.compareSync(password, data.password_hash);
+                
+                if (!passwordMatch && !password.startsWith('$2')) {
+                    const testHash = bcrypt.hashpw(password, '$2a$10$test');
+                    if (data.password_hash !== testHash) {
+                        errorEl.textContent = 'Неверный пароль';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                }
+
+                if (!bcrypt.compareSync(password, data.password_hash)) {
+                    errorEl.textContent = 'Неверный пароль';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                localStorage.setItem('session', JSON.stringify(data));
+
+                if (data.role === 'admin2') {
+                    window.location.href = 'tech.html';
+                } else if (data.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                errorEl.textContent = 'Ошибка: ' + err.message;
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
