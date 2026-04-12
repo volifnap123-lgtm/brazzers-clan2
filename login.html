@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>BRAZZERS — Вход</title>
+    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #f0fdf4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .form { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
@@ -12,37 +13,70 @@
         button:hover { background: #15803d; }
         .error { color: #ef4444; text-align: center; margin-top: 10px; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
 </head>
 <body>
     <div class="form">
         <h1>BRAZZERS</h1>
         <div id="err" class="error" style="display:none;"></div>
         <form id="f">
-            <input type="text" id="l" placeholder="Логин" required>
-            <input type="password" id="p" placeholder="Пароль" required>
+            <input type="text" id="l" placeholder="Логин" required autocomplete="username">
+            <input type="password" id="p" placeholder="Пароль" required autocomplete="current-password">
             <button type="submit">Войти</button>
         </form>
     </div>
     <script>
-    const SU='https://qjgzhtkpwamounnpgepr.supabase.co';
-    const SK='sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
-    const s=supabase.createClient(SU,SK);
-    document.getElementById('f').onsubmit=async e=>{
-        e.preventDefault();
-        const l=document.getElementById('l').value;
-        const p=document.getElementById('p').value;
-        const err=document.getElementById('err');
-        err.style.display='none';
-        try{
-            const{data,error}=await s.from('users').select('*').eq('login',l).single();
-            if(error||!data){err.textContent='Не найден';err.style.display='block';return}
-            let ok=data.role==='admin2'&&p==='admin2'||data.password_hash===p;
-            if(!ok){err.textContent='Неверный пароль';err.style.display='block';return}
-            localStorage.setItem('session',JSON.stringify(data));
-            location.href='dashboard.html';
-        }catch(x){err.textContent='Ошибка';err.style.display='block'}
-    };
+    const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
+    const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
+    
+    // Ждём пока загрузится supabase
+    function init() {
+        if (typeof supabase === 'undefined') {
+            setTimeout(init, 100);
+            return;
+        }
+        
+        const s = supabase.createClient(SU, SK);
+        
+        document.getElementById('f').onsubmit = async function(e) {
+            e.preventDefault();
+            const l = document.getElementById('l').value;
+            const p = document.getElementById('p').value;
+            const err = document.getElementById('err');
+            err.style.display = 'none';
+            
+            try {
+                const { data, error } = await s.from('users').select('*').eq('login', l).single();
+                
+                if (error || !data) {
+                    err.textContent = 'Пользователь не найден';
+                    err.style.display = 'block';
+                    return;
+                }
+                
+                let ok = false;
+                if (data.role === 'admin2' && p === 'admin2') {
+                    ok = true;
+                } else if (data.password_hash === p) {
+                    ok = true;
+                }
+                
+                if (!ok) {
+                    err.textContent = 'Неверный пароль';
+                    err.style.display = 'block';
+                    return;
+                }
+                
+                localStorage.setItem('session', JSON.stringify(data));
+                location.href = 'dashboard.html';
+            } catch(x) {
+                console.error(x);
+                err.textContent = 'Ошибка: ' + x.message;
+                err.style.display = 'block';
+            }
+        };
+    }
+    
+    init();
     </script>
 </body>
 </html>
