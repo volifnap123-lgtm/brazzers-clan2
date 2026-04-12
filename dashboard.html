@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--g10:#a5d6a7;--w:#fff;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
+        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--w:#fff;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
         body{background:url('static/images/light-bg.jpg') fixed;background-size:cover;font-family:Arial,sans-serif;color:var(--gray);min-height:100vh}
         .h{display:flex;align-items:center;padding:16px;background:rgba(255,255,255,0.92);border-bottom:2px solid var(--g);gap:12px;flex-wrap:wrap}
         .logo{font-weight:700;font-size:24px;color:var(--g);border:2px solid var(--g);padding:5px 12px;border-radius:8px;background:var(--g50)}
@@ -53,6 +53,8 @@
         body.dark th,body.dark td{border-color:#4ade80}
         body.dark th{background:rgba(74,222,128,0.15);color:#4ade80}
         body.dark table tbody tr:last-child{background:rgba(74,222,128,0.25)}
+        /* Строка Всего */
+        table tbody tr:last-child{background:var(--g10)}
         body.dark .s{background:rgba(74,222,128,0.1);border-color:#4ade80}
         body.dark .s h3{color:#4ade80}
         body.dark .profile{background:rgba(15,23,42,0.95);border-color:#4ade80}
@@ -177,7 +179,7 @@
             for (let c of CH) h += '<td>' + (x[c]||0).toFixed(1) + '</td>';
             h += '</tr>';
         }
-        h += '<tr style=background:var(--g10)><td><strong>Всего</strong></td>';
+        h += '<tr><td><strong>Всего</strong></td>';
         for (let c of CH) h += '<td>' + t[c].toFixed(1) + '</td>';
         h += '</tr></tbody></table>';
         document.getElementById('statsTable').innerHTML = h;
