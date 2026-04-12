@@ -8,102 +8,240 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0}
-        body{background:#f0fdf4;color:var(--gray);font-family:Arial,sans-serif;min-height:100vh;padding:15px}
+        :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
+        body{background:var(--g50);color:var(--gray);font-family:Arial,sans-serif;min-height:100vh;padding:15px}
         body.dark{background:#0f172a;color:#e2e8f0}
         .h{display:flex;justify-content:space-between;margin-bottom:25px;padding-bottom:12px;border-bottom:2px solid var(--g);flex-wrap:wrap;gap:10px}
+        .h h1{color:var(--g2)}
         .btn{background:var(--g);color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+        .btn:hover{background:var(--g2)}
+        .btn-red{background:#ef4444}
+        .btn-red:hover{background:#dc2626}
         .section{background:var(--g50);padding:18px;border-radius:12px;margin-bottom:20px;border:1px solid var(--b)}
         body.dark .section{background:rgba(74,222,128,0.1);border-color:#4ade80}
         body.dark .h{border-color:#4ade80}
+        body.dark .h h1{color:#4ade80}
         body.dark .btn{background:#4ade80;color:#0f172a}
-        table{width:100%;border-collapse:collapse}
+        body.dark .btn-red{background:#ef4444;color:white}
+        table{width:100%;border-collapse:collapse;margin:12px 0}
         th,td{padding:8px;text-align:center;border:1px solid var(--b)}
         body.dark th,body.dark td{border-color:#4ade80}
         th{background:var(--g100)}
         body.dark th{background:rgba(74,222,128,0.15)}
         input,select,textarea{width:100%;padding:8px;margin:4px 0;border:1px solid var(--b);border-radius:4px}
+        body.dark input,body.dark select,body.dark textarea{border-color:#4ade80;background:rgba(30,41,59,0.8);color:#e2e8f0}
+        .cat-header{color:white;font-weight:bold;text-align:center}
+        .cat-bulldozer{background:var(--bulldozer)}
+        .cat-caravan{background:var(--caravan)}
+        .cat-newland{background:var(--newland)}
+        .cat-core{background:var(--core)}
+        .row{display:flex;gap:8px;flex-wrap:wrap}
+        .col{flex:1;min-width:120px}
     </style>
 </head>
 <body>
     <div class="h">
         <h1>АДМИН-ПАНЕЛЬ</h1>
-        <div>
-            <button onclick="location.href='dashboard.html'">← Назад</button>
-            <button onclick="logout()">Выйти</button>
+        <div style="display:flex;gap:8px">
+            <button class="btn" onclick="location.href='dashboard.html'">← Назад</button>
+            <button class="btn" onclick="toggleTheme()">🌓</button>
+            <button class="btn btn-red" onclick="logout()">Выйти</button>
         </div>
     </div>
+    
+    <div class="section">
+        <h2>Выдать проценты одному игроку</h2>
+        <select id="singleUser"><option value="">Выберите игрока</option></select>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Категория</th>
+                    <th colspan="3" class="cat-header cat-bulldozer">Бульдозер</th>
+                    <th colspan="4" class="cat-header cat-caravan">Караван</th>
+                    <th colspan="4" class="cat-header cat-newland">Новая Земля</th>
+                    <th rowspan="2" class="cat-header cat-core">Ядро</th>
+                </tr>
+                <tr>
+                    <th>Кусок1</th><th>Кусок2</th><th>В.Рад1</th>
+                    <th>Кусок3</th><th>Кусок4</th><th>Кусок5</th><th>В.Рад2</th>
+                    <th>Кусок6</th><th>Кусок7</th><th>Кусок8</th><th>В.Рад3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>%</strong></td>
+                    <td><input type="number" step="0.1" id="chunk1" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk2" value="0"></td>
+                    <td><input type="number" step="0.1" id="vr1" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk3" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk4" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk5" value="0"></td>
+                    <td><input type="number" step="0.1" id="vr2" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk6" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk7" value="0"></td>
+                    <td><input type="number" step="0.1" id="chunk8" value="0"></td>
+                    <td><input type="number" step="0.1" id="vr3" value="0"></td>
+                    <td><input type="number" step="0.1" id="core" value="0"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn" onclick="givePercentSingle()" style="margin-top:8px">Выдать проценты</button>
+    </div>
+    
+    <div class="section">
+        <h2>Выдать проценты группе (100% делится)</h2>
+        <select id="multiUser" multiple size="5"><option value="">Выберите игроков</option></select>
+        <select id="multiChunk">
+            <option value="chunk1">Кусок1</option>
+            <option value="chunk2">Кусок2</option>
+            <option value="chunk3">Кусок3</option>
+            <option value="chunk4">Кусок4</option>
+            <option value="chunk5">Кусок5</option>
+            <option value="chunk6">Кусок6</option>
+            <option value="chunk7">Кусок7</option>
+            <option value="chunk8">Кусок8</option>
+            <option value="vr1">В.Рад1</option>
+            <option value="vr2">В.Рад2</option>
+            <option value="vr3">В.Рад3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <button class="btn" onclick="givePercentMultiple()" style="margin-top:8px">Разделить 100%</button>
+    </div>
+    
+    <div class="section">
+        <h2>Передать проценты</h2>
+        <select id="fromUser"><option value="">От кого</option></select>
+        <select id="toUser"><option value="">Кому</option></select>
+        <select id="transferChunk">
+            <option value="chunk1">Кусок1</option>
+            <option value="chunk2">Кусок2</option>
+            <option value="chunk3">Кусок3</option>
+            <option value="chunk4">Кусок4</option>
+            <option value="chunk5">Кусок5</option>
+            <option value="chunk6">Кусок6</option>
+            <option value="chunk7">Кусок7</option>
+            <option value="chunk8">Кусок8</option>
+            <option value="vr1">В.Рад1</option>
+            <option value="vr2">В.Рад2</option>
+            <option value="vr3">В.Рад3</option>
+            <option value="core">Ядро</option>
+        </select>
+        <input type="number" step="0.1" id="transferAmount" placeholder="Сколько %">
+        <button class="btn" onclick="transferPercent()" style="margin-top:8px">Передать</button>
+    </div>
+    
+    <div class="section">
+        <h2>Общак</h2>
+        <div id="commonFund">Загрузка...</div>
+    </div>
+    
+    <div class="section">
+        <h2>Остаток</h2>
+        <div id="remainder">Загрузка...</div>
+    </div>
+    
     <div class="section">
         <h2>Запросы на куски</h2>
         <div id="chunkRequests">Загрузка...</div>
     </div>
+    
     <div class="section">
         <h2>Запросы на смену данных</h2>
         <div id="changeRequests">Загрузка...</div>
     </div>
+    
     <div class="section">
         <h2>Пользователи</h2>
         <div id="users">Загрузка...</div>
     </div>
+    
+    <div class="section">
+        <h2>Новости</h2>
+        <textarea id="newsMessage" placeholder="Введите сообщение..." style="height:100px"></textarea>
+        <button class="btn" onclick="postNews()" style="margin-top:8px">Опубликовать</button>
+    </div>
+    
     <script>
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
-    
-    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+    let supabaseClient = null;
+    let allUsers = [];
     
     function init() {
+        console.log('Админ-панель загружается...');
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
-        const s = supabase.createClient(SU, SK);
+        
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+        
         const user = JSON.parse(localStorage.getItem('session'));
         if (!user || (user.role !== 'admin' && user.role !== 'admin2')) { location.href = 'login.html'; return; }
         
-        loadRequests(s);
+        supabaseClient = supabase.createClient(SU, SK);
+        loadAll();
     }
     
-    async function loadRequests(s) {
-        console.log('Загружаю chunk_requests...');
+    async function loadAll() {
+        console.log('Загрузка данных...');
+        
+        const { data: users } = await supabaseClient.from('users').select('*');
+        allUsers = users || [];
+        console.log('Users:', allUsers);
+        
+        const singleSel = document.getElementById('singleUser');
+        const multiSel = document.getElementById('multiUser');
+        const fromSel = document.getElementById('fromUser');
+        const toSel = document.getElementById('toUser');
+        
+        let opts = '<option value="">Выберите</option>';
+        for (let u of allUsers) {
+            opts += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+        }
+        singleSel.innerHTML = opts;
+        multiSel.innerHTML = opts;
+        fromSel.innerHTML = opts;
+        toSel.innerHTML = opts;
+        
+        const { data: cf } = await supabaseClient.from('common_fund').select('*').limit(1);
+        let cfData = cf?.[0] || {};
+        let cfHtml = '<table><tr><th>Категория</th><th>Кусок1</th><th>Кусок2</th><th>В.Рад1</th><th>Кусок3</th><th>Кусок4</th><th>Кусок5</th><th>В.Рад2</th><th>Кусок6</th><th>Кусок7</th><th>Кусок8</th><th>В.Рад3</th><th>Ядро</th></tr>';
+        cfHtml += '<tr><td><strong>Общак</strong></td>';
+        for (let c of CH) cfHtml += '<td>'+(cfData[c]||0)+'</td>';
+        cfHtml += '</tr></table>';
+        document.getElementById('commonFund').innerHTML = cfHtml;
+        
+        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        let remData = rem?.[0] || {};
+        let remHtml = '<table>';
+        for (let c of CH) remHtml += '<tr><td>'+c+'</td><td>'+(remData[c]||0)+'</td></tr>';
+        remHtml += '</table>';
+        document.getElementById('remainder').innerHTML = remHtml;
+        
         let chunkReqs = [];
         try {
-            const result = await s.from('chunk_requests').select('*').eq('status', 'pending');
-            console.log('chunk result:', result);
-            if (result.error) {
-                console.error('Ошибка chunk:', result.error);
-            } else {
-                chunkReqs = result.data || [];
-            }
-        } catch (e) {
-            console.error('Исключение chunk:', e);
-        }
+            const cr = await supabaseClient.from('chunk_requests').select('*').eq('status', 'pending');
+            chunkReqs = cr.data || [];
+        } catch(e) { console.error(e); }
         
         let h = '';
-        if (!chunkReqs || chunkReqs.length === 0) h = 'Нет запросов';
+        if (!chunkReqs.length) h = 'Нет запросов';
         for (let req of chunkReqs) {
             h += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
-            h += 'User ID: ' + req.user_id;
-            h += ' хочет ' + req.chunk_name;
+            h += 'User ID: ' + req.user_id + ' хочет ' + req.chunk_name;
             h += ' <button onclick="approveChunk('+req.id+')">Выдать</button>';
             h += ' <button onclick="rejectChunk('+req.id+')">Отказ</button>';
             h += '</div>';
         }
         document.getElementById('chunkRequests').innerHTML = h;
         
-        console.log('Загружаю change_requests...');
         let changeReqs = [];
         try {
-            const result2 = await s.from('change_requests').select('*').eq('status', 'pending');
-            console.log('change result:', result2);
-            if (result2.error) {
-                console.error('Ошибка change:', result2.error);
-            } else {
-                changeReqs = result2.data || [];
-            }
-        } catch (e) {
-            console.error('Исключение change:', e);
-        }
+            const cr2 = await supabaseClient.from('change_requests').select('*').eq('status', 'pending');
+            changeReqs = cr2.data || [];
+        } catch(e) { console.error(e); }
         
         let h2 = '';
-        if (!changeReqs || changeReqs.length === 0) h2 = 'Нет запросов';
+        if (!changeReqs.length) h2 = 'Нет запросов';
         for (let req of changeReqs) {
             h2 += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
             h2 += 'User ID: ' + req.user_id;
@@ -114,45 +252,146 @@
         }
         document.getElementById('changeRequests').innerHTML = h2;
         
-        const { data: users } = await s.from('users').select('*');
-        let h3 = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
-        for (let u of (users || [])) {
-            h3 += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
+        let usersHtml = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
+        for (let u of allUsers) {
+            usersHtml += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
         }
-        h3 += '</table>';
-        document.getElementById('users').innerHTML = h3;
+        usersHtml += '</table>';
+        document.getElementById('users').innerHTML = usersHtml;
+        
+        console.log('Данные загружены!');
+    }
+    
+    async function givePercentSingle() {
+        const userId = document.getElementById('singleUser').value;
+        if (!userId) return alert('Выберите игрока!');
+        
+        let vals = {};
+        for (let c of CH) {
+            vals[c] = parseFloat(document.getElementById(c).value) || 0;
+        }
+        
+        const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).single();
+        if (existing) {
+            for (let c of CH) {
+                existing[c] = (existing[c] || 0) + vals[c];
+            }
+            await supabaseClient.from('stats').update(existing).eq('user_id', userId);
+        } else {
+            await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
+        }
+        
+        for (let c of CH) document.getElementById(c).value = '0';
+        alert('Проценты выданы!');
+        loadAll();
+    }
+    
+    async function givePercentMultiple() {
+        const sel = document.getElementById('multiUser');
+        const userIds = Array.from(sel.selectedOptions).map(o => o.value);
+        if (!userIds.length) return alert('Выберите игроков!');
+        
+        const chunk = document.getElementById('multiChunk').value;
+        const amount = 100 / userIds.length;
+        
+        for (let uid of userIds) {
+            const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).single();
+            if (existing) {
+                existing[chunk] = (existing[chunk] || 0) + amount;
+                await supabaseClient.from('stats').update(existing).eq('user_id', uid);
+            } else {
+                let vals = {}; for (let c of CH) vals[c] = 0;
+                vals[chunk] = amount;
+                await supabaseClient.from('stats').insert({ user_id: uid, ...vals });
+            }
+        }
+        
+        alert('Проценты разделены!');
+        loadAll();
+    }
+    
+    async function transferPercent() {
+        const fromId = document.getElementById('fromUser').value;
+        const toId = document.getElementById('toUser').value;
+        const chunk = document.getElementById('transferChunk').value;
+        const amount = parseFloat(document.getElementById('transferAmount').value);
+        
+        if (!fromId || !toId || !amount) return alert('Заполните все поля!');
+        
+        const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).single();
+        const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).single();
+        
+        if (!fromUser || (fromUser[chunk] || 0) < amount) return alert('Недостаточно процентов!');
+        
+        let fromVals = fromUser || {};
+        let toVals = toUser || {};
+        
+        fromVals[chunk] = (fromVals[chunk] || 0) - amount;
+        toVals[chunk] = (toVals[chunk] || 0) + amount;
+        
+        await supabaseClient.from('stats').update(fromVals).eq('user_id', fromId);
+        await supabaseClient.from('stats').update(toVals).eq('user_id', toId);
+        
+        await supabaseClient.from('transfers').insert({
+            from_user: fromId,
+            to_user: toId,
+            chunk_name: chunk,
+            amount: amount
+        });
+        
+        alert('Проценты переданы!');
+        loadAll();
     }
     
     async function approveChunk(id) {
-        const s = supabase.createClient(SU, SK);
-        const { data: req } = await s.from('chunk_requests').select('*').eq('id', id).single();
-        await s.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
-        await s.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
+        const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
+        await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
+        await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
         location.reload();
     }
     
     async function rejectChunk(id) {
-        const s = supabase.createClient(SU, SK);
-        const { data: req } = await s.from('chunk_requests').select('*').eq('id', id).single();
-        let vals = {}; for (let c of CH) vals[c] = 0;
+        const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
+        let vals = {};
+        for (let c of CH) vals[c] = 0;
         vals[req.chunk_name] = 100;
-        await s.from('stats').insert({ user_id: req.user_id, ...vals });
-        await s.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
+        await supabaseClient.from('stats').insert({ user_id: req.user_id, ...vals });
+        await supabaseClient.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
         location.reload();
     }
     
     async function approveChange(id) {
-        const s = supabase.createClient(SU, SK);
-        const { data: req } = await s.from('change_requests').select('*').eq('id', id).single();
-        if (req.new_login) await s.from('users').update({ login: req.new_login }).eq('id', req.user_id);
-        await s.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
+        if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
         location.reload();
     }
     
     async function rejectChange(id) {
-        const s = supabase.createClient(SU, SK);
-        await s.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
         location.reload();
+    }
+    
+    async function postNews() {
+        const user = JSON.parse(localStorage.getItem('session'));
+        const msg = document.getElementById('newsMessage').value;
+        if (!msg) return;
+        
+        await supabaseClient.from('news').insert({ author_id: user.id, message: msg, role: user.role });
+        
+        await supabaseClient.from('audit_log').insert({
+            admin_id: user.id,
+            action: 'post_news',
+            details: 'msg=' + (msg.length > 30 ? msg.substring(0,30)+'...' : msg)
+        });
+        
+        document.getElementById('newsMessage').value = '';
+        alert('Опубликовано!');
+    }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
     }
     
     function logout() { localStorage.removeItem('session'); location.href = 'login.html'; }
