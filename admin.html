@@ -56,7 +56,7 @@
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
         const s = supabase.createClient(SU, SK);
         const user = JSON.parse(localStorage.getItem('session'));
-        if (!user || user.role !== 'admin') { location.href = 'login.html'; return; }
+        if (!user || (user.role !== 'admin' && user.role !== 'admin2')) { location.href = 'login.html'; return; }
         
         loadRequests(s);
     }
