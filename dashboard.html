@@ -218,20 +218,6 @@ async function loadCommon() {
         document.getElementById('commonTable').innerHTML = h;
         console.log('✅ Общая таблица загружена');
     }
-            h += '<td><strong>' + total.toFixed(1) + '</strong></td></tr>';
-        }
-        h += '</tbody></table>';
-        document.getElementById('commonTable').innerHTML = h;
-        
-        // 6б13
-        const { data: issued } = await s.from('issued_chunks').select('chunk_name').eq('user_id', user.id);
-        let cts = {}; for (let c of CH) cts[c] = 0;
-        for (let i of (issued || [])) cts[i.chunk_name] = (cts[i.chunk_name] || 0) + 1;
-        let ctsArr = Object.values(cts); let min = ctsArr.length > 0 ? Math.min(...ctsArr) : 0;
-        document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + (isFinite(min)?min:0);
-        
-        console.log('✅ Статистика загружена');
-    }
     
     function openModal(name) { console.log('📂 Открыть:', name); document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); }
     function closeModal(name) { console.log('📕 Закрыть:', name); document.getElementById(name + '-modal').classList.remove('open'); }
