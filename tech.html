@@ -139,13 +139,13 @@
             if (auditErr) console.error('Ошибка audit:', auditErr);
             
             console.log('Загружаю change_requests...');
-            let changes = null;
+            let changes = [];
             try {
                 const result = await supabaseClient.from('change_requests').select('*').eq('status', 'pending');
                 if (result.error) {
                     console.error('Ошибка changes:', result.error);
                 } else {
-                    changes = result.data;
+                    changes = result.data || [];
                     console.log('Changes:', changes);
                 }
             } catch (e) {
@@ -153,6 +153,8 @@
             }
             
             // Заполняем селекты
+            console.log('users:', users);
+            console.log('audit:', audit);
             let delSel = document.getElementById('deleteUser');
             let proSel = document.getElementById('promoteUser');
             let demSel = document.getElementById('demoteUser');
@@ -184,7 +186,7 @@
             
             // Изменения
             let changeHtml = '';
-            if (!changes || !Array.isArray(changes) || changes.length === 0) {
+            if (!changes || changes.length === 0) {
                 changeHtml = 'Нет заявок';
             } else {
                 for (let c of changes) {
