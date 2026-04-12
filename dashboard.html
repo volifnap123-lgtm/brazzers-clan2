@@ -9,8 +9,7 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--w:#fff;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
-        body{background:url('https://volifnap123-lgtm.github.io/brazzers-clan2/static/images/light-bg.jpg') fixed;background-size:cover;font-family:Inter,Arial,sans-serif;color:var(--gray);min-height:100vh}
-        body.dark{background:url('https://volifnap123-lgtm.github.io/brazzers-clan2/static/images/dark-bg.jpg') fixed;background-size:cover;color:#e2e8f0}
+        body{background:url('static/images/light-bg.jpg') fixed;background-size:cover;font-family:Arial,sans-serif;color:var(--gray);min-height:100vh}
         .h{display:flex;align-items:center;padding:16px;background:rgba(255,255,255,0.92);border-bottom:2px solid var(--g);gap:12px;flex-wrap:wrap}
         .logo{font-weight:700;font-size:24px;color:var(--g);border:2px solid var(--g);padding:5px 12px;border-radius:8px;background:var(--g50)}
         .nav{flex:1;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
@@ -40,6 +39,22 @@
         
         .overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.2);z-index:999;display:none}
         .overlay.open{display:block}
+        
+        /* DARK THEME */
+        body.dark{background:url('static/images/dark-bg.jpg') fixed;background-size:cover;color:#e2e8f0}
+        body.dark .h{background:rgba(15,23,42,0.95)}
+        body.dark .logo{color:#4ade80;border-color:#4ade80;background:rgba(74,222,128,0.1)}
+        body.dark .nav button{color:#4ade80}
+        body.dark .nav button:hover{background:rgba(74,222,128,0.2)}
+        body.dark .modal-content{background:rgba(15,23,42,0.95)}
+        body.dark .modal-header{border-color:#4ade80}
+        body.dark .modal-title{color:#4ade80}
+        body.dark .close-btn{background:#4ade80;color:#0f172a}
+        body.dark th,body.dark td{border-color:#4ade80}
+        body.dark th{background:rgba(74,222,128,0.15);color:#4ade80}
+        body.dark .s{background:rgba(74,222,128,0.1);border-color:#4ade80}
+        body.dark .s h3{color:#4ade80}
+        body.dark .profile{background:rgba(15,23,42,0.95);border-color:#4ade80}
     </style>
 </head>
 <body>
