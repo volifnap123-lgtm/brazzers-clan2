@@ -4,195 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAZZERS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
     <style>
-        :root {
-            --green-500: #16a34a;
-            --green-600: #15803d;
-            --green-100: #dcfce7;
-            --green-50: #f0fdf4;
-            --white: #ffffff;
-            --gray-900: #111827;
-            --border-color: #bbf7d0;
-            --bulldozer: #f59e0b;
-            --caravan: #4ade80;
-            --newland: #3b82f6;
-            --core: #ef4444;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--green-50);
-            color: var(--gray-900);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: rgba(255,255,255,0.95);
-            border-bottom: 2px solid var(--green-500);
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .logo {
-            font-weight: 700;
-            font-size: 24px;
-            color: var(--green-600);
-            border: 2px solid var(--green-500);
-            padding: 5px 12px;
-            border-radius: 8px;
-        }
-        .nav-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto; }
-        .nav-btn {
-            background: transparent;
-            color: var(--green-600);
-            border: none;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 6px;
-        }
-        .nav-btn:hover { background: var(--green-100); }
-        .logout-btn {
-            color: #ef4444;
-            background: none;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 6px 12px;
-        }
-        .main { padding: 20px; }
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-color);
-        }
-        .section h2 {
-            color: var(--green-600);
-            margin-bottom: 12px;
-            font-size: 18px;
-        }
-        .btn { background: var(--green-500); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn:hover { background: var(--green-600); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: center; border: 1px solid var(--border-color); }
-        th { background: var(--green-100); }
-        .profile-btn {
-            background: var(--green-500);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            margin-top: 16px;
-            cursor: pointer;
-        }
+        body{font-family:Arial,background:#f0fdf4;margin:0;padding:0}
+        .h{display:flex;align-items:center;padding:16px;background:rgba(255,255,255,0.95);border-bottom:2px solid #16a34a;gap:12px}
+        .logo{font-weight:700;font-size:24px;color:#16a34a;border:2px solid #16a34a;padding:5px 12px;border-radius:8px}
+        .nav{flex:1;display:flex;gap:8px;justify-content:center}
+        .nav button{background:0;border:0;color:#16a34a;font-weight:600;font-size:14px;cursor:pointer;padding:6px 12px;border-radius:6px}
+        .nav button:hover{background:#dcfce7}
+        .out{color:#ef4444;background:0;border:0;font-weight:600;cursor:pointer}
+        .m{padding:20px}
+        .s{background:white;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #bbf7d0}
+        .s h2{color:#16a34a;margin:0 0 12px 0}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:8px;text-align:center;border:1px solid #bbf7d0}
+        th{background:#dcfce7}
+        .btn{background:#16a34a;color:white;border:0;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer}
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="h">
         <div class="logo">BRAZZERS</div>
-        <div class="nav-buttons">
-            <button class="nav-btn" onclick="location.reload()">📊 Статистика</button>
-            <button class="nav-btn" onclick="loadCommon()">📋 Общая</button>
-            <button class="nav-btn" onclick="loadNews()">📰 Новости</button>
+        <div class="nav">
+            <button onclick="location.reload()">📊 Статистика</button>
+            <button onclick="loadC()">📋 Общая</button>
+            <button onclick="loadN()">📰 Новости</button>
         </div>
-        <button class="logout-btn" onclick="logout()">🚪 Выйти</button>
+        <button class="out" onclick="logout()">🚪 Выйти</button>
     </div>
-    
-    <div class="main">
-        <div class="section">
-            <h2 id="welcome">Добро пожаловать!</h2>
-            <div>Ваша статистика:</div>
-            <div id="stats">Загрузка...</div>
+    <div class="m">
+        <div class="s">
+            <h2 id="w">Добро пожаловать!</h2>
+            <div id="st">Загрузка...</div>
         </div>
-        
-        <div class="section" id="adminSection" style="display:none;">
-            <h2>Админ-панель</h2>
-            <button class="btn" onclick="goAdmin()">Перейти</button>
+        <div class="s" id="as" style="display:none;">
+            <h2>Админ</h2>
+            <button class="btn" onclick="goA()">Перейти</button>
         </div>
     </div>
-    
-    <div style="position: fixed; bottom: 20px; right: 20px;">
-        <button onclick="toggleTheme()" style="padding:8px 16px; background:var(--green-500); color:white; border:none; border-radius:6px; cursor:pointer;">🌓</button>
-    </div>
-
-    <script src="js/config.js"></script>
     <script>
-        const { createClient } = supabase;
-        const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        
-        let currentUser = null;
-        
-        async function init() {
-            const session = JSON.parse(localStorage.getItem('session'));
-            if (!session) { window.location.href = 'login.html'; return; }
-            currentUser = session;
-            
-            document.getElementById('welcome').textContent = 'Привет, ' + session.username + '!';
-            
-            if (session.role === 'admin' || session.role === 'admin2') {
-                document.getElementById('adminSection').style.display = 'block';
-            }
-            
-            await loadStats();
-        }
-        
-        async function loadStats() {
-            const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', currentUser.id);
-            
-            let total = {};
-            for (let c of CONFIG.CHUNKS) total[c] = 0;
-            for (let s of (stats || [])) {
-                for (let c of CONFIG.CHUNKS) total[c] += s[c] || 0;
-            }
-            
-            let html = '<table><tr><th>Кусок</th><th>Процент</th></tr>';
-            for (let c of CONFIG.CHUNKS) {
-                html += '<tr><td>' + c + '</td><td>' + total[c].toFixed(1) + '%</td></tr>';
-            }
-            html += '</table>';
-            
-            document.getElementById('stats').innerHTML = html;
-        }
-        
-        async function loadCommon() {
-            const { data: users } = await supabaseClient.from('users').select('*');
-            alert('Всего пользователей: ' + (users || []).length);
-        }
-        
-        async function loadNews() {
-            const { data: news } = await supabaseClient.from('news').select('*').order('created_at', { ascending: false });
-            if (!news || news.length === 0) {
-                alert('Новостей пока нет');
-            } else {
-                alert(news[0].message);
-            }
-        }
-        
-        function goAdmin() {
-            if (currentUser.role === 'admin2') {
-                window.location.href = 'tech.html';
-            } else {
-                window.location.href = 'admin.html';
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('session');
-            window.location.href = 'login.html';
-        }
-        
-        function toggleTheme() {
-            alert('Тема');
-        }
-        
-        init();
+    const SU='https://qjgzhtkpwamounnpgepr.supabase.co';
+    const SK='sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
+    const CH=['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
+    const s=supabase.createClient(SU,SK);
+    let u=null;
+    async function init(){
+        let ss=JSON.parse(localStorage.getItem('session'));
+        if(!ss){location.href='login.html';return}
+        u=ss;document.getElementById('w').textContent='Привет, '+u.username+'!';
+        if(u.role==='admin'||u.role==='admin2')document.getElementById('as').style.display='block';
+        let{d}=await s.from('stats').select('*').eq('user_id',u.id);
+        let t=[];for(let c of CH)t[c]=0;
+        for(let x of(d||[]))for(let c of CH)t[c]+=x[c]||0;
+        let h='<table><tr><th>Кусок</th><th>%</th></tr>';
+        for(let c of CH)h+='<tr><td>'+c+'</td><td>'+t[c].toFixed(1)+'</td></tr>';
+        h+='</table>';document.getElementById('st').innerHTML=h;
+    }
+    async function loadC(){let{data}=await s.from('users').select('*');alert('Юзеров: '+(data||[]).length)}
+    async function loadN(){let{data}=await s.from('news').select('*').order('created_at',{ascending:false});alert(data&&data[0]?data[0].message:'Нет')}
+    function goA(){location.href=u.role==='admin2'?'tech.html':'admin.html'}
+    function logout(){localStorage.removeItem('session');location.href='login.html'}
+    init();
     </script>
 </body>
 </html>
