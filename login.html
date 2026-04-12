@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>BRAZZERS — Вход</title>
-    <link rel="preload" href="https://unpkg.com/@supabase/supabase-js@2" as="script">
+    <link rel="preconnect" href="https://unpkg.com">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body{font-family:Arial,sans-serif;background:#f0fdf4;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
@@ -25,25 +25,58 @@
         </form>
     </div>
     <script>
+    console.log('🚀 Сайт запущен');
+    console.log('📝 Страница логин открыта');
+    
     function init() {
+        console.log('⏳ Загрузка Supabase...');
         if (typeof supabase === 'undefined') {
-            console.log('Ждём supabase...');
             setTimeout(init, 50);
             return;
         }
+        console.log('✅ Supabase загружен');
+        console.log('🔗 Подключение к БД...');
+        
         const s = supabase.createClient('https://qjgzhtkpwamounnpgepr.supabase.co','sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV');
+        console.log('✅ Подключено к БД');
+        console.log('�表格 Форма готова к входу');
+        
         f.onsubmit = async function(e) {
             e.preventDefault();
+            console.log('👤 Попытка входа...');
             btn.disabled = true;
             btn.textContent = 'Загрузка...';
+            
             const { data } = await s.from('users').select('*').eq('login', l.value).single();
-            if (!data) { err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Войти'; return; }
+            
+            if (!data) {
+                console.log('❌ Пользователь не найден');
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Войти';
+                return;
+            }
+            
+            console.log('✅ Пользователь найден:', data.username, 'роль:', data.role);
+            
             let ok = (data.role === 'admin2' && p.value === 'admin2') || data.password_hash === p.value;
-            if (!ok) { err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Войти'; return; }
+            
+            if (!ok) {
+                console.log('❌ Неверный пароль');
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Войти';
+                return;
+            }
+            
+            console.log('✅ Пароль верный');
+            console.log('💾 Сохранение сессии...');
             localStorage.setItem('session', JSON.stringify(data));
+            console.log('➡️ Переход на dashboard...');
             location.href = 'dashboard.html';
         };
     }
+    
     init();
     </script>
 </body>
