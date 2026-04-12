@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тех. режим | BRAZZERS</title>
-    <link rel="preconnect" href="https://unpkg.com">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6}
@@ -114,6 +114,7 @@
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
+    let supabaseClient = null;
     
     function init() {
         console.log('🔧 Тех. режим загружен');
@@ -124,141 +125,237 @@
         const user = JSON.parse(localStorage.getItem('session'));
         if (!user || user.role !== 'admin2') { location.href = 'login.html'; return; }
         
-        const s = supabase.createClient(SU, SK);
-        loadAll(s);
+        supabaseClient = supabase.createClient(SU, SK);
+        loadAll();
     }
     
-    async function loadAll(s) {
-        const { data: users } = await s.from('users').select('*');
-        const { data: audit } = await s.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
-        const { data: changes } = await s.from('change_requests').select('*,users(username,login)').eq('status', 'pending');
-        
-        // Заполняем селекты
-        let delSel = document.getElementById('deleteUser');
-        let proSel = document.getElementById('promoteUser');
-        let demSel = document.getElementById('demoteUser');
-        let chgSel = document.getElementById('changeUser');
-        
-        delSel.innerHTML = '<option value="">Выберите</option>';
-        proSel.innerHTML = '<option value="">Выберите (user)</option>';
-        demSel.innerHTML = '<option value="">Выберите (admin)</option>';
-        chgSel.innerHTML = '<option value="">Выберите</option>';
-        
-        let table = '<table><tr><th>Никнейм</th><th>Логин</th><th>Роль</th></tr>';
-        for (let u of (users || [])) {
-            delSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
-            if (u.role === 'user') proSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
-            if (u.role === 'admin') demSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
-            chgSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
-            table += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
+    async function loadAll() {
+        console.log('Загрузка данных...');
+        try {
+            const { data: users, error: usersErr } = await supabaseClient.from('users').select('*');
+            if (usersErr) console.error('Ошибка users:', usersErr);
+            
+            const { data: audit, error: auditErr } = await supabaseClient.from('audit_log').select('*').order('timestamp', { ascending: false }).limit(50);
+            if (auditErr) console.error('Ошибка audit:', auditErr);
+            
+            console.log('Загружаю change_requests...');
+            let changes = null;
+            try {
+                const result = await supabaseClient.from('change_requests').select('*').eq('status', 'pending');
+                if (result.error) {
+                    console.error('Ошибка changes:', result.error);
+                } else {
+                    changes = result.data;
+                    console.log('Changes:', changes);
+                }
+            } catch (e) {
+                console.error('Исключение changes:', e);
+            }
+            
+            // Заполняем селекты
+            let delSel = document.getElementById('deleteUser');
+            let proSel = document.getElementById('promoteUser');
+            let demSel = document.getElementById('demoteUser');
+            let chgSel = document.getElementById('changeUser');
+            
+            delSel.innerHTML = '<option value="">Выберите</option>';
+            proSel.innerHTML = '<option value="">Выберите (user)</option>';
+            demSel.innerHTML = '<option value="">Выберите (admin)</option>';
+            chgSel.innerHTML = '<option value="">Выберите</option>';
+            
+            let table = '<table><tr><th>Никнейм</th><th>Логин</th><th>Роль</th></tr>';
+            for (let u of (users || [])) {
+                delSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                if (u.role === 'user') proSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                if (u.role === 'admin') demSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                chgSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                table += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
+            }
+            table += '</table>';
+            document.getElementById('usersTable').innerHTML = table;
+            
+            // Аудит
+            let auditHtml = '<table><tr><th>Время</th><th>Действие</th><th>Детали</th></tr>';
+            for (let a of (audit || [])) {
+                auditHtml += '<tr><td>'+(a.timestamp||'').slice(0,16)+'</td><td>'+a.action+'</td><td>'+(a.details||'')+'</td></tr>';
+            }
+            auditHtml += '</table>';
+            document.getElementById('auditLogs').innerHTML = auditHtml;
+            
+            // Изменения
+            let changeHtml = '';
+            if (!changes || !Array.isArray(changes) || changes.length === 0) {
+                changeHtml = 'Нет заявок';
+            } else {
+                for (let c of changes) {
+                    changeHtml += '<div style="background:white;padding:12px;border-radius:8px;margin:8px 0">';
+                    changeHtml += '<strong>Пользователь ID: ' + c.user_id + '</strong>';
+                    if (c.new_login) changeHtml += '<br>Новый логин: ' + c.new_login;
+                    changeHtml += '<br><button class="btn" onclick="approveChange(' + c.id + ')">Одобрить</button> ';
+                    changeHtml += '<button class="btn btn-red" onclick="rejectChange(' + c.id + ')">Отклонить</button>';
+                    changeHtml += '</div>';
+                }
+            }
+            document.getElementById('changeRequests').innerHTML = changeHtml;
+            
+            console.log('Данные загружены успешно');
+        } catch (e) {
+            console.error('Ошибка loadAll:', e);
         }
-        table += '</table>';
-        document.getElementById('usersTable').innerHTML = table;
-        
-        // Аудит
-        let auditHtml = '<table><tr><th>Время</th><th>Действие</th><th>Детали</th></tr>';
-        for (let a of (audit || [])) {
-            auditHtml += '<tr><td>'+(a.timestamp||'').slice(0,16)+'</td><td>'+a.action+'</td><td>'+(a.details||'')+'</td></tr>';
-        }
-        auditHtml += '</table>';
-        document.getElementById('auditLogs').innerHTML = auditHtml;
-        
-        // Изменения
-        let changeHtml = '';
-        if (!changes || changes.length === 0) changeHtml = 'Нет заявок';
-        for (let c of changes) {
-            changeHtml += '<div style="background:white;padding:12px;border-radius:8px;margin:8px 0">';
-            changeHtml += '<strong>'+(c.users?.username||'Unknown')+'</strong> ('+(c.users?.login||'unknown')+')';
-            if (c.new_login) changeHtml += '<br>Новый логин: '+c.new_login;
-            changeHtml += '<br><button class="btn" onclick="approveChange('+c.id+')">Одобрить</button> ';
-            changeHtml += '<button class="btn btn-red" onclick="rejectChange('+c.id+')">Отклонить</button>';
-            changeHtml += '</div>';
-        }
-        document.getElementById('changeRequests').innerHTML = changeHtml;
     }
     
     async function createUser() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Создание пользователя...');
         const username = document.getElementById('newUsername').value;
         const login = document.getElementById('newLogin').value;
         const password = document.getElementById('newPassword').value;
         if (!username || !login || !password) return alert('Заполните все поля!');
-        await s.from('users').insert({ username, login, password_hash: password, role: 'user' });
-        alert('Создан!');
-        loadAll(s);
+        
+        try {
+            const hash = btoa(password);
+            console.log('Хеш пароля:', hash);
+            
+            const { error } = await supabaseClient.from('users').insert({ 
+                username, 
+                login, 
+                password_hash: hash, 
+                role: 'user' 
+            });
+            
+            if (error) {
+                console.error('Ошибка создания пользователя:', error);
+                alert('Ошибка: ' + error.message);
+                return;
+            }
+            
+            console.log('Пользователь создан, добавляю в аудит...');
+            
+            const user = JSON.parse(localStorage.getItem('session'));
+            await supabaseClient.from('audit_log').insert({ 
+                admin_id: user.id, 
+                action: 'create_user', 
+                details: 'login=' + login 
+            });
+            
+            console.log('Аудит записан');
+            
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newLogin').value = '';
+            document.getElementById('newPassword').value = '';
+            
+            console.log('✅ Пользователь ' + login + ' успешно создан!');
+            loadAll();
+        } catch (e) {
+            console.error('Ошибка:', e);
+            alert('Ошибка: ' + e.message);
+        }
     }
     
     async function deleteUser() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Удаление пользователя...');
         const id = document.getElementById('deleteUser').value;
         if (!id) return;
         if (!confirm('Удалить пользователя и все его данные?')) return;
-        await s.from('users').delete().eq('id', id);
-        await s.from('stats').delete().eq('user_id', id);
-        alert('Удалён!');
-        loadAll(s);
+        
+        const { data: delUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
+        
+        await supabaseClient.from('users').delete().eq('id', id);
+        await supabaseClient.from('stats').delete().eq('user_id', id);
+        
+        const user = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({ 
+            admin_id: user.id, 
+            action: 'delete_user', 
+            details: 'login=' + delUser.login 
+        });
+        
+        console.log('✅ Пользователь удалён');
+        loadAll();
     }
     
     async function promoteToAdmin() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Повышение до админа...');
         const id = document.getElementById('promoteUser').value;
         if (!id) return;
-        await s.from('users').update({ role: 'admin' }).eq('id', id).eq('role', 'user');
-        alert('Сделан админом!');
-        loadAll(s);
+        
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
+        await supabaseClient.from('users').update({ role: 'admin' }).eq('id', id).eq('role', 'user');
+        
+        const user = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({ 
+            admin_id: user.id, 
+            action: 'promote_user', 
+            details: 'login=' + targetUser.login 
+        });
+        
+        console.log('✅ Пользователь повышен до админа');
+        loadAll();
     }
     
     async function demoteAdmin() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Снятие админа...');
         const id = document.getElementById('demoteUser').value;
         if (!id) return;
-        await s.from('users').update({ role: 'user' }).eq('id', id);
-        alert('Снят!');
-        loadAll(s);
+        
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
+        await supabaseClient.from('users').update({ role: 'user' }).eq('id', id);
+        
+        const user = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({ 
+            admin_id: user.id, 
+            action: 'demote_user', 
+            details: 'login=' + targetUser.login 
+        });
+        
+        console.log('✅ Админ снят');
+        loadAll();
     }
     
     async function adminChangeLogin() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Смена логина...');
         const id = document.getElementById('changeUser').value;
         const newLogin = document.getElementById('adminNewLogin').value;
         if (!id || !newLogin) return;
-        await s.from('users').update({ login: newLogin }).eq('id', id);
-        alert('Логин изменён!');
+        await supabaseClient.from('users').update({ login: newLogin }).eq('id', id);
+        console.log('✅ Логин изменён');
         document.getElementById('adminNewLogin').value = '';
-        loadAll(s);
+        loadAll();
     }
     
     async function adminChangePassword() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Смена пароля...');
         const id = document.getElementById('changeUser').value;
         const newPass = document.getElementById('adminNewPassword').value;
         if (!id || !newPass) return;
-        await s.from('users').update({ password_hash: newPass }).eq('id', id);
-        alert('Пароль изменён!');
+        
+        const hash = btoa(newPass);
+        await supabaseClient.from('users').update({ password_hash: hash }).eq('id', id);
+        
+        console.log('✅ Пароль изменён и захеширован');
         document.getElementById('adminNewPassword').value = '';
     }
     
     async function approveChange(id) {
-        const s = supabase.createClient(SU, SK);
-        const { data: req } = await s.from('change_requests').select('*').eq('id', id).single();
-        if (req.new_login) await s.from('users').update({ login: req.new_login }).eq('id', req.user_id);
-        await s.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
+        if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
         location.reload();
     }
     
     async function rejectChange(id) {
-        const s = supabase.createClient(SU, SK);
-        await s.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
         location.reload();
     }
     
     async function postNews() {
-        const s = supabase.createClient(SU, SK);
+        console.log('Публикация новости...');
         const user = JSON.parse(localStorage.getItem('session'));
         const msg = document.getElementById('newsMessage').value;
         if (!msg) return;
-        await s.from('news').insert({ author_id: user.id, message: msg, role: user.role });
-        alert('Опубликовано!');
+        
+        await supabaseClient.from('news').insert({ author_id: user.id, message: msg, role: user.role });
+        
+        console.log('✅ Новость опубликована');
         document.getElementById('newsMessage').value = '';
     }
     
