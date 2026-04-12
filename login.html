@@ -109,14 +109,7 @@
 
                 console.log('Login success:', data);
                 localStorage.setItem('session', JSON.stringify(data));
-
-                if (data.role === 'admin2') {
-                    window.location.href = 'tech.html';
-                } else if (data.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+                window.location.href = 'dashboard.html';
             } catch (err) {
                 errorEl.textContent = 'Ошибка: ' + err.message;
                 errorEl.style.display = 'block';
