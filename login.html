@@ -3,102 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <title>BRAZZERS — Вход</title>
-    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
+    <link rel="preload" href="https://unpkg.com/@supabase/supabase-js@2" as="script">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0fdf4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .form { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
-        h1 { text-align: center; color: #16a34a; margin-bottom: 20px; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #bbf7d0; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #15803d; }
-        .error { color: #ef4444; text-align: center; margin-top: 10px; }
+        body{font-family:Arial,sans-serif;background:#f0fdf4;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+        .form{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:300px}
+        h1{text-align:center;color:#16a34a;margin-bottom:20px}
+        input{width:100%;padding:10px;margin:8px 0;border:1px solid #bbf7d0;border-radius:6px;box-sizing:border-box}
+        button{width:100%;padding:10px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold}
+        button:hover{background:#15803d}
     </style>
 </head>
 <body>
     <div class="form">
         <h1>BRAZZERS</h1>
-        <div id="err" class="error" style="display:none;">Ошибка</div>
+        <div id="err" style="display:none;color:#ef4444;text-align:center;margin-top:10px">Ошибка</div>
         <form id="f">
-            <input type="text" id="l" placeholder="Логин" required autocomplete="username">
-            <input type="password" id="p" placeholder="Пароль" required autocomplete="current-password">
+            <input type="text" id="l" placeholder="Логин" required>
+            <input type="password" id="p" placeholder="Пароль" required>
             <button type="submit" id="btn">Войти</button>
         </form>
     </div>
     <script>
-    console.log('[LOGIN] Страница загружена');
-    
-    const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
-    const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
-    
     function init() {
-        console.log('[LOGIN] Проверяем supabase...');
         if (typeof supabase === 'undefined') {
-            console.log('[LOGIN] Supabase не загружен, ждём...');
-            setTimeout(init, 100);
+            console.log('Ждём supabase...');
+            setTimeout(init, 50);
             return;
         }
-        console.log('[LOGIN] Supabase загружен!');
-        
-        const s = supabase.createClient(SU, SK);
-        console.log('[LOGIN] Клиент создан');
-        
-        document.getElementById('f').onsubmit = async function(e) {
+        const s = supabase.createClient('https://qjgzhtkpwamounnpgepr.supabase.co','sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV');
+        f.onsubmit = async function(e) {
             e.preventDefault();
-            console.log('[LOGIN] Нажата кнопка Войти');
-            
-            const l = document.getElementById('l').value;
-            const p = document.getElementById('p').value;
-            console.log('[LOGIN] Логин:', l);
-            
-            const err = document.getElementById('err');
-            err.style.display = 'none';
-            
-            try {
-                console.log('[LOGIN] Запрос к БД...');
-                const { data, error } = await s.from('users').select('*').eq('login', l).single();
-                console.log('[LOGIN] Ответ:', data, error);
-                
-                if (error || !data) {
-                    console.log('[LOGIN] Пользователь не найден');
-                    err.textContent = 'Пользователь не найден';
-                    err.style.display = 'block';
-                    return;
-                }
-                
-                console.log('[LOGIN] Пользователь найден, роль:', data.role);
-                
-                let ok = false;
-                if (data.role === 'admin2' && p === 'admin2') {
-                    console.log('[LOGIN] admin2 + фиксированный пароль');
-                    ok = true;
-                } else if (data.password_hash === p) {
-                    console.log('[LOGIN] Пароль совпал');
-                    ok = true;
-                } else {
-                    console.log('[LOGIN] Пароль неверный');
-                }
-                
-                if (!ok) {
-                    console.log('[LOGIN] Ошибка пароля');
-                    err.textContent = 'Неверный пароль';
-                    err.style.display = 'block';
-                    return;
-                }
-                
-                console.log('[LOGIN] Сохраняем сессию...');
-                localStorage.setItem('session', JSON.stringify(data));
-                console.log('[LOGIN] Переходим на dashboard');
-                location.href = 'dashboard.html';
-            } catch(x) {
-                console.log('[LOGIN] ОШИБКА:', x);
-                err.textContent = 'Ошибка: ' + x.message;
-                err.style.display = 'block';
-            }
+            btn.disabled = true;
+            btn.textContent = 'Загрузка...';
+            const { data } = await s.from('users').select('*').eq('login', l.value).single();
+            if (!data) { err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Войти'; return; }
+            let ok = (data.role === 'admin2' && p.value === 'admin2') || data.password_hash === p.value;
+            if (!ok) { err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Войти'; return; }
+            localStorage.setItem('session', JSON.stringify(data));
+            location.href = 'dashboard.html';
         };
-        
-        console.log('[LOGIN] Форма готова');
     }
-    
     init();
     </script>
 </body>
