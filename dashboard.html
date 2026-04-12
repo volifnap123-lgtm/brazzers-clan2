@@ -218,7 +218,6 @@ async function loadStats() {
         }
         h += '</tbody></table>';
         document.getElementById('commonTable').innerHTML = h;
-    }
         
         // 6б13
         const { data: issued } = await s.from('issued_chunks').select('chunk_name').eq('user_id', user.id);
