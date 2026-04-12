@@ -135,7 +135,7 @@
             <button onclick="reqChange()" style="background:var(--g);color:white;border:0;padding:8px 16px;border-radius:6px;cursor:pointer">Отправить</button>
         </div>
         <div id="adminBtnContainer">
-            <button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>
+            <div id="adminBtns"></div>
         </div>
     </div>
     
@@ -165,8 +165,15 @@
         document.getElementById('profileRole').textContent = user.role;
         
         if (user.role === 'user') document.getElementById('requestChange').style.display = 'block';
-        if (user.role === 'admin') document.getElementById('adminBtnContainer').querySelector('button').textContent = 'Админ-панель';
-        if (user.role === 'admin2') document.getElementById('adminBtnContainer').querySelector('button').textContent = 'Тех. режим';
+        
+        let adminBtns = '';
+        if (user.role === 'admin') {
+            adminBtns = '<button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>';
+        } else if (user.role === 'admin2') {
+            adminBtns = '<button onclick="goAdmin2()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>';
+            adminBtns += '<button onclick="goTech()" style="width:100%;margin-top:8px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Тех. режим</button>';
+        }
+        document.getElementById('adminBtns').innerHTML = adminBtns;
         
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
         
@@ -253,7 +260,9 @@ async function loadCommon() {
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
     function toggleTheme() { console.log('🌓 Тема'); document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); }
     function logout() { console.log('🚪 Выход'); localStorage.removeItem('session'); location.href = 'login.html'; }
-    function goAdmin() { console.log('➡️ Админ'); location.href = user.role === 'admin2' ? 'tech.html' : 'admin.html'; }
+    function goAdmin() { console.log('➡️ Админ'); location.href = 'admin.html'; }
+    function goAdmin2() { console.log('➡️ Админ2'); location.href = 'admin.html'; }
+    function goTech() { console.log('➡️ Тех'); location.href = 'tech.html'; }
     async function reqChange() {
         let nl = document.getElementById('newLogin').value;
         if (!nl) return alert('Введите логин');
