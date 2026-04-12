@@ -142,6 +142,7 @@
     <button class="theme-btn" onclick="toggleTheme()">🌓 Тема</button>
     
     <script>
+    console.log('🚀 Скрипт Started');
     console.log('🚀 Главная страница загружена');
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
@@ -248,7 +249,11 @@ async function loadCommon() {
         loadStats();
     }
     
-    init();
+    // Запускаем когда страница загрузится
+    window.onload = function() {
+        console.log('🏠 Страница загружена, запускаем init...');
+        init();
+    };
     </script>
 </body>
 </html>
