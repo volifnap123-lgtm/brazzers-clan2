@@ -384,10 +384,10 @@
                 document.getElementById('requestChangeForm').style.display = 'block';
             } else if (session.role === 'admin') {
                 document.getElementById('adminBtn').textContent = 'Админ-панель';
-                document.getElementById('adminBtn').onclick = () => window.location.href = 'admin.html';
+                document.getElementById('adminBtn').onclick = function() { window.location.href = 'admin.html'; };
             } else if (session.role === 'admin2') {
                 document.getElementById('adminBtn').textContent = 'Тех. режим';
-                document.getElementById('adminBtn').onclick = () => window.location.href = 'tech.html';
+                document.getElementById('adminBtn').onclick = function() { window.location.href = 'tech.html'; };
             }
             
             await loadStats();
