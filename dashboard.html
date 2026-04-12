@@ -6,7 +6,7 @@
     <title>BRAZZERS</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
-    <style id="theme-style">
+    <style>
         :root {
             --green-500: #16a34a;
             --green-600: #15803d;
@@ -14,14 +14,7 @@
             --green-50: #f0fdf4;
             --white: #ffffff;
             --gray-900: #111827;
-            --gray-800: #1f2937;
-            --gray-700: #374151;
-            --gray-600: #4b5563;
-            --gray-500: #6b7280;
-            --gray-100: #f3f4f6;
             --border-color: #bbf7d0;
-            --red-border: #ef4444;
-            --yellow-border: #eab308;
             --bulldozer: #f59e0b;
             --caravan: #4ade80;
             --newland: #3b82f6;
@@ -29,33 +22,20 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-image: url('static/images/light-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background: var(--green-50);
             color: var(--gray-900);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
-        }
-        body.dark-theme {
-            background-image: url('static/images/dark-bg.jpg');
-            color: #e2e8f0 !important;
         }
         .header {
             display: flex;
             align-items: center;
-            padding: 16px 15px;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(4px);
+            padding: 16px;
+            background: rgba(255,255,255,0.95);
             border-bottom: 2px solid var(--green-500);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            z-index: 10;
-            position: relative;
+            gap: 12px;
             flex-wrap: wrap;
-            gap: 10px;
         }
-        .dark-theme .header { background: rgba(15, 23, 42, 0.95) !important; }
         .logo {
             font-weight: 700;
             font-size: 24px;
@@ -63,10 +43,8 @@
             border: 2px solid var(--green-500);
             padding: 5px 12px;
             border-radius: 8px;
-            background: var(--green-50);
         }
-        .dark-theme .logo { color: #4ade80 !important; border-color: #4ade80 !important; background: rgba(74, 222, 128, 0.1) !important; }
-        .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 auto; }
+        .nav-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto; }
         .nav-btn {
             background: transparent;
             color: var(--green-600);
@@ -74,158 +52,45 @@
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
-            min-width: 100px;
         }
-        .dark-theme .nav-btn { color: #4ade80 !important; }
-        .nav-btn:hover { background: var(--green-50); color: var(--green-700); transform: translateY(-1px); }
-        .dark-theme .nav-btn:hover { background: rgba(74, 222, 128, 0.2) !important; }
+        .nav-btn:hover { background: var(--green-100); }
         .logout-btn {
-            margin-left: auto;
             color: #ef4444;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
             background: none;
             border: none;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
-            padding: 6px 10px;
+            padding: 6px 12px;
         }
-        .logout-btn:hover { color: #dc2626; }
-        .main-content { height: calc(100vh - 90px); display: flex; justify-content: center; align-items: center; padding: 10px; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.3); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .modal-content {
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid var(--green-500);
-            border-radius: 16px;
-            width: 94%;
-            max-width: 1200px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 20px;
-            position: relative;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-        .dark-theme .modal-content { background: rgba(15, 23, 42, 0.95) !important; }
-        .close-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: var(--green-500);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .dark-theme .close-btn { background: #4ade80 !important; color: #0f172a !important; }
-        .close-btn:hover { background: var(--green-600); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
-        .dark-theme .modal-header { border-color: #4ade80 !important; }
-        .modal-title { font-size: 20px; font-weight: 700; color: var(--green-600); }
-        .dark-theme .modal-title { color: #4ade80 !important; }
-        
-        .table-container { width: 100%; overflow-x: auto; margin: 16px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .table-container table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 11px 8px; text-align: center; border: 1px solid var(--border-color); white-space: nowrap; font-size: 13px; }
-        .dark-theme th, .dark-theme td { border-color: #4ade80 !important; }
-        tbody tr { transition: background 0.2s; }
-        tbody tr:hover { background: var(--green-50); }
-        .dark-theme tbody tr:hover { background: rgba(74, 222, 128, 0.1) !important; }
-        
-        .player-info { margin-bottom: 16px; font-size: 18px; color: var(--gray-900); text-align: center; }
-        .dark-theme .player-info { color: #e2e8f0 !important; }
-        .extra-box {
-            background: var(--green-50);
-            border: 1px solid var(--border-color);
+        .main { padding: 20px; }
+        .section {
+            background: white;
             border-radius: 12px;
             padding: 16px;
-            margin-top: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
         }
-        .dark-theme .extra-box { background: rgba(74, 222, 128, 0.1) !important; border-color: #4ade80 !important; }
-        .extra-box h3 { font-size: 16px; font-weight: 600; color: var(--green-700); margin-bottom: 12px; }
-        .dark-theme .extra-box h3 { color: #4ade80 !important; }
-        
-        .top-player { display: flex; justify-content: space-between; padding: 10px; border-radius: 8px; margin: 6px 0; }
-        .top-player:hover { background: var(--white); }
-        .dark-theme .top-player:hover { background: rgba(255, 255, 255, 0.1) !important; }
-        .rank-badge { font-weight: 700; margin-right: 10px; }
-        .rank-1 { color: #ca8a04; }
-        .rank-2 { color: #6b7280; }
-        .rank-3 { color: #d97706; }
-        .rank-other { color: var(--green-600); }
-        
-        .profile-panel {
-            display: none;
-            position: fixed;
-            top: 0;
-            right: 0;
-            height: 100vh;
-            width: 320px;
-            background: rgba(255, 255, 255, 0.95);
-            border-left: 2px solid var(--green-500);
-            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
-            z-index: 1001;
-            padding: 24px;
+        .section h2 {
+            color: var(--green-600);
+            margin-bottom: 12px;
+            font-size: 18px;
         }
-        .dark-theme .profile-panel { background: rgba(15, 23, 42, 0.95) !important; border-color: #4ade80 !important; }
-        .profile-panel.open { display: block; }
-        .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .profile-title { font-size: 20px; font-weight: 700; color: var(--green-600); }
-        .dark-theme .profile-title { color: #4ade80 !important; }
-        .profile-field { margin-bottom: 20px; }
-        .profile-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--green-700); margin-bottom: 8px; }
-        .dark-theme .profile-label { color: #4ade80 !important; }
-        .profile-value { background: var(--green-50); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-family: monospace; color: var(--gray-900); }
-        .dark-theme .profile-value { background: rgba(74, 222, 128, 0.1) !important; border-color: #4ade80 !important; color: #e2e8f0 !important; }
-        .profile-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .btn-small { padding: 6px 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-edit { background: var(--green-500); color: white; }
-        .dark-theme .btn-edit { background: #4ade80 !important; color: #0f172a !important; }
-        .btn-edit:hover { background: var(--green-600); }
-        .btn-cancel { background: var(--gray-100); color: var(--gray-700); }
-        .dark-theme .btn-cancel { background: rgba(71, 85, 105, 0.3) !important; color: #cbd5e1 !important; }
-        .role-info { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); color: var(--green-700); font-weight: 600; }
-        
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.2); z-index: 999; }
-        .overlay.active { display: block; }
-        
-        .news-item { background: var(--green-50); border-radius: 8px; padding: 12px; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; line-height: 1.4; }
-        .dark-theme .news-item { background: rgba(74, 222, 128, 0.1) !important; }
-        .news-border-red::before, .news-border-red::after { content: "--------------------------------------------------"; display: block; color: var(--red-border); font-weight: bold; margin: 4px 0; }
-        .news-border-yellow::before, .news-border-yellow::after { content: "--------------------------------------------------"; display: block; color: var(--yellow-border); font-weight: bold; margin: 4px 0; }
-        .news-author { font-weight: bold; margin-bottom: 6px; color: var(--green-700); }
-        .dark-theme .news-author { color: #4ade80 !important; }
-        .news-date { font-size: 12px; color: var(--gray-600); margin-top: 6px; }
-        .dark-theme .news-date { color: #94a3b8 !important; }
-        
-        .request-form { background: var(--green-50); padding: 16px; border-radius: 12px; margin-top: 20px; }
-        .dark-theme .request-form { background: rgba(74, 222, 128, 0.1) !important; }
-        .request-form input { width: 100%; padding: 8px; margin: 6px 0; border: 1px solid var(--border-color); border-radius: 6px; }
-        
-        .request-btn { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 4px; width: 100%; }
-        .request-btn:hover { background: #d97706; }
-        .dark-theme .request-btn { background: #d97706; color: #0f172a; }
-        .dark-theme .request-btn:hover { background: #b45309; }
-        
-        @media (max-width: 768px) {
-            .nav-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-            .nav-btn { min-width: auto; padding: 6px 10px; }
-            th, td { font-size: 11px; padding: 6px 4px; }
-            .logo { font-size: 20px; padding: 4px 10px; }
-            .modal-content { padding: 15px; margin: 10px; }
+        .btn { background: var(--green-500); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn:hover { background: var(--green-600); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: center; border: 1px solid var(--border-color); }
+        th { background: var(--green-100); }
+        .profile-btn {
+            background: var(--green-500);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -233,381 +98,98 @@
     <div class="header">
         <div class="logo">BRAZZERS</div>
         <div class="nav-buttons">
-            <button class="nav-btn" onclick="openModal('stats')"><span>📊</span> Статистика</button>
-            <button class="nav-btn" onclick="openModal('common')"><span>📋</span> Общая таблица</button>
-            <button class="nav-btn" onclick="openModal('news')"><span>📰</span> Новости</button>
-            <button class="nav-btn" onclick="toggleProfile()"><span>👤</span> Профиль</button>
+            <button class="nav-btn" onclick="location.reload()">📊 Статистика</button>
+            <button class="nav-btn" onclick="loadCommon()">📋 Общая</button>
+            <button class="nav-btn" onclick="loadNews()">📰 Новости</button>
         </div>
-        <button class="logout-btn" onclick="logout()"><span>🚪</span> Выйти</button>
+        <button class="logout-btn" onclick="logout()">🚪 Выйти</button>
     </div>
     
-    <div class="main-content"></div>
-    
-    <!-- Stats Modal -->
-    <div id="stats-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Статистика игрока</div>
-                <button class="close-btn" onclick="closeModal('stats')">×</button>
-            </div>
-            <div class="player-info" id="playerName">Игрок: ...</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Дата зачисления</th>
-                            <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
-                            <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
-                            <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
-                            <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
-                        </tr>
-                        <tr>
-                            <th>Кусок №1</th><th>Кусок №2</th><th>В.Рад №1</th>
-                            <th>Кусок №3</th><th>Кусок №4</th><th>Кусок №5</th><th>В.Рад №2</th>
-                            <th>Кусок №6</th><th>Кусок №7</th><th>Кусок №8</th><th>В.Рад №3</th>
-                        </tr>
-                    </thead>
-                    <tbody id="statsTableBody"></tbody>
-                </table>
-            </div>
-            <div class="extra-box">
-                <div id="sixB13Info">Полученных 6б13: 0</div>
-                <div id="givenPercentInfo">Отданных процентов: 0%</div>
-            </div>
-            <div class="extra-box">
-                <h3>Запросить выдачу куска</h3>
-                <div id="requestButtons" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px;"></div>
-            </div>
-            <div class="extra-box">
-                <h3>Топ 5 игроков</h3>
-                <div id="top5List"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Common Modal -->
-    <div id="common-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Общая статистика</div>
-                <button class="close-btn" onclick="closeModal('common')">×</button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Никнейм</th>
-                            <th colspan="3" style="background: var(--bulldozer); color: white;">Бульдозер Левая</th>
-                            <th colspan="4" style="background: var(--caravan); color: white;">Караван Правая</th>
-                            <th colspan="4" style="background: var(--newland); color: white;">Новая Земля Верхняя</th>
-                            <th rowspan="2" style="background: var(--core); color: white;">Ядро</th>
-                        </tr>
-                        <tr>
-                            <th>Кусок №1</th><th>Кусок №2</th><th>В.Рад №1</th>
-                            <th>Кусок №3</th><th>Кусок №4</th><th>Кусок №5</th><th>В.Рад №2</th>
-                            <th>Кусок №6</th><th>Кусок №7</th><th>Кусок №8</th><th>В.Рад №3</th>
-                        </tr>
-                    </thead>
-                    <tbody id="commonTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- News Modal -->
-    <div id="news-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Обновления и новости</div>
-                <button class="close-btn" onclick="closeModal('news')">×</button>
-            </div>
-            <div id="newsList"></div>
-        </div>
-    </div>
-    
-    <!-- Profile Panel -->
-    <div id="profile-panel">
-        <div class="profile-header">
-            <div class="profile-title">Ваш профиль</div>
-            <button class="close-btn" style="width:28px;height:28px;" onclick="toggleProfile()">×</button>
-        </div>
-        <div class="profile-field">
-            <div class="profile-label"><span>Логин</span><span id="profileLogin">-</span></div>
-        </div>
-        <div class="profile-field">
-            <div class="profile-label"><span>Роль</span><span id="profileRole">-</span></div>
+    <div class="main">
+        <div class="section">
+            <h2 id="welcome">Добро пожаловать!</h2>
+            <div>Ваша статистика:</div>
+            <div id="stats">Загрузка...</div>
         </div>
         
-        <div id="requestChangeForm" class="request-form" style="display: none;">
-            <h3>Запросить смену учётных данных</h3>
-            <input type="text" id="newLoginInput" placeholder="Новый логин (опционально)">
-            <input type="password" id="newPasswordInput" placeholder="Новый пароль (опционально)">
-            <button class="btn-small btn-edit" style="width:100%;" onclick="submitChangeRequest()">Отправить запрос</button>
-        </div>
-        
-        <div id="adminBtnContainer">
-            <button class="nav-btn" style="width: 100%; margin-top: 20px;" id="adminBtn" onclick="goToAdminPanel()">Админ-панель</button>
+        <div class="section" id="adminSection" style="display:none;">
+            <h2>Админ-панель</h2>
+            <button class="btn" onclick="goAdmin()">Перейти</button>
         </div>
     </div>
     
-    <div id="overlay" class="overlay"></div>
-    
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
-        <button onclick="toggleTheme()" style="padding: 8px 16px; background: var(--green-500); color: white; border: none; border-radius: 6px; cursor: pointer;">🌓 Тема</button>
+    <div style="position: fixed; bottom: 20px; right: 20px;">
+        <button onclick="toggleTheme()" style="padding:8px 16px; background:var(--green-500); color:white; border:none; border-radius:6px; cursor:pointer;">🌓</button>
     </div>
 
     <script src="js/config.js"></script>
     <script>
-        const _supabase = window.supabase;
-        const { createClient } = _supabase;
+        const { createClient } = supabase;
         const supabaseClient = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         
         let currentUser = null;
-        let totalStats = {};
-        let allUsers = [];
         
         async function init() {
-            console.log('Init...');
             const session = JSON.parse(localStorage.getItem('session'));
             if (!session) { window.location.href = 'login.html'; return; }
             currentUser = session;
             
-            document.getElementById('playerName').textContent = 'Игрок: ' + session.username;
-            document.getElementById('profileLogin').textContent = session.login;
-            document.getElementById('profileRole').textContent = CHUNK_LABELS[session.role] || session.role;
+            document.getElementById('welcome').textContent = 'Привет, ' + session.username + '!';
             
-            if (session.role === 'user') {
-                document.getElementById('requestChangeForm').style.display = 'block';
-            } else if (session.role === 'admin') {
-                document.getElementById('adminBtn').textContent = 'Админ-панель';
-            } else if (session.role === 'admin2') {
-                document.getElementById('adminBtn').textContent = 'Тех. режим';
+            if (session.role === 'admin' || session.role === 'admin2') {
+                document.getElementById('adminSection').style.display = 'block';
             }
             
             await loadStats();
-            await loadCommonStats();
-            await loadNews();
-            
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') document.body.classList.add('dark-theme');
         }
         
         async function loadStats() {
-            const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false }).limit(10);
+            const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', currentUser.id);
             
-            const tbody = document.getElementById('statsTableBody');
-            tbody.innerHTML = '';
-            
-            totalStats = {};
-            for (const chunk of CONFIG.CHUNKS) totalStats[chunk] = 0;
-            for (const row of (stats || [])) {
-                for (const chunk of CONFIG.CHUNKS) totalStats[chunk] += row[chunk] || 0;
+            let total = {};
+            for (let c of CONFIG.CHUNKS) total[c] = 0;
+            for (let s of (stats || [])) {
+                for (let c of CONFIG.CHUNKS) total[c] += s[c] || 0;
             }
             
-            for (const row of (stats || [])) {
-                const tr = document.createElement('tr');
-                let html = `<td>${(row.updated_at || '').slice(0, 16)}</td>`;
-                for (const chunk of CONFIG.CHUNKS) html += `<td>${((row[chunk] || 0)).toFixed(1)}%</td>`;
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
+            let html = '<table><tr><th>Кусок</th><th>Процент</th></tr>';
+            for (let c of CONFIG.CHUNKS) {
+                html += '<tr><td>' + c + '</td><td>' + total[c].toFixed(1) + '%</td></tr>';
             }
+            html += '</table>';
             
-            const totalTr = document.createElement('tr');
-            totalTr.style.background = 'var(--green-100)';
-            let totalHtml = '<td><strong>Общее кол-во</strong></td>';
-            for (const chunk of CONFIG.CHUNKS) totalHtml += `<td>${totalStats[chunk].toFixed(1)}%</td>`;
-            totalTr.innerHTML = totalHtml;
-            tbody.appendChild(totalTr);
-            
-            const { data: issued } = await supabaseClient.from('issued_chunks').select('chunk_name').eq('user_id', currentUser.id);
-            const counts = {};
-            for (const chunk of CONFIG.CHUNKS) counts[chunk] = 0;
-            for (const i of (issued || [])) counts[i.chunk_name] = (counts[i.chunk_name] || 0) + 1;
-            const countsArr = Object.values(counts);
-            const minCount = countsArr.length > 0 ? Math.min(...countsArr) : 0;
-            document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + (isFinite(minCount) ? minCount : 0);
-            
-            const { data: transfers } = await supabaseClient.from('transfers').select('amount').eq('from_user_id', currentUser.id);
-            const given = (transfers || []).reduce((s, t) => s + (t.amount || 0), 0);
-            document.getElementById('givenPercentInfo').textContent = 'Отданных процентов: ' + given.toFixed(1) + '%';
-            
-            const reqBtns = document.getElementById('requestButtons');
-            reqBtns.innerHTML = '';
-            for (const chunk of CONFIG.CHUNKS) {
-                if (totalStats[chunk] >= 100) {
-                    const btn = document.createElement('button');
-                    btn.className = 'request-btn';
-                    btn.textContent = 'Запросить ' + CHUNK_LABELS[chunk];
-                    btn.onclick = function() { requestChunk(chunk); };
-                    reqBtns.appendChild(btn);
-                }
-            }
-            
-            await loadTop5();
+            document.getElementById('stats').innerHTML = html;
         }
         
-        async function loadCommonStats() {
-            const { data: users } = await supabaseClient.from('users').select('id,username,login,role');
-            allUsers = users || [];
-            
-            const tbody = document.getElementById('commonTableBody');
-            tbody.innerHTML = '';
-            
-            const commonFund = {};
-            for (const chunk of CONFIG.CHUNKS) commonFund[chunk] = 0;
-            
-            for (const user of allUsers) {
-                const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', user.id);
-                const userStats = {};
-                for (const chunk of CONFIG.CHUNKS) userStats[chunk] = 0;
-                for (const s of (stats || [])) {
-                    for (const chunk of CONFIG.CHUNKS) {
-                        userStats[chunk] += s[chunk] || 0;
-                        commonFund[chunk] += s[chunk] || 0;
-                    }
-                }
-                
-                const tr = document.createElement('tr');
-                let html = `<td>${user.username}</td>`;
-                for (const chunk of CONFIG.CHUNKS) html += `<td>${userStats[chunk].toFixed(1)}%</td>`;
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
-            }
-            
-            const fundTr = document.createElement('tr');
-            fundTr.style.background = 'var(--green-100)';
-            let fundHtml = '<td><strong>Общак</strong></td>';
-            for (const chunk of CONFIG.CHUNKS) fundHtml += `<td>${commonFund[chunk].toFixed(1)}%</td>`;
-            fundTr.innerHTML = fundHtml;
-            tbody.appendChild(fundTr);
-        }
-        
-        async function loadTop5() {
-            const topList = document.getElementById('top5List');
-            topList.innerHTML = '';
-            
-            const totals = [];
-            for (const user of allUsers) {
-                const { data: stats } = await supabaseClient.from('stats').select('*').eq('user_id', user.id);
-                let total = 0;
-                for (const s of (stats || [])) {
-                    for (const chunk of CONFIG.CHUNKS) total += s[chunk] || 0;
-                }
-                totals.push({ username: user.username, total });
-            }
-            
-            totals.sort((a, b) => b.total - a.total);
-            const top5 = totals.slice(0, 5);
-            
-            for (let i = 0; i < top5.length; i++) {
-                const div = document.createElement('div');
-                div.className = 'top-player';
-                let rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
-                div.innerHTML = `<span class="rank-badge ${rankClass}">#${i + 1}</span> ${top5[i].username} <span>${top5[i].total.toFixed(1)}%</span>`;
-                topList.appendChild(div);
-            }
+        async function loadCommon() {
+            const { data: users } = await supabaseClient.from('users').select('*');
+            alert('Всего пользователей: ' + (users || []).length);
         }
         
         async function loadNews() {
             const { data: news } = await supabaseClient.from('news').select('*').order('created_at', { ascending: false });
-            const newsList = document.getElementById('newsList');
-            newsList.innerHTML = '';
-            
-            const usersMap = {};
-            for (const u of allUsers) usersMap[u.id] = u;
-            
-            for (const n of (news || [])) {
-                const author = usersMap[n.author_id] || { username: 'Unknown' };
-                const div = document.createElement('div');
-                div.className = 'news-item ' + (n.role === 'admin' ? 'news-border-red' : n.role === 'admin2' ? 'news-border-yellow' : '');
-                div.innerHTML = `<div class="news-author">${author.username}</div><div>${n.message}</div><div class="news-date">${(n.created_at || '').slice(0, 16)}</div>`;
-                newsList.appendChild(div);
-            }
-            
-            if (!news || news.length === 0) newsList.innerHTML = '<p>Новостей пока нет. Скоро появятся!</p>';
-        }
-        
-        async function requestChunk(chunk) {
-            if ((totalStats[chunk] || 0) < 100) { alert('Недостаточно процентов'); return; }
-            
-            try {
-                const values = { user_id: currentUser.id };
-                for (const c of CONFIG.CHUNKS) values[c] = 0;
-                values[chunk] = -100;
-                await supabaseClient.from('stats').insert(values);
-                
-                await supabaseClient.from('chunk_requests').insert({ user_id: currentUser.id, chunk_name: chunk, status: 'pending' });
-                alert('Запрос отправлен!');
-                await loadStats();
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        }
-        
-        async function submitChangeRequest() {
-            const newLogin = document.getElementById('newLoginInput').value;
-            const newPassword = document.getElementById('newPasswordInput').value;
-            if (!newLogin && !newPassword) { alert('Введите новый логин или пароль'); return; }
-            
-            try {
-                const insertData = { user_id: currentUser.id, status: 'pending' };
-                if (newLogin) insertData.new_login = newLogin;
-                await supabaseClient.from('change_requests').insert(insertData);
-                alert('Запрос отправлен!');
-                document.getElementById('newLoginInput').value = '';
-                document.getElementById('newPasswordInput').value = '';
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        }
-        
-        function openModal(name) {
-            document.getElementById(name + '-modal').style.display = 'flex';
-            document.getElementById('overlay').classList.add('active');
-        }
-        function closeModal(name) {
-            document.getElementById(name + '-modal').style.display = 'none';
-            document.getElementById('overlay').classList.remove('active');
-        }
-        function toggleProfile() {
-            console.log('toggleProfile');
-            const panel = document.getElementById('profile-panel');
-            const overlay = document.getElementById('overlay');
-            if (panel.style.display === 'block') {
-                panel.style.display = 'none';
-                overlay.classList.remove('active');
+            if (!news || news.length === 0) {
+                alert('Новостей пока нет');
             } else {
-                panel.style.display = 'block';
-                overlay.classList.add('active');
+                alert(news[0].message);
             }
         }
-        document.getElementById('overlay').onclick = function() {
-            console.log('overlay click');
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            document.getElementById('profile-panel').style.display = 'none';
-            this.classList.remove('active');
-        };
-        function toggleTheme() {
-            console.log('toggleTheme');
-            const isDark = document.body.classList.contains('dark-theme');
-            if (isDark) {
-                document.body.classList.remove('dark-theme');
-                localStorage.setItem('theme', 'light');
+        
+        function goAdmin() {
+            if (currentUser.role === 'admin2') {
+                window.location.href = 'tech.html';
             } else {
-                document.body.classList.add('dark-theme');
-                localStorage.setItem('theme', 'dark');
+                window.location.href = 'admin.html';
             }
         }
+        
         function logout() {
-            console.log('logout');
             localStorage.removeItem('session');
             window.location.href = 'login.html';
         }
-        function goToAdminPanel() {
-            console.log('goToAdminPanel', currentUser.role);
-            if (currentUser.role === 'admin2') {
-                window.location.href = 'tech.html';
-            } else if (currentUser.role === 'admin') {
-                window.location.href = 'admin.html';
-            } else {
-                alert('У вас нет доступа');
-            }
+        
+        function toggleTheme() {
+            alert('Тема');
         }
         
         init();
