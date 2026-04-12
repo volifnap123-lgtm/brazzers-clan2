@@ -230,29 +230,13 @@ async function loadStats() {
         console.log('✅ Статистика загружена');
     }
     
-    function openModal(name) { document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); }
-    function closeModal(name) { document.getElementById(name + '-modal').classList.remove('open'); }
-    function toggleProfile() {
-        let p = document.getElementById('profile');
-        p.classList.toggle('open');
-        document.querySelector('.overlay').classList.toggle('open');
-    }
-    function closeAll() {
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
-        document.getElementById('profile').classList.remove('open');
-        document.querySelector('.overlay').classList.remove('open');
-    }
-    function toggleTheme() {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-    }
-    function logout() {
-        localStorage.removeItem('session');
-        location.href = 'login.html';
-    }
-    function goAdmin() {
-        location.href = user.role === 'admin2' ? 'tech.html' : 'admin.html';
-    }
+    function openModal(name) { console.log('📂 Открыть:', name); document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); }
+    function closeModal(name) { console.log('📕 Закрыть:', name); document.getElementById(name + '-modal').classList.remove('open'); }
+    function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
+    function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
+    function toggleTheme() { console.log('🌓 Тема'); document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); }
+    function logout() { console.log('🚪 Выход'); localStorage.removeItem('session'); location.href = 'login.html'; }
+    function goAdmin() { console.log('➡️ Админ'); location.href = user.role === 'admin2' ? 'tech.html' : 'admin.html'; }
     async function reqChange() {
         let nl = document.getElementById('newLogin').value;
         if (!nl) return alert('Введите логин');
