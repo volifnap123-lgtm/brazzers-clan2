@@ -172,14 +172,14 @@
         loadStats();
     }
     
-    async function loadStats() {
+async function loadStats() {
         console.log('📊 Загрузка статистики...');
         const { data } = await s.from('stats').select('*').eq('user_id', user.id);
         
         let t = {}; for (let c of CH) t[c] = 0;
         for (let x of (data || [])) for (let c of CH) t[c] += x[c] || 0;
         
-        let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style=background:var(--bulldozer)>Бульдозер</th><th colspan=4 style=background:var(--caravan)>Караван</th><th colspan=4 style=background:var(--newland)>Новая Земля</th><th rowspan=2 style=background:var(--core)>Ядро</th></tr><tr><th style="background:var(--bulldozer)">1</th><th style="background:var(--bulldozer)">2</th><th style="background:var(--bulldozer)">ВР1</th><th style="background:var(--caravan)">3</th><th style="background:var(--caravan)">4</th><th style="background:var(--caravan)">5</th><th style="background:var(--caravan)">ВР2</th><th style="background:var(--newland)">6</th><th style="background:var(--newland)">7</th><th style="background:var(--newland)">8</th><th style="background:var(--newland)">ВР3</th></tr></thead><tbody>';
+        let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style="background:var(--bulldozer);color:white">Бульдозер</th><th colspan=4 style="background:var(--caravan);color:#111">Караван</th><th colspan=4 style="background:var(--newland);color:white">Новая Земля</th><th rowspan=2 style="background:var(--core);color:white">Ядро</th></tr><tr><th style="background:var(--bulldozer);color:white">1</th><th style="background:var(--bulldozer);color:white">2</th><th style="background:var(--bulldozer);color:white">ВР1</th><th style="background:var(--caravan);color:#111">3</th><th style="background:var(--caravan);color:#111">4</th><th style="background:var(--caravan);color:#111">5</th><th style="background:var(--caravan);color:#111">ВР2</th><th style="background:var(--newland);color:white">6</th><th style="background:var(--newland);color:white">7</th><th style="background:var(--newland);color:white">8</th><th style="background:var(--newland);color:white">ВР3</th></tr></thead><tbody>';
         for (let x of (data || []).slice(0,10)) {
             h += '<tr><td>' + (x.updated_at||'').slice(0,16) + '</td>';
             for (let c of CH) h += '<td>' + (x[c]||0).toFixed(1) + '</td>';
@@ -189,6 +189,36 @@
         for (let c of CH) h += '<td>' + t[c].toFixed(1) + '</td>';
         h += '</tr></tbody></table>';
         document.getElementById('statsTable').innerHTML = h;
+        
+        // Создаём кнопки запроса кусков
+        let btns = '';
+        for (let c of CH) {
+            if (t[c] >= 100) btns += '<button onclick="reqChunk(\''+c+'\')" style="background:var(--g);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;margin:2px">'+C_LABELS[c]+'</button>';
+        }
+        document.getElementById('requestBtns').innerHTML = btns || 'Нет кусков для запроса';
+    }
+    
+    async function loadCommon() {
+        console.log('📋 Загрузка общей таблицы...');
+        const { data: users } = await s.from('users').select('*');
+        
+        let h = '<table><thead><tr><th>Ник</th><th>1</th><th>2</th><th>ВР1</th><th>3</th><th>4</th><th>5</th><th>ВР2</th><th>6</th><th>7</th><th>8</th><th>ВР3</th><th>Всего</th></tr></thead><tbody>';
+        
+        for (let u of (users || [])) {
+            const { data } = await s.from('stats').select('*').eq('user_id', u.id);
+            let total = 0;
+            for (let x of (data || [])) for (let c of CH) total += x[c] || 0;
+            h += '<tr><td>' + u.username + '</td>';
+            for (let c of CH) {
+                let val = 0;
+                for (let x of (data || [])) val += x[c] || 0;
+                h += '<td>' + val.toFixed(1) + '</td>';
+            }
+            h += '<td><strong>' + total.toFixed(1) + '</strong></td></tr>';
+        }
+        h += '</tbody></table>';
+        document.getElementById('commonTable').innerHTML = h;
+    }
         
         // 6б13
         const { data: issued } = await s.from('issued_chunks').select('chunk_name').eq('user_id', user.id);
@@ -200,7 +230,7 @@
         console.log('✅ Статистика загружена');
     }
     
-    function openModal(name) { document.getElementById(name + '-modal').classList.add('open'); }
+    function openModal(name) { document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); }
     function closeModal(name) { document.getElementById(name + '-modal').classList.remove('open'); }
     function toggleProfile() {
         let p = document.getElementById('profile');
@@ -228,6 +258,21 @@
         if (!nl) return alert('Введите логин');
         await s.from('change_requests').insert({ user_id: user.id, new_login: nl, status: 'pending' });
         alert('Запрос отправлен!');
+    }
+    
+    async function reqChunk(chunk) {
+        console.log('📦 Запрос куска:', chunk);
+        let t = {};
+        const { data } = await s.from('stats').select('*').eq('user_id', user.id);
+        for (let x of (data || [])) for (let c of CH) t[c] = (t[c]||0) + (x[c]||0);
+        if ((t[chunk]||0) < 100) return alert('Недостаточно процентов!');
+        
+        let vals = {}; for (let c of CH) vals[c] = 0;
+        vals[chunk] = -100;
+        await s.from('stats').insert({ user_id: user.id, ...vals });
+        await s.from('chunk_requests').insert({ user_id: user.id, chunk_name: chunk, status: 'pending' });
+        alert('Запрос отправлен!');
+        loadStats();
     }
     
     init();
