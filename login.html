@@ -2,22 +2,22 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAZZERS — Вход</title>
     <style>
-        body{font-family:Arial,sans-serif;background:#f0fdf4;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
-        .form{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:300px}
-        h1{text-align:center;color:#16a34a;margin-bottom:20px}
-        input{width:100%;padding:10px;margin:8px 0;border:1px solid #bbf7d0;border-radius:6px;box-sizing:border-box;font-size:14px}
-        button{width:100%;padding:10px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:14px;margin-top:8px}
-        button:hover{background:#15803d}
-        .error{color:#ef4444;text-align:center;margin-top:10px;font-size:13px}
+        body { font-family: Arial, sans-serif; background: #f0fdf4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .form { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
+        h1 { text-align: center; color: #16a34a; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #bbf7d0; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #15803d; }
+        .error { color: #ef4444; text-align: center; margin-top: 10px; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/supabase-js@2"></script>
 </head>
 <body>
     <div class="form">
         <h1>BRAZZERS</h1>
-        <div id="e" class="error" style="display:none;"></div>
+        <div id="err" class="error" style="display:none;"></div>
         <form id="f">
             <input type="text" id="l" placeholder="Логин" required>
             <input type="password" id="p" placeholder="Пароль" required>
@@ -28,22 +28,20 @@
     const SU='https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK='sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const s=supabase.createClient(SU,SK);
-    f.onsubmit=async e=>{
+    document.getElementById('f').onsubmit=async e=>{
         e.preventDefault();
         const l=document.getElementById('l').value;
         const p=document.getElementById('p').value;
-        const err=document.getElementById('e');
+        const err=document.getElementById('err');
         err.style.display='none';
         try{
             const{data,error}=await s.from('users').select('*').eq('login',l).single();
             if(error||!data){err.textContent='Не найден';err.style.display='block';return}
-            let ok=false;
-            if(data.role==='admin2'&&p==='admin2')ok=true;
-            else if(data.password_hash===p)ok=true;
+            let ok=data.role==='admin2'&&p==='admin2'||data.password_hash===p;
             if(!ok){err.textContent='Неверный пароль';err.style.display='block';return}
             localStorage.setItem('session',JSON.stringify(data));
             location.href='dashboard.html';
-        }catch(errr){err.textContent='Ошибка';err.style.display='block'}
+        }catch(x){err.textContent='Ошибка';err.style.display='block'}
     };
     </script>
 </body>
