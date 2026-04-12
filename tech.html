@@ -320,7 +320,17 @@
         const id = document.getElementById('changeUser').value;
         const newLogin = document.getElementById('adminNewLogin').value;
         if (!id || !newLogin) return;
+        
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
         await supabaseClient.from('users').update({ login: newLogin }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'change_login',
+            details: 'user=' + targetUser.login
+        });
+        
         console.log('✅ Логин изменён');
         document.getElementById('adminNewLogin').value = '';
         loadAll();
@@ -332,8 +342,16 @@
         const newPass = document.getElementById('adminNewPassword').value;
         if (!id || !newPass) return;
         
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
         const hash = btoa(newPass);
         await supabaseClient.from('users').update({ password_hash: hash }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'change_password',
+            details: 'user=' + targetUser.login
+        });
         
         console.log('✅ Пароль изменён и захеширован');
         document.getElementById('adminNewPassword').value = '';
@@ -343,11 +361,27 @@
         const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
         if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
         await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'approve_change_request',
+            details: 'request_id=' + id
+        });
+        
         location.reload();
     }
     
     async function rejectChange(id) {
         await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'reject_change_request',
+            details: 'request_id=' + id
+        });
+        
         location.reload();
     }
     
@@ -357,7 +391,15 @@
         const msg = document.getElementById('newsMessage').value;
         if (!msg) return;
         
+        const msgPreview = msg.length > 50 ? msg.substring(0, 50) + '...' : msg;
+        
         await supabaseClient.from('news').insert({ author_id: user.id, message: msg, role: user.role });
+        
+        await supabaseClient.from('audit_log').insert({
+            admin_id: user.id,
+            action: 'post_news',
+            details: 'msg=' + msgPreview
+        });
         
         console.log('✅ Новость опубликована');
         document.getElementById('newsMessage').value = '';
