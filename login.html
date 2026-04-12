@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRAZZERS — Вход</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -94,19 +94,14 @@
                     return;
                 }
 
-                const passwordMatch = bcrypt.hashpw(password, data.password_hash) === data.password_hash || 
-                                data.password_hash.startsWith('$2') && bcrypt.compareSync(password, data.password_hash);
-                
-                if (!passwordMatch && !password.startsWith('$2')) {
-                    const testHash = bcrypt.hashpw(password, '$2a$10$test');
-                    if (data.password_hash !== testHash) {
-                        errorEl.textContent = 'Неверный пароль';
-                        errorEl.style.display = 'block';
-                        return;
-                    }
+                let passwordValid = false;
+                if (data.password_hash.startsWith('$2')) {
+                    passwordValid = bcrypt.compareSync(password, data.password_hash);
+                } else if (data.password_hash === password) {
+                    passwordValid = true;
                 }
-
-                if (!bcrypt.compareSync(password, data.password_hash)) {
+                
+                if (!passwordValid) {
                     errorEl.textContent = 'Неверный пароль';
                     errorEl.style.display = 'block';
                     return;
