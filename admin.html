@@ -188,6 +188,11 @@
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
     const CH = ['chunk1','chunk2','chunk3','chunk4','chunk5','chunk6','chunk7','chunk8','vr1','vr2','vr3','core'];
+    const CH_LABELS = {
+        'chunk1': 'Кусок №1', 'chunk2': 'Кусок №2', 'chunk3': 'Кусок №3', 'chunk4': 'Кусок №4',
+        'chunk5': 'Кусок №5', 'chunk6': 'Кусок №6', 'chunk7': 'Кусок №7', 'chunk8': 'Кусок №8',
+        'vr1': 'В.Рад №1', 'vr2': 'В.Рад №2', 'vr3': 'В.Рад №3', 'core': 'Ядро'
+    };
     let supabaseClient = null;
     let allUsers = [];
     
@@ -240,7 +245,7 @@
         for (let c of CH) remData[c] = 0;
         for (let r of (rem || [])) remData[r.chunk_name] = r.amount || 0;
         let remHtml = '<div class="remainder-grid">';
-        for (let c of CH) remHtml += '<div class="remainder-item"><strong>'+c+'</strong><br>'+remData[c]+'</div>';
+        for (let c of CH) remHtml += '<div class="remainder-item"><strong>'+(CH_LABELS[c]||c)+'</strong><br>'+remData[c]+'</div>';
         remHtml += '</div>';
         document.getElementById('remainder').innerHTML = remHtml;
         
@@ -508,32 +513,45 @@
     }
     
     async function updateCommonFund() {
-        console.log('updateCommonFund called');
-        const { data: allStats } = await supabaseClient.from('stats').select('*');
+        console.log('=== updateCommonFund START ===');
+        const { data: allStats, error: statsErr } = await supabaseClient.from('stats').select('*');
+        if (statsErr) console.error('stats error:', statsErr);
+        console.log('allStats count:', allStats?.length);
+        
         let totals = {};
         for (let c of CH) totals[c] = 0;
         
         for (let s of (allStats || [])) {
-            for (let c of CH) totals[c] += s[c] || 0;
+            for (let c of CH) {
+                totals[c] += s[c] || 0;
+            }
         }
+        console.log('totals from stats:', totals);
         
-        const { data: rem } = await supabaseClient.from('remainder').select('*');
+        const { data: rem, error: remErr } = await supabaseClient.from('remainder').select('*');
+        if (remErr) console.error('remainder error:', remErr);
+        console.log('remainder data:', rem);
+        
         for (let r of (rem || [])) {
             totals[r.chunk_name] = (totals[r.chunk_name] || 0) + (r.amount || 0);
         }
+        console.log('totals with remainder:', totals);
         
         for (let c of CH) {
             let total = totals[c] || 0;
             let chunks = Math.floor(total / 100);
+            console.log(c + ': total=' + total + ', chunks=' + chunks);
             
             const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
+                console.log('updating common_fund', c, 'to', chunks);
                 await supabaseClient.from('common_fund').update({ amount: chunks }).eq('chunk_name', c);
             } else {
+                console.log('inserting common_fund', c, 'with', chunks);
                 await supabaseClient.from('common_fund').insert({ chunk_name: c, amount: chunks });
             }
         }
-        console.log('Common fund updated');
+        console.log('=== updateCommonFund END ===');
     }
     
     function toggleUsers() {
