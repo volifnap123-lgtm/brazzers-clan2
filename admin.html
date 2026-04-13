@@ -502,22 +502,29 @@
     }
     
     async function updateCommonFund() {
+        console.log('updateCommonFund called');
         const { data: allStats } = await supabaseClient.from('stats').select('*');
+        console.log('allStats:', allStats);
         let totals = {};
         for (let c of CH) totals[c] = 0;
         
         for (let s of (allStats || [])) {
             for (let c of CH) totals[c] += s[c] || 0;
         }
+        console.log('totals (with stats):', totals);
         
         const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        console.log('remainder:', rem);
         let remData = rem?.[0] || {};
         for (let c of CH) totals[c] += remData[c] || 0;
+        console.log('totals (with remainder):', totals);
         
         let chunks = {};
         for (let c of CH) chunks[c] = Math.floor(totals[c] / 100);
+        console.log('chunks:', chunks);
         
         const { data: cf } = await supabaseClient.from('common_fund').select('*').limit(1);
+        console.log('common_fund:', cf);
         if (cf?.[0]?.id) {
             await supabaseClient.from('common_fund').update(chunks).eq('id', cf[0].id);
         } else {
