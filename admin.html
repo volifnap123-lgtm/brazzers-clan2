@@ -514,41 +514,32 @@
     
     async function updateCommonFund() {
         console.log('=== updateCommonFund START ===');
-        const { data: allStats, error: statsErr } = await supabaseClient.from('stats').select('*');
-        if (statsErr) console.error('stats error:', statsErr);
-        console.log('allStats count:', allStats?.length);
         
-        let totals = {};
-        for (let c of CH) totals[c] = 0;
+        // Берём ВСЕ записи из stats
+        const { data: allStats } = await supabaseClient.from('stats').select('*');
+        console.log('Всего записей в stats:', allStats?.length);
+        
+        // Складываем проценты всех пользователей
+        let totals = {chunk1:0,chunk2:0,chunk3:0,chunk4:0,chunk5:0,chunk6:0,chunk7:0,chunk8:0,vr1:0,vr2:0,vr3:0,core:0};
         
         for (let s of (allStats || [])) {
             for (let c of CH) {
                 totals[c] += s[c] || 0;
             }
         }
-        console.log('totals from stats:', totals);
+        console.log('Итого процентов:', totals);
         
-        const { data: rem, error: remErr } = await supabaseClient.from('remainder').select('*');
-        if (remErr) console.error('remainder error:', remErr);
-        console.log('remainder data:', rem);
-        
-        for (let r of (rem || [])) {
-            totals[r.chunk_name] = (totals[r.chunk_name] || 0) + (r.amount || 0);
-        }
-        console.log('totals with remainder:', totals);
-        
+        // Делим на 100, берём целое число в меньшую сторону
         for (let c of CH) {
-            let total = Math.round((totals[c] || 0) * 10) / 10;
-            let chunks = Math.floor(total / 100);
-            console.log(c + ': total=' + total + ', chunks=' + chunks);
+            let total = Math.floor(totals[c]);
+            console.log(c + ' = ' + total + ' кусков');
             
+            // Обновляем или создаём запись в common_fund
             const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
-                console.log('updating common_fund', c, 'to', chunks);
-                await supabaseClient.from('common_fund').update({ amount: chunks }).eq('chunk_name', c);
+                await supabaseClient.from('common_fund').update({ amount: total }).eq('chunk_name', c);
             } else {
-                console.log('inserting common_fund', c, 'with', chunks);
-                await supabaseClient.from('common_fund').insert({ chunk_name: c, amount: chunks });
+                await supabaseClient.from('common_fund').insert({ chunk_name: c, amount: total });
             }
         }
         console.log('=== updateCommonFund END ===');
