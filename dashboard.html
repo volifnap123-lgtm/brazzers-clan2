@@ -294,9 +294,8 @@ async function loadCommon() {
     function goTech() { console.log('➡️ Тех'); location.href = 'tech.html'; }
     async function reqChange() {
         let nl = document.getElementById('newLogin').value;
-        if (!nl) return alert('Введите логин');
+        if (!nl) return;
         await s.from('change_requests').insert({ user_id: user.id, new_login: nl, status: 'pending' });
-        alert('Запрос отправлен!');
     }
     
     async function reqChunk(chunk) {
@@ -304,13 +303,12 @@ async function loadCommon() {
         let t = {};
         const { data } = await s.from('stats').select('*').eq('user_id', user.id);
         for (let x of (data || [])) for (let c of CH) t[c] = (t[c]||0) + (x[c]||0);
-        if ((t[chunk]||0) < 100) return alert('Недостаточно процентов!');
+        if ((t[chunk]||0) < 100) return;
         
         let vals = {}; for (let c of CH) vals[c] = 0;
         vals[chunk] = -100;
         await s.from('stats').insert({ user_id: user.id, ...vals });
         await s.from('chunk_requests').insert({ user_id: user.id, chunk_name: chunk, status: 'pending' });
-        alert('Запрос отправлен!');
         loadStats();
     }
     

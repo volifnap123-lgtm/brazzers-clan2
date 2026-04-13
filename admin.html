@@ -288,7 +288,7 @@
     async function givePercentSingle() {
         showLoading();
         const userId = document.getElementById('singleUser').value;
-        if (!userId) { hideLoading(); return alert('Выберите игрока!'); }
+        if (!userId) { hideLoading(); return; }
         
         let vals = {};
         for (let c of CH) {
@@ -315,7 +315,6 @@
         
         for (let c of CH) document.getElementById(c).value = '0';
         hideLoading();
-        alert('Проценты выданы!');
         loadAll();
     }
     
@@ -324,7 +323,7 @@
         console.log('givePercentMultiple started');
         const sel = document.getElementById('multiUser');
         const userIds = Array.from(sel.selectedOptions).map(o => o.value);
-        if (!userIds.length) return alert('Выберите игроков!');
+        if (!userIds.length) return;
         
         const chunk = document.getElementById('multiChunk').value;
         
@@ -355,7 +354,6 @@
             details: 'chunk=' + chunk + ', users=' + userIds.length + ', amount=' + amount.toFixed(2) + ', remainder=' + remainder
         });
         
-        alert('Проценты разделены!');
         hideLoading();
         loadAll();
     }
@@ -367,12 +365,12 @@
         const chunk = document.getElementById('transferChunk').value;
         const amount = Math.round((parseFloat(document.getElementById('transferAmount').value) || 0) * 10) / 10;
         
-        if (!fromId || !toId || !amount) return alert('Заполните все поля!');
+        if (!fromId || !toId || !amount) return;
         
         const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).maybeSingle();
         const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).maybeSingle();
         
-        if (!fromUser || (fromUser[chunk] || 0) < amount - 0.01) return alert('Недостаточно процентов!');
+        if (!fromUser || (fromUser[chunk] || 0) < amount - 0.01) return;
         
         let fromVals = fromUser || {};
         let toVals = toUser || {};
@@ -401,7 +399,6 @@
             details: 'from=' + (fromU?.login || fromId) + ', to=' + (toU?.login || toId) + ', chunk=' + chunk + ', amount=' + amount
         });
         
-        alert('Проценты переданы!');
         hideLoading();
         loadAll();
     }
@@ -491,13 +488,13 @@
     async function giveFromRemainder() {
         showLoading();
         const userId = document.getElementById('remainderUser').value;
-        if (!userId) return alert('Выберите игрока!');
+        if (!userId) return;
         
         for (let c of CH) {
             let amount = parseFloat(document.getElementById('rem_'+c).value) || 0;
             if (amount > 0) {
                 const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', c).single();
-                if (!rem || (rem.amount || 0) < amount) return alert('Недостаточно в остатке: ' + c);
+                if (!rem || (rem.amount || 0) < amount) return;
                 await supabaseClient.from('remainder').update({ amount: (rem.amount || 0) - amount }).eq('chunk_name', c);
                 
                 const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).single();
@@ -525,7 +522,6 @@
         });
         
         for (let c of CH) document.getElementById('rem_'+c).value = '0';
-        alert('Выдано из остатка!');
         hideLoading();
         loadAll();
     }
@@ -588,7 +584,6 @@
         });
         
         document.getElementById('newsMessage').value = '';
-        alert('Опубликовано!');
         hideLoading();
     }
     

@@ -204,7 +204,6 @@
             console.log('Данные загружены успешно!');
         } catch (e) {
             console.error('Ошибка loadAll:', e);
-            alert('Ошибка загрузки: ' + e.message);
         }
     }
     
@@ -213,7 +212,7 @@
         const username = document.getElementById('newUsername').value;
         const login = document.getElementById('newLogin').value;
         const password = document.getElementById('newPassword').value;
-        if (!username || !login || !password) return alert('Заполните все поля!');
+        if (!username || !login || !password) return;
         
         try {
             const hash = btoa(password);
@@ -228,7 +227,6 @@
             
             if (error) {
                 console.error('Ошибка создания пользователя:', error);
-                alert('Ошибка: ' + error.message);
                 return;
             }
             
@@ -251,7 +249,6 @@
             loadAll();
         } catch (e) {
             console.error('Ошибка:', e);
-            alert('Ошибка: ' + e.message);
         }
     }
     
