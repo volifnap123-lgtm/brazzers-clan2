@@ -64,6 +64,12 @@
         body.dark th[style*="caravan"]{background:#3aba68 !important}
         body.dark th[style*="newland"]{background:#2d6bc4 !important}
         body.dark th[style*="core"]{background:#cc3333 !important}
+        
+        /* Новости в тёмной теме */
+        body.dark .news-item{background:rgba(30,41,59,0.9) !important;border-color:#4ade80 !important}
+        body.dark .news-item .author{color:#4ade80 !important}
+        body.dark .news-item .message{color:#fff !important}
+        body.dark .news-item .date{color:#94a3b8 !important}
     </style>
 </head>
 <body>
@@ -259,10 +265,10 @@ async function loadCommon() {
         for (let n of news) {
             let author = usersMap[n.author_id] || { username: 'Unknown' };
             let borderClass = n.role === 'admin' ? 'border-left:4px solid #ef4444' : n.role === 'admin2' ? 'border-left:4px solid #eab308' : '';
-            h += '<div style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;' + borderClass + '">';
-            h += '<div style="font-weight:bold;color:var(--g2);margin-bottom:6px">' + author.username + '</div>';
-            h += '<div style="white-space:pre-wrap;line-height:1.4">' + n.message + '</div>';
-            h += '<div style="font-size:12px;color:#666;margin-top:6px">' + (n.created_at || '').slice(0, 16) + '</div>';
+            h += '<div class="news-item" style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;' + borderClass + '">';
+            h += '<div class="author" style="font-weight:bold;color:var(--g2);margin-bottom:6px">' + author.username + '</div>';
+            h += '<div class="message" style="white-space:pre-wrap;line-height:1.4">' + n.message + '</div>';
+            h += '<div class="date" style="font-size:12px;color:#666;margin-top:6px">' + (n.created_at || '').slice(0, 16) + '</div>';
             h += '</div>';
         }
         document.getElementById('newsList').innerHTML = h;
