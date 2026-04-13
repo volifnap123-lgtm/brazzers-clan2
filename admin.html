@@ -283,7 +283,7 @@
             vals[c] = parseFloat(document.getElementById(c).value) || 0;
         }
         
-        const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).single();
+        const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).maybeSingle();
         if (existing) {
             for (let c of CH) {
                 existing[c] = (existing[c] || 0) + vals[c];
@@ -316,11 +316,12 @@
         
         const chunk = document.getElementById('multiChunk').value;
         const amount = 100 / userIds.length;
-        const remainder = 100 % userIds.length;
+        const remainderPercent = 100 - (amount * userIds.length);
+        const remainder = Math.round(remainderPercent * 10) / 10;
         console.log('chunk=' + chunk + ', amount=' + amount + ', remainder=' + remainder);
         
         for (let uid of userIds) {
-            const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).single();
+            const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).maybeSingle();
             if (existing) {
                 existing[chunk] = (existing[chunk] || 0) + amount;
                 await supabaseClient.from('stats').update(existing).eq('user_id', uid);
@@ -355,8 +356,8 @@
         
         if (!fromId || !toId || !amount) return alert('Заполните все поля!');
         
-        const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).single();
-        const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).single();
+        const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).maybeSingle();
+        const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).maybeSingle();
         
         if (!fromUser || (fromUser[chunk] || 0) < amount) return alert('Недостаточно процентов!');
         
@@ -395,7 +396,7 @@
         console.log('updateRemainderAdd: chunk=' + chunk + ', amount=' + amount);
         if (amount === 0) return;
         
-        const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', chunk).single();
+        const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', chunk).maybeSingle();
         console.log('remainder record:', rem);
         
         if (rem) {
@@ -526,7 +527,7 @@
             let total = totals[c] || 0;
             let chunks = Math.floor(total / 100);
             
-            const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).single();
+            const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
                 await supabaseClient.from('common_fund').update({ amount: chunks }).eq('chunk_name', c);
             } else {
