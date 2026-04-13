@@ -527,14 +527,21 @@
                 totals[c] += s[c] || 0;
             }
         }
-        console.log('Итого процентов:', totals);
+        console.log('Итого процентов из stats:', totals);
         
-        // Делим на 100, берём целое число в меньшую сторону
+        // Прибавляем остаток
+        const { data: rem } = await supabaseClient.from('remainder').select('*');
+        console.log('Остаток:', rem);
+        for (let r of (rem || [])) {
+            totals[r.chunk_name] += r.amount || 0;
+        }
+        console.log('Итого процентов (с остатком):', totals);
+        
+        // Делим на 100, берём целое число
         for (let c of CH) {
             let total = Math.floor(totals[c]);
             console.log(c + ' = ' + total + ' кусков');
             
-            // Обновляем или создаём запись в common_fund
             const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
                 await supabaseClient.from('common_fund').update({ amount: total }).eq('chunk_name', c);
