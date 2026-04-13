@@ -538,7 +538,7 @@
         console.log('totals with remainder:', totals);
         
         for (let c of CH) {
-            let total = totals[c] || 0;
+            let total = Math.round((totals[c] || 0) * 10) / 10;
             let chunks = Math.floor(total / 100);
             console.log(c + ': total=' + total + ', chunks=' + chunks);
             
