@@ -315,9 +315,8 @@
         if (!userIds.length) return alert('Выберите игроков!');
         
         const chunk = document.getElementById('multiChunk').value;
-        const amount = 100 / userIds.length;
-        const remainderPercent = 100 - (amount * userIds.length);
-        const remainder = Math.round(remainderPercent * 10) / 10;
+        const amount = Math.round((100 / userIds.length) * 10) / 10;
+        const remainder = Math.round((100 - (amount * userIds.length)) * 10) / 10;
         console.log('chunk=' + chunk + ', amount=' + amount + ', remainder=' + remainder);
         
         for (let uid of userIds) {
