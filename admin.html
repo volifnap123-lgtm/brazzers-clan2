@@ -305,6 +305,7 @@
     }
     
     async function givePercentMultiple() {
+        console.log('givePercentMultiple started');
         const sel = document.getElementById('multiUser');
         const userIds = Array.from(sel.selectedOptions).map(o => o.value);
         if (!userIds.length) return alert('Выберите игроков!');
@@ -312,6 +313,7 @@
         const chunk = document.getElementById('multiChunk').value;
         const amount = 100 / userIds.length;
         const remainder = 100 % userIds.length;
+        console.log('chunk=' + chunk + ', amount=' + amount + ', remainder=' + remainder);
         
         for (let uid of userIds) {
             const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).single();
@@ -325,7 +327,9 @@
             }
         }
         
+        console.log('Going to update remainder with remainder=' + remainder);
         await updateRemainderAdd(chunk, remainder);
+        console.log('Remainder updated');
         await updateCommonFund();
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -384,9 +388,13 @@
     }
     
     async function updateRemainderAdd(chunk, amount) {
+        console.log('updateRemainderAdd: chunk=' + chunk + ', amount=' + amount);
         const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        console.log('remainder record:', rem);
         let remData = rem?.[0] || {};
+        console.log('remData before:', remData);
         remData[chunk] = (remData[chunk] || 0) + amount;
+        console.log('remData after:', remData);
         if (rem?.[0]?.id) {
             await supabaseClient.from('remainder').update(remData).eq('id', rem[0].id);
         } else {
