@@ -285,13 +285,13 @@
         
         let vals = {};
         for (let c of CH) {
-            vals[c] = parseFloat(document.getElementById(c).value) || 0;
+            vals[c] = Math.round((parseFloat(document.getElementById(c).value) || 0) * 10) / 10;
         }
         
         const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).maybeSingle();
         if (existing) {
             for (let c of CH) {
-                existing[c] = (existing[c] || 0) + vals[c];
+                existing[c] = Math.round(((existing[c] || 0) + vals[c]) * 10) / 10;
             }
             await supabaseClient.from('stats').update(existing).eq('user_id', userId);
         } else {
@@ -333,7 +333,7 @@
         for (let uid of userIds) {
             const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).maybeSingle();
             if (existing) {
-                existing[chunk] = (existing[chunk] || 0) + amount;
+                existing[chunk] = Math.round(((existing[chunk] || 0) + amount) * 10) / 10;
                 await supabaseClient.from('stats').update(existing).eq('user_id', uid);
             } else {
                 let vals = {}; for (let c of CH) vals[c] = 0;
@@ -360,7 +360,7 @@
         const fromId = document.getElementById('fromUser').value;
         const toId = document.getElementById('toUser').value;
         const chunk = document.getElementById('transferChunk').value;
-        const amount = parseFloat(document.getElementById('transferAmount').value);
+        const amount = Math.round((parseFloat(document.getElementById('transferAmount').value) || 0) * 10) / 10;
         
         if (!fromId || !toId || !amount) return alert('Заполните все поля!');
         
@@ -372,8 +372,8 @@
         let fromVals = fromUser || {};
         let toVals = toUser || {};
         
-        fromVals[chunk] = (fromVals[chunk] || 0) - amount;
-        toVals[chunk] = (toVals[chunk] || 0) + amount;
+        fromVals[chunk] = Math.round(((fromVals[chunk] || 0) - amount) * 10) / 10;
+        toVals[chunk] = Math.round(((toVals[chunk] || 0) + amount) * 10) / 10;
         
         await supabaseClient.from('stats').update(fromVals).eq('user_id', fromId);
         await supabaseClient.from('stats').update(toVals).eq('user_id', toId);
