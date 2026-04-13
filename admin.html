@@ -515,11 +515,8 @@
     async function updateCommonFund() {
         console.log('=== updateCommonFund START ===');
         
-        // Берём ВСЕ записи из stats
         const { data: allStats } = await supabaseClient.from('stats').select('*');
-        console.log('Всего записей в stats:', allStats?.length);
         
-        // Складываем проценты всех пользователей
         let totals = {chunk1:0,chunk2:0,chunk3:0,chunk4:0,chunk5:0,chunk6:0,chunk7:0,chunk8:0,vr1:0,vr2:0,vr3:0,core:0};
         
         for (let s of (allStats || [])) {
@@ -527,20 +524,16 @@
                 totals[c] += s[c] || 0;
             }
         }
-        console.log('Итого процентов из stats:', totals);
         
-        // Прибавляем остаток
         const { data: rem } = await supabaseClient.from('remainder').select('*');
-        console.log('Остаток:', rem);
         for (let r of (rem || [])) {
             totals[r.chunk_name] += r.amount || 0;
         }
-        console.log('Итого процентов (с остатком):', totals);
         
-        // Делим на 100, берём целое число
+        // Сохраняем как проценты (не делим на 100)
         for (let c of CH) {
             let total = Math.floor(totals[c]);
-            console.log(c + ' = ' + total + ' кусков');
+            console.log(c + ' = ' + total + '%');
             
             const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
