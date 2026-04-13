@@ -183,7 +183,7 @@
 async function loadStats() {
         console.log('📊 Загрузка статистики...');
         
-        // Получаем все записи
+        // Получаем все записи для подсчёта total
         const { data: allData, error } = await s.from('stats').select('*').eq('user_id', user.id);
         console.log('stats response:', allData, 'error:', error);
         
@@ -193,23 +193,15 @@ async function loadStats() {
             return;
         }
         
-        // Удаляем старые записи если их больше 10
-        if (allData && allData.length > 10) {
-            const toDelete = allData.slice(0, allData.length - 10);
-            for (let rec of toDelete) {
-                await s.from('stats').delete().eq('id', rec.id);
-            }
-            console.log('Удалено старых записей: ' + toDelete.length);
-        }
-        
-        // Получаем оставшиеся (макс 10)
-        const { data } = await s.from('stats').select('*').eq('user_id', user.id);
-        
+        // Считаем total из ВСЕХ записей в БД
         let t = {}; for (let c of CH) t[c] = 0;
-        for (let x of (data || [])) for (let c of CH) t[c] += x[c] || 0;
+        for (let x of (allData || [])) for (let c of CH) t[c] += x[c] || 0;
+        
+        // Показываем только последние 10 записей (новые внизу)
+        const displayData = (allData || []).slice(-10);
         
         let h = '<table><thead><tr><th rowspan=2>Дата</th><th colspan=3 style="background:var(--bulldozer);color:white">Бульдозер</th><th colspan=4 style="background:var(--caravan);color:#111">Караван</th><th colspan=4 style="background:var(--newland);color:white">Новая Земля</th><th rowspan=2 style="background:var(--core);color:white">Ядро</th></tr><tr><th style="background:var(--bulldozer);color:white">1</th><th style="background:var(--bulldozer);color:white">2</th><th style="background:var(--bulldozer);color:white">ВР1</th><th style="background:var(--caravan);color:#111">3</th><th style="background:var(--caravan);color:#111">4</th><th style="background:var(--caravan);color:#111">5</th><th style="background:var(--caravan);color:#111">ВР2</th><th style="background:var(--newland);color:white">6</th><th style="background:var(--newland);color:white">7</th><th style="background:var(--newland);color:white">8</th><th style="background:var(--newland);color:white">ВР3</th></tr></thead><tbody>';
-        for (let x of (data || [])) {
+        for (let x of displayData) {
             h += '<tr><td>' + (x.created_at || x.updated_at || '').slice(0,16) + '</td>';
             for (let c of CH) h += '<td>' + (x[c]||0).toFixed(1) + '</td>';
             h += '</tr>';
