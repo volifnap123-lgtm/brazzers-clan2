@@ -45,6 +45,12 @@
         .remainder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
         .remainder-item{background:white;padding:8px;border-radius:4px;text-align:center}
         body.dark .remainder-item{background:rgba(74,222,128,0.1)}
+        .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:9999}
+        .loading-overlay.show{display:flex}
+        .loading-box{background:white;padding:30px 50px;border-radius:10px;text-align:center;color:#111}
+        .loading-spinner{width:40px;height:40px;border:4px solid #ddd;border-top-color:#16a34a;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        body.dark .loading-box{background:#1e293b;color:#fff}
     </style>
 </head>
 <body>
@@ -184,6 +190,14 @@
         <button class="btn" onclick="postNews()" style="margin-top:8px">Опубликовать</button>
     </div>
     
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <p>Обработка...</p>
+            <p style="font-size:12px;color:#666">Пожалуйста подождите</p>
+        </div>
+    </div>
+    
     <script>
     const SU = 'https://qjgzhtkpwamounnpgepr.supabase.co';
     const SK = 'sb_publishable_WV7YnhP_OAWYx8gQjOmG1Q_7GdKOVlV';
@@ -272,6 +286,7 @@
     }
     
     async function givePercentSingle() {
+        showLoading();
         const userId = document.getElementById('singleUser').value;
         if (!userId) return alert('Выберите игрока!');
         
@@ -301,11 +316,13 @@
         });
         
         for (let c of CH) document.getElementById(c).value = '0';
+        hideLoading();
         alert('Проценты выданы!');
         loadAll();
     }
     
     async function givePercentMultiple() {
+        showLoading();
         console.log('givePercentMultiple started');
         const sel = document.getElementById('multiUser');
         const userIds = Array.from(sel.selectedOptions).map(o => o.value);
@@ -345,10 +362,12 @@
         });
         
         alert('Проценты разделены!');
+        hideLoading();
         loadAll();
     }
     
     async function transferPercent() {
+        showLoading();
         const fromId = document.getElementById('fromUser').value;
         const toId = document.getElementById('toUser').value;
         const chunk = document.getElementById('transferChunk').value;
@@ -371,8 +390,8 @@
         await supabaseClient.from('stats').update(toVals).eq('user_id', toId);
         
         await supabaseClient.from('transfers').insert({
-            from_user: fromId,
-            to_user: toId,
+            from_user_id: fromId,
+            to_user_id: toId,
             chunk_name: chunk,
             amount: amount
         });
@@ -389,6 +408,7 @@
         });
         
         alert('Проценты переданы!');
+        hideLoading();
         loadAll();
     }
     
@@ -421,10 +441,12 @@
             details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
         });
         
+        showLoading();
         location.reload();
     }
     
     async function rejectChunk(id) {
+        showLoading();
         const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
         let vals = {};
         for (let c of CH) vals[c] = 0;
@@ -454,10 +476,12 @@
             details: 'request_id=' + id + ', user_id=' + req.user_id
         });
         
+        showLoading();
         location.reload();
     }
     
     async function rejectChange(id) {
+        showLoading();
         await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -471,6 +495,7 @@
     }
     
     async function giveFromRemainder() {
+        showLoading();
         const userId = document.getElementById('remainderUser').value;
         if (!userId) return alert('Выберите игрока!');
         
@@ -507,6 +532,7 @@
         
         for (let c of CH) document.getElementById('rem_'+c).value = '0';
         alert('Выдано из остатка!');
+        hideLoading();
         loadAll();
     }
     
@@ -554,6 +580,7 @@
     }
     
     async function postNews() {
+        showLoading();
         const user = JSON.parse(localStorage.getItem('session'));
         const msg = document.getElementById('newsMessage').value;
         if (!msg) return;
@@ -568,12 +595,16 @@
         
         document.getElementById('newsMessage').value = '';
         alert('Опубликовано!');
+        hideLoading();
     }
     
     function toggleTheme() {
         document.body.classList.toggle('dark');
         localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
     }
+    
+    function showLoading() { document.getElementById('loadingOverlay').classList.add('show'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
     
     function logout() { localStorage.removeItem('session'); location.href = 'login.html'; }
     
