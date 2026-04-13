@@ -289,7 +289,6 @@
             await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
         }
         
-        await updateRemainderAfterGive(vals);
         await updateCommonFund();
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -382,28 +381,6 @@
         
         alert('Проценты переданы!');
         loadAll();
-    }
-    
-    async function updateRemainderAfterGive(vals) {
-        console.log('updateRemainderAfterGive:', vals);
-        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
-        console.log('remainder before:', rem);
-        let remData = rem?.[0] || {};
-        for (let c of CH) {
-            if (vals[c] > 0) {
-                let total = vals[c];
-                let given = Math.floor(total / 100) * 100;
-                let rest = total - given;
-                console.log(c + ': total=' + total + ', given=' + given + ', rest=' + rest);
-                remData[c] = (remData[c] || 0) + rest;
-            }
-        }
-        console.log('remainder after:', remData);
-        if (rem?.[0]?.id) {
-            await supabaseClient.from('remainder').update(remData).eq('id', rem[0].id);
-        } else {
-            await supabaseClient.from('remainder').insert(remData);
-        }
     }
     
     async function updateRemainderAdd(chunk, amount) {
