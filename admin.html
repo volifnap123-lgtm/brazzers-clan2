@@ -138,8 +138,8 @@
         <button class="btn" onclick="transferPercent()" style="margin-top:8px">Передать</button>
     </div>
     
-    <div class="section">
-        <h2>Общак</h2>
+    <div class="section" style="opacity:0.5;pointer-events:none">
+        <h2>Общак ⚠️ временно не работает</h2>
         <div id="commonFund">Загрузка...</div>
     </div>
     
@@ -230,15 +230,7 @@
         fromSel.innerHTML = opts;
         toSel.innerHTML = opts;
         
-        const { data: cf } = await supabaseClient.from('common_fund').select('*');
-        let cfData = {};
-        for (let c of CH) cfData[c] = 0;
-        for (let c of (cf || [])) cfData[c.chunk_name] = c.amount || 0;
-        let cfHtml = '<table><tr><th>Категория</th><th>Кусок1</th><th>Кусок2</th><th>В.Рад1</th><th>Кусок3</th><th>Кусок4</th><th>Кусок5</th><th>В.Рад2</th><th>Кусок6</th><th>Кусок7</th><th>Кусок8</th><th>В.Рад3</th><th>Ядро</th></tr>';
-        cfHtml += '<tr><td><strong>Общак</strong></td>';
-        for (let c of CH) cfHtml += '<td>'+cfData[c]+'</td>';
-        cfHtml += '</tr></table>';
-        document.getElementById('commonFund').innerHTML = cfHtml;
+        document.getElementById('commonFund').innerHTML = '<p style="color:#666;text-align:center">Временно недоступно</p>';
         
         const { data: rem } = await supabaseClient.from('remainder').select('*');
         let remData = {};
@@ -298,7 +290,7 @@
             await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
         }
         
-        await updateCommonFund();
+        // updateCommonFund() - отключено
         
         const admin = JSON.parse(localStorage.getItem('session'));
         const user = allUsers.find(u => u.id == userId);
@@ -343,7 +335,7 @@
         }
         
         await updateRemainderAdd(chunk, remainder);
-        await updateCommonFund();
+        // updateCommonFund() - отключено
         
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
@@ -385,7 +377,7 @@
             amount: amount
         });
         
-        await updateCommonFund();
+        // updateCommonFund() - отключено
         
         const admin = JSON.parse(localStorage.getItem('session'));
         const fromU = allUsers.find(u => u.id == fromId);
@@ -501,7 +493,7 @@
             }
         }
         
-        await updateCommonFund();
+        // updateCommonFund() - отключено
         
         const admin = JSON.parse(localStorage.getItem('session'));
         const user = allUsers.find(u => u.id == userId);
