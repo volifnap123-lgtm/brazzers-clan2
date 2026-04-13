@@ -88,11 +88,13 @@
             </div>
             <div class="player-info" id="playerName" style="font-size:24px;margin-bottom:16px;font-weight:bold">Игрок: ...</div>
             <div class="table-container" id="statsTable"></div>
-            <div class="s" id="sixB13Info">Полученных 6б13: 0</div>
-            <div class="s" id="givenInfo">Отданных процентов: 0%</div>
-            <div class="s">
-                <h3>Запросить выдачу куска</h3>
-                <div id="requestBtns" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-top:12px">
+                <div class="s" id="sixB13Info" style="margin:0">Полученных 6б13: 0</div>
+                <div class="s" id="givenInfo" style="margin:0">Отданных процентов: 0%</div>
+                <div class="s" style="margin:0">
+                    <h3 style="font-size:14px;margin-bottom:8px">Запросить кусок</h3>
+                    <div id="requestBtns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -214,9 +216,9 @@ async function loadStats() {
         // Создаём кнопки запроса кусков
         let btns = '';
         for (let c of CH) {
-            if (t[c] >= 100) btns += '<button onclick="reqChunk(\''+c+'\')" style="background:var(--g);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;margin:2px">'+C_LABELS[c]+'</button>';
+            if (t[c] >= 100) btns += '<button onclick="reqChunk(\''+c+'\')" style="background:var(--g);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;margin:2px;font-size:12px">'+C_LABELS[c]+'</button>';
         }
-        document.getElementById('requestBtns').innerHTML = btns || 'Нет кусков для запроса';
+        document.getElementById('requestBtns').innerHTML = btns || '<span style="color:#888;font-size:12px">Нет кусков для запроса</span>';
     }
     
 async function loadCommon() {
