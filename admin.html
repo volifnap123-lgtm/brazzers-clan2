@@ -37,6 +37,14 @@
         .cat-core{background:var(--core)}
         .row{display:flex;gap:8px;flex-wrap:wrap}
         .col{flex:1;min-width:120px}
+        .collapsible{cursor:pointer;display:flex;align-items:center;gap:8px}
+        .collapsible::before{content:"▶";font-size:12px}
+        .collapsible.open::before{content:"▼"}
+        .users-content{display:none}
+        .users-content.open{display:block}
+        .remainder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+        .remainder-item{background:white;padding:8px;border-radius:4px;text-align:center}
+        body.dark .remainder-item{background:rgba(74,222,128,0.1)}
     </style>
 </head>
 <body>
@@ -146,13 +154,28 @@
     </div>
     
     <div class="section">
-        <h2>Запросы на смену данных</h2>
-        <div id="changeRequests">Загрузка...</div>
+        <h2 class="collapsible" onclick="toggleUsers()">Пользователи</h2>
+        <div id="users" class="users-content">Загрузка...</div>
     </div>
     
     <div class="section">
-        <h2>Пользователи</h2>
-        <div id="users">Загрузка...</div>
+        <h2>Выдать из остатка</h2>
+        <select id="remainderUser"><option value="">Выберите игрока</option></select>
+        <div class="remainder-grid">
+            <div class="remainder-item"><strong>Кусок1</strong><br><input type="number" step="0.1" id="rem_chunk1" value="0"></div>
+            <div class="remainder-item"><strong>Кусок2</strong><br><input type="number" step="0.1" id="rem_chunk2" value="0"></div>
+            <div class="remainder-item"><strong>В.Рад1</strong><br><input type="number" step="0.1" id="rem_vr1" value="0"></div>
+            <div class="remainder-item"><strong>Кусок3</strong><br><input type="number" step="0.1" id="rem_chunk3" value="0"></div>
+            <div class="remainder-item"><strong>Кусок4</strong><br><input type="number" step="0.1" id="rem_chunk4" value="0"></div>
+            <div class="remainder-item"><strong>Кусок5</strong><br><input type="number" step="0.1" id="rem_chunk5" value="0"></div>
+            <div class="remainder-item"><strong>В.Рад2</strong><br><input type="number" step="0.1" id="rem_vr2" value="0"></div>
+            <div class="remainder-item"><strong>Кусок6</strong><br><input type="number" step="0.1" id="rem_chunk6" value="0"></div>
+            <div class="remainder-item"><strong>Кусок7</strong><br><input type="number" step="0.1" id="rem_chunk7" value="0"></div>
+            <div class="remainder-item"><strong>Кусок8</strong><br><input type="number" step="0.1" id="rem_chunk8" value="0"></div>
+            <div class="remainder-item"><strong>В.Рад3</strong><br><input type="number" step="0.1" id="rem_vr3" value="0"></div>
+            <div class="remainder-item"><strong>Ядро</strong><br><input type="number" step="0.1" id="rem_core" value="0"></div>
+        </div>
+        <button class="btn" onclick="giveFromRemainder()" style="margin-top:8px">Выдать из остатка</button>
     </div>
     
     <div class="section">
@@ -212,10 +235,13 @@
         
         const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
         let remData = rem?.[0] || {};
-        let remHtml = '<table>';
-        for (let c of CH) remHtml += '<tr><td>'+c+'</td><td>'+(remData[c]||0)+'</td></tr>';
-        remHtml += '</table>';
+        let remHtml = '<div class="remainder-grid">';
+        for (let c of CH) remHtml += '<div class="remainder-item"><strong>'+c+'</strong><br>'+(remData[c]||0)+'</div>';
+        remHtml += '</div>';
         document.getElementById('remainder').innerHTML = remHtml;
+        
+        const remUserSel = document.getElementById('remainderUser');
+        remUserSel.innerHTML = opts;
         
         let chunkReqs = [];
         try {
@@ -233,24 +259,6 @@
             h += '</div>';
         }
         document.getElementById('chunkRequests').innerHTML = h;
-        
-        let changeReqs = [];
-        try {
-            const cr2 = await supabaseClient.from('change_requests').select('*').eq('status', 'pending');
-            changeReqs = cr2.data || [];
-        } catch(e) { console.error(e); }
-        
-        let h2 = '';
-        if (!changeReqs.length) h2 = 'Нет запросов';
-        for (let req of changeReqs) {
-            h2 += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
-            h2 += 'User ID: ' + req.user_id;
-            if (req.new_login) h2 += ' хочет логин: ' + req.new_login;
-            h2 += ' <button onclick="approveChange('+req.id+')">Одобрить</button>';
-            h2 += ' <button onclick="rejectChange('+req.id+')">Отказ</button>';
-            h2 += '</div>';
-        }
-        document.getElementById('changeRequests').innerHTML = h2;
         
         let usersHtml = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
         for (let u of allUsers) {
@@ -281,6 +289,9 @@
             await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
         }
         
+        await updateRemainderAfterGive(vals);
+        await updateCommonFund();
+        
         const admin = JSON.parse(localStorage.getItem('session'));
         const user = allUsers.find(u => u.id == userId);
         await supabaseClient.from('audit_log').insert({
@@ -301,6 +312,7 @@
         
         const chunk = document.getElementById('multiChunk').value;
         const amount = 100 / userIds.length;
+        const remainder = 100 % userIds.length;
         
         for (let uid of userIds) {
             const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', uid).single();
@@ -314,11 +326,14 @@
             }
         }
         
+        await updateRemainderAdd(chunk, remainder);
+        await updateCommonFund();
+        
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
             admin_id: admin.id,
             action: 'give_percent_multiple',
-            details: 'chunk=' + chunk + ', users=' + userIds.length + ', amount=' + amount.toFixed(2)
+            details: 'chunk=' + chunk + ', users=' + userIds.length + ', amount=' + amount.toFixed(2) + ', remainder=' + remainder
         });
         
         alert('Проценты разделены!');
@@ -354,6 +369,8 @@
             amount: amount
         });
         
+        await updateCommonFund();
+        
         const admin = JSON.parse(localStorage.getItem('session'));
         const fromU = allUsers.find(u => u.id == fromId);
         const toU = allUsers.find(u => u.id == toId);
@@ -365,6 +382,35 @@
         
         alert('Проценты переданы!');
         loadAll();
+    }
+    
+    async function updateRemainderAfterGive(vals) {
+        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        let remData = rem?.[0] || {};
+        for (let c of CH) {
+            if (vals[c] > 0) {
+                let total = vals[c];
+                let given = Math.floor(total / 100) * 100;
+                let rest = total - given;
+                remData[c] = (remData[c] || 0) + rest;
+            }
+        }
+        if (rem?.[0]?.id) {
+            await supabaseClient.from('remainder').update(remData).eq('id', rem[0].id);
+        } else {
+            await supabaseClient.from('remainder').insert(remData);
+        }
+    }
+    
+    async function updateRemainderAdd(chunk, amount) {
+        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        let remData = rem?.[0] || {};
+        remData[chunk] = (remData[chunk] || 0) + amount;
+        if (rem?.[0]?.id) {
+            await supabaseClient.from('remainder').update(remData).eq('id', rem[0].id);
+        } else {
+            await supabaseClient.from('remainder').insert(remData);
+        }
     }
     
     async function approveChunk(id) {
@@ -426,6 +472,75 @@
         });
         
         location.reload();
+    }
+    
+    async function giveFromRemainder() {
+        const userId = document.getElementById('remainderUser').value;
+        if (!userId) return alert('Выберите игрока!');
+        
+        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        let remData = rem?.[0] || {};
+        
+        let vals = {};
+        for (let c of CH) {
+            vals[c] = parseFloat(document.getElementById('rem_'+c).value) || 0;
+            if (vals[c] > (remData[c] || 0)) return alert('Недостаточно в остатке: ' + c);
+            remData[c] = (remData[c] || 0) - vals[c];
+        }
+        
+        await supabaseClient.from('remainder').update(remData).eq('id', rem?.[0]?.id);
+        
+        const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).single();
+        if (existing) {
+            for (let c of CH) existing[c] = (existing[c] || 0) + vals[c];
+            await supabaseClient.from('stats').update(existing).eq('user_id', userId);
+        } else {
+            await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
+        }
+        
+        await updateCommonFund();
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        const user = allUsers.find(u => u.id == userId);
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'give_from_remainder',
+            details: 'user=' + (user?.login || userId) + ', chunks=' + JSON.stringify(vals)
+        });
+        
+        alert('Выдано из остатка!');
+        loadAll();
+    }
+    
+    async function updateCommonFund() {
+        const { data: allStats } = await supabaseClient.from('stats').select('*');
+        let totals = {};
+        for (let c of CH) totals[c] = 0;
+        
+        for (let s of (allStats || [])) {
+            for (let c of CH) totals[c] += s[c] || 0;
+        }
+        
+        const { data: rem } = await supabaseClient.from('remainder').select('*').limit(1);
+        let remData = rem?.[0] || {};
+        for (let c of CH) totals[c] += remData[c] || 0;
+        
+        let chunks = {};
+        for (let c of CH) chunks[c] = Math.floor(totals[c] / 100);
+        
+        const { data: cf } = await supabaseClient.from('common_fund').select('*').limit(1);
+        if (cf?.[0]?.id) {
+            await supabaseClient.from('common_fund').update(chunks).eq('id', cf[0].id);
+        } else {
+            await supabaseClient.from('common_fund').insert(chunks);
+        }
+    }
+    
+    function toggleUsers() {
+        const el = document.querySelector('.users-content');
+        const h2 = document.querySelector('h2.collapsible');
+        el.classList.toggle('open');
+        h2.classList.toggle('open');
     }
     
     async function postNews() {
