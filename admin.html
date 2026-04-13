@@ -359,7 +359,7 @@
         const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).maybeSingle();
         const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).maybeSingle();
         
-        if (!fromUser || (fromUser[chunk] || 0) < amount) return alert('Недостаточно процентов!');
+        if (!fromUser || (fromUser[chunk] || 0) < amount - 0.01) return alert('Недостаточно процентов!');
         
         let fromVals = fromUser || {};
         let toVals = toUser || {};
