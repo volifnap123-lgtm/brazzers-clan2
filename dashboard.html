@@ -272,8 +272,8 @@ async function loadCommon() {
         let h = '';
         for (let n of news) {
             let author = usersMap[n.author_id] || { username: 'Unknown' };
-            let newsClass = n.role === 'admin2' ? 'news-admin2' : n.role === 'admin' ? 'news-admin' : 'news-user';
-            h += '<div class="news-item ' + newsClass + '" style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;border-left:4px solid ' + (n.role === 'admin2' ? '#eab308' : n.role === 'admin' ? '#ef4444' : 'transparent') + '">';
+            let newsClass = n.role === 'admin2' ? 'news-admin2' : 'news-admin';
+            h += '<div class="news-item ' + newsClass + '" style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px">';
             h += '<div class="author" style="font-weight:bold;color:var(--g2);margin-bottom:6px">' + author.username + '</div>';
             h += '<div class="message" style="white-space:pre-wrap;line-height:1.4">' + n.message + '</div>';
             h += '<div class="date" style="font-size:12px;color:#666;margin-top:6px">' + (n.created_at || '').slice(0, 16) + '</div>';
