@@ -281,6 +281,14 @@
             await supabaseClient.from('stats').insert({ user_id: userId, ...vals });
         }
         
+        const admin = JSON.parse(localStorage.getItem('session'));
+        const user = allUsers.find(u => u.id == userId);
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'give_percent_single',
+            details: 'user=' + (user?.login || userId) + ', chunks=' + JSON.stringify(vals)
+        });
+        
         for (let c of CH) document.getElementById(c).value = '0';
         alert('Проценты выданы!');
         loadAll();
@@ -305,6 +313,13 @@
                 await supabaseClient.from('stats').insert({ user_id: uid, ...vals });
             }
         }
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'give_percent_multiple',
+            details: 'chunk=' + chunk + ', users=' + userIds.length + ', amount=' + amount.toFixed(2)
+        });
         
         alert('Проценты разделены!');
         loadAll();
@@ -339,6 +354,15 @@
             amount: amount
         });
         
+        const admin = JSON.parse(localStorage.getItem('session'));
+        const fromU = allUsers.find(u => u.id == fromId);
+        const toU = allUsers.find(u => u.id == toId);
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'transfer_percent',
+            details: 'from=' + (fromU?.login || fromId) + ', to=' + (toU?.login || toId) + ', chunk=' + chunk + ', amount=' + amount
+        });
+        
         alert('Проценты переданы!');
         loadAll();
     }
@@ -347,6 +371,14 @@
         const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
         await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
         await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'approve_chunk_request',
+            details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
+        });
+        
         location.reload();
     }
     
@@ -357,6 +389,14 @@
         vals[req.chunk_name] = 100;
         await supabaseClient.from('stats').insert({ user_id: req.user_id, ...vals });
         await supabaseClient.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'reject_chunk_request',
+            details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
+        });
+        
         location.reload();
     }
     
@@ -364,11 +404,27 @@
         const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
         if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
         await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'approve_change_request',
+            details: 'request_id=' + id + ', user_id=' + req.user_id
+        });
+        
         location.reload();
     }
     
     async function rejectChange(id) {
         await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'reject_change_request',
+            details: 'request_id=' + id
+        });
+        
         location.reload();
     }
     
