@@ -527,19 +527,22 @@
         
         for (let s of (allStats || [])) {
             for (let c of CH) {
-                totals[c] += Math.round((s[c] || 0) * 10) / 10;
+                let val = s[c] || 0;
+                // Округляем при чтении
+                totals[c] += Math.round(val * 10) / 10;
             }
         }
+        console.log('Итого из stats:', totals);
         
         const { data: rem } = await supabaseClient.from('remainder').select('*');
         for (let r of (rem || [])) {
             totals[r.chunk_name] += Math.round((r.amount || 0) * 10) / 10;
         }
+        console.log('Итого с остатком:', totals);
         
-        // Сохраняем как проценты (не делим на 100)
         for (let c of CH) {
             let total = Math.floor(totals[c]);
-            console.log(c + ' = ' + total + '%');
+            console.log(c + ' = ' + total);
             
             const { data: cf } = await supabaseClient.from('common_fund').select('*').eq('chunk_name', c).maybeSingle();
             if (cf) {
