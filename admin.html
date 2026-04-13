@@ -320,8 +320,14 @@
         if (!userIds.length) return alert('Выберите игроков!');
         
         const chunk = document.getElementById('multiChunk').value;
-        const amount = Math.round((100 / userIds.length) * 10) / 10;
-        const remainder = Math.round((100 - (amount * userIds.length)) * 10) / 10;
+        
+        // Округляем до 1 знака после запятой
+        let amount = Math.round((100 / userIds.length) * 10) / 10;
+        let remainder = Math.round((100 - (amount * userIds.length)) * 10) / 10;
+        
+        // Если остаток получился 0.0, а должен быть 0.1 (из-за погрешности)
+        if (remainder === 0 && amount * userIds.length < 100) remainder = 0.1;
+        
         console.log('chunk=' + chunk + ', amount=' + amount + ', remainder=' + remainder);
         
         for (let uid of userIds) {
@@ -336,9 +342,7 @@
             }
         }
         
-        console.log('Going to update remainder with remainder=' + remainder);
         await updateRemainderAdd(chunk, remainder);
-        console.log('Remainder updated');
         await updateCommonFund();
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -400,11 +404,13 @@
         console.log('updateRemainderAdd: chunk=' + chunk + ', amount=' + amount);
         if (amount === 0) return;
         
+        // Округляем до 1 знака
+        amount = Math.round(amount * 10) / 10;
+        
         const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', chunk).maybeSingle();
-        console.log('remainder record:', rem);
         
         if (rem) {
-            let newAmount = (rem.amount || 0) + amount;
+            let newAmount = Math.round(((rem.amount || 0) + amount) * 10) / 10;
             await supabaseClient.from('remainder').update({ amount: newAmount }).eq('chunk_name', chunk);
         } else {
             await supabaseClient.from('remainder').insert({ chunk_name: chunk, amount: amount });
@@ -521,13 +527,13 @@
         
         for (let s of (allStats || [])) {
             for (let c of CH) {
-                totals[c] += s[c] || 0;
+                totals[c] += Math.round((s[c] || 0) * 10) / 10;
             }
         }
         
         const { data: rem } = await supabaseClient.from('remainder').select('*');
         for (let r of (rem || [])) {
-            totals[r.chunk_name] += r.amount || 0;
+            totals[r.chunk_name] += Math.round((r.amount || 0) * 10) / 10;
         }
         
         // Сохраняем как проценты (не делим на 100)
