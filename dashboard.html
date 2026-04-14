@@ -319,7 +319,7 @@ async function loadCommon() {
         try {
             let insertData = { user_id: user.id, status: 'pending' };
             if (nl) insertData.new_login = nl;
-            if (np) insertData.new_password = btoa(np);
+            if (np) insertData.new_password_hash = btoa(np);
             
             console.log('Отправка заявки:', insertData);
             const { error } = await s.from('change_requests').insert(insertData);

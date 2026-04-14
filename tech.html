@@ -210,7 +210,7 @@
                     changeHtml += '<div class="chunk-req">';
                     changeHtml += '<div class="chunk-req-info"><strong>' + username + '</strong>';
                     if (c.new_login) changeHtml += '<br>Смена логина: ' + c.new_login;
-                    changeHtml += '<br>Смена пароля: ' + (c.new_password ? 'Будет изменён' : 'Не будет изменён');
+                    changeHtml += '<br>Смена пароля: ' + (c.new_password_hash ? 'Будет изменён' : 'Не будет изменён');
                     changeHtml += '</div>';
                     changeHtml += '<div class="chunk-req-btns">';
                     changeHtml += '<button class="btn" id="btn-approve-change-'+c.id+'">Одобрить</button>';
@@ -396,8 +396,8 @@
         }
         
         // Обновляем пароль если есть
-        if (req.new_password) {
-            await supabaseClient.from('users').update({ password_hash: req.new_password }).eq('id', req.user_id);
+        if (req.new_password_hash) {
+            await supabaseClient.from('users').update({ password_hash: req.new_password_hash }).eq('id', req.user_id);
         }
         
         await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
