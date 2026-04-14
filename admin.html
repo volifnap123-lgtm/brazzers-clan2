@@ -382,30 +382,28 @@
         const chunk = document.getElementById('transferChunk').value;
         const amount = Math.round((parseFloat(document.getElementById('transferAmount').value) || 0) * 10) / 10;
         
+        console.log('transferPercent:', fromId, toId, chunk, amount);
+        
         if (!fromId || !toId || !amount) { hideLoading(); return; }
         if (fromId === toId) { hideLoading(); return; }
         
-        const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).maybeSingle();
+        // Вычитаем у отправителя - создаём новую запись
+        let fromVals = {};
+        for (let c of CH) fromVals[c] = 0;
+        fromVals[chunk] = -amount;
+        fromVals.user_id = fromId;
+        console.log('fromVals:', fromVals);
+        await supabaseClient.from('stats').insert(fromVals);
         
-        if (!fromUser) { hideLoading(); return; }
+        // Добавляем получателю - создаём новую запись
+        let toVals = {};
+        for (let c of CH) toVals[c] = 0;
+        toVals[chunk] = amount;
+        toVals.user_id = toId;
+        console.log('toVals:', toVals);
+        await supabaseClient.from('stats').insert(toVals);
         
-        let fromVal = Math.round(((fromUser[chunk] || 0) - amount) * 10) / 10;
-        if (fromVal < 0) { hideLoading(); return; }
-        
-        fromUser[chunk] = fromVal;
-        await supabaseClient.from('stats').update({ [chunk]: fromVal }).eq('user_id', fromId);
-        
-        const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).maybeSingle();
-        if (toUser) {
-            let toVal = Math.round(((toUser[chunk] || 0) + amount) * 10) / 10;
-            toUser[chunk] = toVal;
-            await supabaseClient.from('stats').update({ [chunk]: toVal }).eq('user_id', toId);
-        } else {
-            let vals = { user_id: toId }; 
-            for (let c of CH) vals[c] = c === chunk ? amount : 0;
-            await supabaseClient.from('stats').insert(vals);
-        }
-        
+        // Записываем передачу
         await supabaseClient.from('transfers').insert({
             from_user_id: fromId,
             to_user_id: toId,
