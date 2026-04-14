@@ -493,6 +493,9 @@
             const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
             await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
             
+            // Добавляем в историю выданных кусков
+            await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
+            
             const admin = JSON.parse(localStorage.getItem('session'));
             await supabaseClient.from('audit_log').insert({
                 admin_id: admin.id,

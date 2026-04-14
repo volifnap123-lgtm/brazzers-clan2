@@ -240,11 +240,16 @@ async function loadStats() {
         }
         document.getElementById('requestBtns').innerHTML = btns || '<span style="color:#888;font-size:12px">Нет кусков для запроса</span>';
         
-        // Считаем 6Б13 - минимум из (каждый кусок / 100)
+        // Считаем 6Б13 из таблицы issued_chunks
+        const { data: issued } = await s.from('issued_chunks').select('chunk_name').eq('user_id', user.id);
+        let counts = {};
+        for (let c of CH) counts[c] = 0;
+        for (let x of (issued || [])) {
+            if (counts[x.chunk_name] !== undefined) counts[x.chunk_name]++;
+        }
         let sixB13 = 999999;
         for (let c of CH) {
-            let count = Math.floor(t[c] / 100);
-            if (count < sixB13) sixB13 = count;
+            if (counts[c] < sixB13) sixB13 = counts[c];
         }
         if (sixB13 === 999999) sixB13 = 0;
         document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + sixB13;
