@@ -491,11 +491,9 @@
         showLoading();
         try {
             const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
-            console.log('req:', req);
             await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
             
             // Добавляем в историю выданных кусков
-            console.log('Inserting into issued_chunks:', { user_id: req.user_id, chunk_name: req.chunk_name });
             await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
             
             const admin = JSON.parse(localStorage.getItem('session'));
