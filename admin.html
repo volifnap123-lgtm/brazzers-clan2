@@ -51,6 +51,19 @@
         .loading-spinner{width:40px;height:40px;border:4px solid #ddd;border-top-color:#16a34a;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px}
         @keyframes spin{to{transform:rotate(360deg)}}
         body.dark .loading-box{background:#1e293b;color:#fff}
+        
+        /* Тёмная тема для категорий */
+        body.dark .cat-bulldozer{background:#c77a00 !important}
+        body.dark .cat-caravan{background:#3aba68 !important}
+        body.dark .cat-newland{background:#2d6bc4 !important}
+        body.dark .cat-core{background:#cc3333 !important}
+        
+        /* Стили для запросов кусков */
+        .chunk-req{background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+        .chunk-req-info{font-size:14px}
+        .chunk-req-btns{display:flex;gap:8px}
+        .chunk-req-btns button{font-size:12px;padding:6px 12px}
+        body.dark .chunk-req{background:rgba(74,222,128,0.1);border:1px solid #4ade80}
     </style>
 </head>
 <body>
@@ -265,13 +278,17 @@
         } catch(e) { console.error(e); }
         
         let h = '';
-        if (!chunkReqs.length) h = 'Нет запросов';
+        if (!chunkReqs.length) h = '<div style="text-align:center;padding:20px;color:#666">Нет запросов</div>';
         for (let req of chunkReqs) {
-            h += '<div style="padding:8px;margin:4px 0;background:white;border-radius:4px">';
-            h += 'User ID: ' + req.user_id + ' хочет ' + req.chunk_name;
-            h += ' <button onclick="approveChunk('+req.id+')">Выдать</button>';
-            h += ' <button onclick="rejectChunk('+req.id+')">Отказ</button>';
-            h += '</div>';
+            let user = allUsers.find(u => u.id == req.user_id);
+            let username = user ? user.username : 'User ID: ' + req.user_id;
+            let chunkLabel = {chunk1:'Кусок1',chunk2:'Кусок2',chunk3:'Кусок3',chunk4:'Кусок4',chunk5:'Кусок5',chunk6:'Кусок6',chunk7:'Кусок7',chunk8:'Кусок8',vr1:'В.Рад1',vr2:'В.Рад2',vr3:'В.Рад3',core:'Ядро'}[req.chunk_name] || req.chunk_name;
+            h += '<div class="chunk-req">';
+            h += '<div class="chunk-req-info"><strong>' + username + '</strong> хочет <strong>' + chunkLabel + '</strong></div>';
+            h += '<div class="chunk-req-btns">';
+            h += '<button class="btn" onclick="approveChunk('+req.id+')">Выдать</button>';
+            h += '<button class="btn btn-red" onclick="rejectChunk('+req.id+')">Отказ</button>';
+            h += '</div></div>';
         }
         document.getElementById('chunkRequests').innerHTML = h;
         
@@ -365,21 +382,29 @@
         const chunk = document.getElementById('transferChunk').value;
         const amount = Math.round((parseFloat(document.getElementById('transferAmount').value) || 0) * 10) / 10;
         
-        if (!fromId || !toId || !amount) return;
+        if (!fromId || !toId || !amount) { hideLoading(); return; }
+        if (fromId === toId) { hideLoading(); return; }
         
         const { data: fromUser } = await supabaseClient.from('stats').select('*').eq('user_id', fromId).maybeSingle();
+        
+        if (!fromUser) { hideLoading(); return; }
+        
+        let fromVal = Math.round(((fromUser[chunk] || 0) - amount) * 10) / 10;
+        if (fromVal < 0) { hideLoading(); return; }
+        
+        fromUser[chunk] = fromVal;
+        await supabaseClient.from('stats').update({ [chunk]: fromVal }).eq('user_id', fromId);
+        
         const { data: toUser } = await supabaseClient.from('stats').select('*').eq('user_id', toId).maybeSingle();
-        
-        if (!fromUser || (fromUser[chunk] || 0) < amount - 0.01) return;
-        
-        let fromVals = fromUser || {};
-        let toVals = toUser || {};
-        
-        fromVals[chunk] = Math.round(((fromVals[chunk] || 0) - amount) * 10) / 10;
-        toVals[chunk] = Math.round(((toVals[chunk] || 0) + amount) * 10) / 10;
-        
-        await supabaseClient.from('stats').update(fromVals).eq('user_id', fromId);
-        await supabaseClient.from('stats').update(toVals).eq('user_id', toId);
+        if (toUser) {
+            let toVal = Math.round(((toUser[chunk] || 0) + amount) * 10) / 10;
+            toUser[chunk] = toVal;
+            await supabaseClient.from('stats').update({ [chunk]: toVal }).eq('user_id', toId);
+        } else {
+            let vals = { user_id: toId }; 
+            for (let c of CH) vals[c] = c === chunk ? amount : 0;
+            await supabaseClient.from('stats').insert(vals);
+        }
         
         await supabaseClient.from('transfers').insert({
             from_user_id: fromId,
@@ -387,8 +412,6 @@
             chunk_name: chunk,
             amount: amount
         });
-        
-        // updateCommonFund() - отключено
         
         const admin = JSON.parse(localStorage.getItem('session'));
         const fromU = allUsers.find(u => u.id == fromId);
@@ -421,8 +444,8 @@
     }
     
     async function approveChunk(id) {
+        showLoading();
         const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
-        await supabaseClient.from('issued_chunks').insert({ user_id: req.user_id, chunk_name: req.chunk_name });
         await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -432,8 +455,7 @@
             details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
         });
         
-        showLoading();
-        location.reload();
+        loadAll();
     }
     
     async function rejectChunk(id) {
@@ -452,7 +474,7 @@
             details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
         });
         
-        location.reload();
+        loadAll();
     }
     
     async function approveChange(id) {
@@ -467,12 +489,10 @@
             details: 'request_id=' + id + ', user_id=' + req.user_id
         });
         
-        showLoading();
-        location.reload();
+        loadAll();
     }
     
     async function rejectChange(id) {
-        showLoading();
         await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
         
         const admin = JSON.parse(localStorage.getItem('session'));
@@ -482,7 +502,7 @@
             details: 'request_id=' + id
         });
         
-        location.reload();
+        loadAll();
     }
     
     async function giveFromRemainder() {
