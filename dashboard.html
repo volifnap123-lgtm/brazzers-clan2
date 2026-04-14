@@ -240,6 +240,15 @@ async function loadStats() {
         }
         document.getElementById('requestBtns').innerHTML = btns || '<span style="color:#888;font-size:12px">Нет кусков для запроса</span>';
         
+        // Считаем 6Б13 - минимум из (каждый кусок / 100)
+        let sixB13 = 999999;
+        for (let c of CH) {
+            let count = Math.floor(t[c] / 100);
+            if (count < sixB13) sixB13 = count;
+        }
+        if (sixB13 === 999999) sixB13 = 0;
+        document.getElementById('sixB13Info').textContent = 'Полученных 6б13: ' + sixB13;
+        
         // Считаем отданные проценты из transfers
         const { data: transfers } = await s.from('transfers').select('amount').eq('from_user_id', user.id);
         let given = 0;
