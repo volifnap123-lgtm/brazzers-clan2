@@ -209,7 +209,8 @@
                     let username = user ? user.username : 'User ID: ' + c.user_id;
                     changeHtml += '<div class="chunk-req">';
                     changeHtml += '<div class="chunk-req-info"><strong>' + username + '</strong>';
-                    if (c.new_login) changeHtml += '<br>Новый логин: ' + c.new_login;
+                    if (c.new_login) changeHtml += '<br>Смена логина: ' + c.new_login;
+                    changeHtml += '<br>Смена пароля: ' + (c.new_password ? 'Будет изменён' : 'Не будет изменён');
                     changeHtml += '</div>';
                     changeHtml += '<div class="chunk-req-btns">';
                     changeHtml += '<button class="btn" id="btn-approve-change-'+c.id+'">Одобрить</button>';
@@ -388,7 +389,17 @@
     
     async function approveChange(id) {
         const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
-        if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        
+        // Обновляем логин если есть
+        if (req.new_login) {
+            await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+        }
+        
+        // Обновляем пароль если есть
+        if (req.new_password) {
+            await supabaseClient.from('users').update({ password_hash: req.new_password }).eq('id', req.user_id);
+        }
+        
         await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
         
         const admin = JSON.parse(localStorage.getItem('session'));

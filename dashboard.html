@@ -310,8 +310,31 @@ async function loadCommon() {
     function goTech() { console.log('➡️ Тех'); location.href = 'tech.html'; }
     async function reqChange() {
         let nl = document.getElementById('newLogin').value;
-        if (!nl) return;
-        await s.from('change_requests').insert({ user_id: user.id, new_login: nl, status: 'pending' });
+        let np = document.getElementById('newPass').value;
+        if (!nl && !np) return;
+        
+        // Показываем overlay
+        document.querySelector('.overlay').classList.add('open');
+        
+        try {
+            await s.from('change_requests').insert({ 
+                user_id: user.id, 
+                new_login: nl || null, 
+                new_password: np ? btoa(np) : null,
+                status: 'pending' 
+            });
+            
+            // Очищаем поля
+            document.getElementById('newLogin').value = '';
+            document.getElementById('newPass').value = '';
+            
+            // Показываем сообщение об успехе
+            alert('✅ Заявка отправлена!');
+        } catch(e) {
+            console.error('Ошибка:', e);
+        }
+        
+        document.querySelector('.overlay').classList.remove('open');
     }
     
     async function reqChunk(chunk) {
