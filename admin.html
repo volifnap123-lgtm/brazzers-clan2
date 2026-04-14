@@ -286,10 +286,31 @@
             h += '<div class="chunk-req">';
             h += '<div class="chunk-req-info"><strong>' + username + '</strong> хочет <strong>' + chunkLabel + '</strong></div>';
             h += '<div class="chunk-req-btns">';
-            h += '<button class="btn" onclick="approveChunk('+req.id+')">Выдать</button>';
-            h += '<button class="btn btn-red" onclick="rejectChunk('+req.id+')">Отказ</button>';
+            h += '<button class="btn" id="btn-approve-'+req.id+'">Выдать</button>';
+            h += '<button class="btn btn-red" id="btn-reject-'+req.id+'">Отказ</button>';
             h += '</div></div>';
         }
+        
+        // Добавляем обработчики после создания HTML
+        setTimeout(() => {
+            for (let req of chunkReqs) {
+                let approveBtn = document.getElementById('btn-approve-'+req.id);
+                let rejectBtn = document.getElementById('btn-reject-'+req.id);
+                
+                if (approveBtn) {
+                    approveBtn.onclick = function() {
+                        console.log('Клик по Выдать, id=', req.id);
+                        approveChunk(req.id);
+                    };
+                }
+                if (rejectBtn) {
+                    rejectBtn.onclick = function() {
+                        console.log('Клик по Отказ, id=', req.id);
+                        rejectChunk(req.id);
+                    };
+                }
+            }
+        }, 100);
         document.getElementById('chunkRequests').innerHTML = h;
         
         let usersHtml = '<table><tr><th>Ник</th><th>Логин</th><th>Роль</th></tr>';
