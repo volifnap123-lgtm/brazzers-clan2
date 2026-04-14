@@ -42,6 +42,13 @@
         
         .row{display:flex;gap:8px;margin-top:8px}
         .col{flex:1}
+        
+        /* Стили для запросов - как в админке */
+        .chunk-req{background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+        .chunk-req-info{font-size:14px}
+        .chunk-req-btns{display:flex;gap:8px}
+        .chunk-req-btns button{font-size:12px;padding:6px 12px}
+        body.dark .chunk-req{background:rgba(74,222,128,0.1);border:1px solid #4ade80}
     </style>
 </head>
 <body>
@@ -195,16 +202,34 @@
             // Изменения
             let changeHtml = '';
             if (!changes || changes.length === 0) {
-                changeHtml = 'Нет заявок';
+                changeHtml = '<div style="text-align:center;padding:20px;color:#666">Нет заявок</div>';
             } else {
                 for (let c of changes) {
-                    changeHtml += '<div style="background:white;padding:12px;border-radius:8px;margin:8px 0">';
-                    changeHtml += '<strong>Пользователь ID: ' + c.user_id + '</strong>';
+                    let user = users.find(u => u.id == c.user_id);
+                    let username = user ? user.username : 'User ID: ' + c.user_id;
+                    changeHtml += '<div class="chunk-req">';
+                    changeHtml += '<div class="chunk-req-info"><strong>' + username + '</strong>';
                     if (c.new_login) changeHtml += '<br>Новый логин: ' + c.new_login;
-                    changeHtml += '<br><button class="btn" onclick="approveChange(' + c.id + ')">Одобрить</button> ';
-                    changeHtml += '<button class="btn btn-red" onclick="rejectChange(' + c.id + ')">Отклонить</button>';
                     changeHtml += '</div>';
+                    changeHtml += '<div class="chunk-req-btns">';
+                    changeHtml += '<button class="btn" id="btn-approve-change-'+c.id+'">Одобрить</button>';
+                    changeHtml += '<button class="btn btn-red" id="btn-reject-change-'+c.id+'">Отклонить</button>';
+                    changeHtml += '</div></div>';
                 }
+                
+                // Добавляем обработчики
+                setTimeout(() => {
+                    for (let c of changes) {
+                        let approveBtn = document.getElementById('btn-approve-change-'+c.id);
+                        let rejectBtn = document.getElementById('btn-reject-change-'+c.id);
+                        if (approveBtn) {
+                            approveBtn.onclick = function() { approveChange(c.id); };
+                        }
+                        if (rejectBtn) {
+                            rejectBtn.onclick = function() { rejectChange(c.id); };
+                        }
+                    }
+                }, 100);
             }
             document.getElementById('changeRequests').innerHTML = changeHtml;
             
@@ -373,7 +398,7 @@
             details: 'request_id=' + id
         });
         
-        location.reload();
+        loadAll();
     }
     
     async function rejectChange(id) {
@@ -386,7 +411,7 @@
             details: 'request_id=' + id
         });
         
-        location.reload();
+        loadAll();
     }
     
     async function postNews() {
