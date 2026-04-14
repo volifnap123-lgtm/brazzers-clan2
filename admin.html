@@ -9,6 +9,13 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
+        
+        /* Красивый скроллбар */
+        ::-webkit-scrollbar{width:10px;height:10px}
+        ::-webkit-scrollbar-track{background:rgba(0,0,0,0.1);border-radius:5px}
+        ::-webkit-scrollbar-thumb{background:var(--g);border-radius:5px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--g2)}
+        
         body{background:var(--g50);color:var(--gray);font-family:Arial,sans-serif;min-height:100vh;padding:15px}
         body.dark{background:#0f172a;color:#e2e8f0}
         .h{display:flex;justify-content:space-between;margin-bottom:25px;padding-bottom:12px;border-bottom:2px solid var(--g);flex-wrap:wrap;gap:10px}

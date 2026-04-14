@@ -9,6 +9,12 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--g:#16a34a;--g2:#15803d;--g100:#dcfce7;--g50:#f0fdf4;--w:#fff;--gray:#111;--b:#bbf7d0;--bulldozer:#f59e0b;--caravan:#4ade80;--newland:#3b82f6;--core:#ef4444}
+        
+        /* Красивый скроллбар */
+        ::-webkit-scrollbar{width:10px;height:10px}
+        ::-webkit-scrollbar-track{background:rgba(0,0,0,0.1);border-radius:5px}
+        ::-webkit-scrollbar-thumb{background:var(--g);border-radius:5px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--g2)}
         body{background:url('static/images/light-bg.jpg') fixed;background-size:cover;font-family:Arial,sans-serif;color:var(--gray);min-height:100vh}
         .h{display:flex;align-items:center;padding:16px;background:rgba(255,255,255,0.92);border-bottom:2px solid var(--g);gap:12px;flex-wrap:wrap}
         .logo{font-weight:700;font-size:24px;color:var(--g);border:2px solid var(--g);padding:5px 12px;border-radius:8px;background:var(--g50)}
