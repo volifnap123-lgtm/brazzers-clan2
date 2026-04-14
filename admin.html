@@ -564,13 +564,33 @@
     async function giveFromRemainder() {
         showLoading();
         const userId = document.getElementById('remainderUser').value;
-        if (!userId) return;
+        if (!userId) { hideLoading(); return; }
+        
+        let errors = [];
         
         for (let c of CH) {
             let amount = parseFloat(document.getElementById('rem_'+c).value) || 0;
             if (amount > 0) {
                 const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', c).single();
-                if (!rem || (rem.amount || 0) < amount) return;
+                if (!rem || (rem.amount || 0) < amount) {
+                    let chunkLabel = {chunk1:'Кусок1',chunk2:'Кусок2',chunk3:'Кусок3',chunk4:'Кусок4',chunk5:'Кусок5',chunk6:'Кусок6',chunk7:'Кусок7',chunk8:'Кусок8',vr1:'В.Рад1',vr2:'В.Рад2',vr3:'В.Рад3',core:'Ядро'}[c] || c;
+                    let available = rem ? (rem.amount || 0) : 0;
+                    errors.push(chunkLabel + ': доступно ' + available.toFixed(1) + '%, запрошено ' + amount + '%');
+                }
+            }
+        }
+        
+        if (errors.length > 0) {
+            hideLoading();
+            showToast('❌ Недостаточно в остатке:<br>' + errors.join('<br>'));
+            return;
+        }
+        
+        // Если ошибок нет - выполняем выдачу
+        for (let c of CH) {
+            let amount = parseFloat(document.getElementById('rem_'+c).value) || 0;
+            if (amount > 0) {
+                const { data: rem } = await supabaseClient.from('remainder').select('*').eq('chunk_name', c).single();
                 await supabaseClient.from('remainder').update({ amount: (rem.amount || 0) - amount }).eq('chunk_name', c);
                 
                 const { data: existing } = await supabaseClient.from('stats').select('*').eq('user_id', userId).single();
