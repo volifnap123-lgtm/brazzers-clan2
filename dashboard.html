@@ -309,29 +309,33 @@ async function loadCommon() {
     function goAdmin2() { console.log('➡️ Админ2'); location.href = 'admin.html'; }
     function goTech() { console.log('➡️ Тех'); location.href = 'tech.html'; }
     async function reqChange() {
-        let nl = document.getElementById('newLogin').value;
-        let np = document.getElementById('newPass').value;
+        let nl = document.getElementById('newLogin').value.trim();
+        let np = document.getElementById('newPass').value.trim();
         if (!nl && !np) return;
         
         // Показываем overlay
         document.querySelector('.overlay').classList.add('open');
         
         try {
-            await s.from('change_requests').insert({ 
-                user_id: user.id, 
-                new_login: nl || null, 
-                new_password: np ? btoa(np) : null,
-                status: 'pending' 
-            });
+            let insertData = { user_id: user.id, status: 'pending' };
+            if (nl) insertData.new_login = nl;
+            if (np) insertData.new_password = btoa(np);
             
-            // Очищаем поля
-            document.getElementById('newLogin').value = '';
-            document.getElementById('newPass').value = '';
+            console.log('Отправка заявки:', insertData);
+            const { error } = await s.from('change_requests').insert(insertData);
             
-            // Показываем сообщение об успехе
-            alert('✅ Заявка отправлена!');
+            if (error) {
+                console.error('Ошибка при отправке:', error);
+                alert('Ошибка: ' + error.message);
+            } else {
+                // Очищаем поля
+                document.getElementById('newLogin').value = '';
+                document.getElementById('newPass').value = '';
+                alert('✅ Заявка отправлена!');
+            }
         } catch(e) {
             console.error('Ошибка:', e);
+            alert('Ошибка: ' + e.message);
         }
         
         document.querySelector('.overlay').classList.remove('open');
