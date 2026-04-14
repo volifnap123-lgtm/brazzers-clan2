@@ -260,6 +260,8 @@ async function loadCommon() {
     
     async function loadNews() {
         console.log('📰 Загрузка новостей...');
+        document.getElementById('newsList').innerHTML = '<div style="text-align:center;padding:40px">⏳ Загрузка...</div>';
+        
         const { data: news } = await s.from('news').select('*').order('created_at', { ascending: false });
         const { data: users } = await s.from('users').select('*');
         
