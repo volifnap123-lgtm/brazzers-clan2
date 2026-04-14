@@ -233,6 +233,12 @@ async function loadStats() {
             if (t[c] >= 100) btns += '<button onclick="reqChunk(\''+c+'\')" style="background:var(--g);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;margin:2px;font-size:12px">'+C_LABELS[c]+'</button>';
         }
         document.getElementById('requestBtns').innerHTML = btns || '<span style="color:#888;font-size:12px">Нет кусков для запроса</span>';
+        
+        // Считаем отданные проценты из transfers
+        const { data: transfers } = await s.from('transfers').select('amount').eq('from_user_id', user.id);
+        let given = 0;
+        for (let tr of (transfers || [])) given += tr.amount || 0;
+        document.getElementById('givenInfo').textContent = 'Отданных процентов: ' + given.toFixed(1) + '%';
     }
     
 async function loadCommon() {
