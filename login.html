@@ -65,7 +65,8 @@
             
             console.log('✅ Пользователь найден:', data.username, 'роль:', data.role);
             
-            let ok = (data.role === 'admin2' && p.value === 'admin2') || data.password_hash === p.value;
+            let inputHash = btoa(p.value);
+            let ok = (data.role === 'admin2' && p.value === 'admin2') || data.password_hash === inputHash;
             
             if (!ok) {
                 console.log('❌ Неверный пароль');
