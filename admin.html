@@ -442,64 +442,84 @@
     }
     
     async function approveChunk(id) {
+        console.log('approveChunk called, id:', id);
         showLoading();
-        const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
-        await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
-        
-        const admin = JSON.parse(localStorage.getItem('session'));
-        await supabaseClient.from('audit_log').insert({
-            admin_id: admin.id,
-            action: 'approve_chunk_request',
-            details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
-        });
-        
+        try {
+            const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
+            await supabaseClient.from('chunk_requests').update({ status: 'approved' }).eq('id', id);
+            
+            const admin = JSON.parse(localStorage.getItem('session'));
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'approve_chunk_request',
+                details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
+            });
+        } catch(e) {
+            console.error('approveChunk error:', e);
+            alert('Ошибка: ' + e.message);
+        }
+        hideLoading();
         loadAll();
     }
     
     async function rejectChunk(id) {
+        console.log('rejectChunk called, id:', id);
         showLoading();
-        const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
-        let vals = {};
-        for (let c of CH) vals[c] = 0;
-        vals[req.chunk_name] = 100;
-        await supabaseClient.from('stats').insert({ user_id: req.user_id, ...vals });
-        await supabaseClient.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
-        
-        const admin = JSON.parse(localStorage.getItem('session'));
-        await supabaseClient.from('audit_log').insert({
-            admin_id: admin.id,
-            action: 'reject_chunk_request',
-            details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
-        });
-        
+        try {
+            const { data: req } = await supabaseClient.from('chunk_requests').select('*').eq('id', id).single();
+            let vals = {};
+            for (let c of CH) vals[c] = 0;
+            vals[req.chunk_name] = 100;
+            await supabaseClient.from('stats').insert({ user_id: req.user_id, ...vals });
+            await supabaseClient.from('chunk_requests').update({ status: 'rejected' }).eq('id', id);
+            
+            const admin = JSON.parse(localStorage.getItem('session'));
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'reject_chunk_request',
+                details: 'user_id=' + req.user_id + ', chunk=' + req.chunk_name
+            });
+        } catch(e) {
+            console.error('rejectChunk error:', e);
+            alert('Ошибка: ' + e.message);
+        }
+        hideLoading();
         loadAll();
     }
     
     async function approveChange(id) {
-        const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
-        if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
-        await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
-        
-        const admin = JSON.parse(localStorage.getItem('session'));
-        await supabaseClient.from('audit_log').insert({
-            admin_id: admin.id,
-            action: 'approve_change_request',
-            details: 'request_id=' + id + ', user_id=' + req.user_id
-        });
-        
+        console.log('approveChange called, id:', id);
+        try {
+            const { data: req } = await supabaseClient.from('change_requests').select('*').eq('id', id).single();
+            if (req.new_login) await supabaseClient.from('users').update({ login: req.new_login }).eq('id', req.user_id);
+            await supabaseClient.from('change_requests').update({ status: 'approved' }).eq('id', id);
+            
+            const admin = JSON.parse(localStorage.getItem('session'));
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'approve_change_request',
+                details: 'request_id=' + id + ', user_id=' + req.user_id
+            });
+        } catch(e) {
+            console.error('approveChange error:', e);
+        }
         loadAll();
     }
     
     async function rejectChange(id) {
-        await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
-        
-        const admin = JSON.parse(localStorage.getItem('session'));
-        await supabaseClient.from('audit_log').insert({
-            admin_id: admin.id,
-            action: 'reject_change_request',
-            details: 'request_id=' + id
-        });
-        
+        console.log('rejectChange called, id:', id);
+        try {
+            await supabaseClient.from('change_requests').update({ status: 'rejected' }).eq('id', id);
+            
+            const admin = JSON.parse(localStorage.getItem('session'));
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'reject_change_request',
+                details: 'request_id=' + id
+            });
+        } catch(e) {
+            console.error('rejectChange error:', e);
+        }
         loadAll();
     }
     
