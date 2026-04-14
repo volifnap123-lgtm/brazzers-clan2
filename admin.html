@@ -52,6 +52,12 @@
         @keyframes spin{to{transform:rotate(360deg)}}
         body.dark .loading-box{background:#1e293b;color:#fff}
         
+        /* Toast notifications */
+        .toast{position:fixed;top:20px;right:20px;padding:16px 24px;border-radius:8px;z-index:9999;max-width:400px;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+        .toast-error{background:#fee2e2;color:#991b1b;border:1px solid #ef4444}
+        body.dark .toast-error{background:#450a0a;color:#fca5a5;border-color:#ef4444}
+        .toast-close{background:0;border:0;cursor:pointer;font-size:18px;margin-left:12px;color:inherit}
+        
         /* Тёмная тема для категорий */
         body.dark .cat-bulldozer{background:#c77a00 !important}
         body.dark .cat-caravan{background:#3aba68 !important}
@@ -408,6 +414,17 @@
         if (!fromId || !toId || !amount) { hideLoading(); return; }
         if (fromId === toId) { hideLoading(); return; }
         
+        // Проверяем баланс
+        const { data: fromStats } = await supabaseClient.from('stats').select('*').eq('user_id', fromId);
+        let balance = 0;
+        for (let s of (fromStats || [])) balance += s[chunk] || 0;
+        
+        if (balance < amount - 0.01) {
+            hideLoading();
+            showToast('❌ Недостаточно процентов для передачи! Максимум: ' + balance.toFixed(1) + '%');
+            return;
+        }
+        
         // Вычитаем у отправителя - создаём новую запись
         let fromVals = {};
         for (let c of CH) fromVals[c] = 0;
@@ -626,6 +643,14 @@
         const h2 = document.querySelector('h2.collapsible');
         el.classList.toggle('open');
         h2.classList.toggle('open');
+    }
+    
+    function showToast(message, isError = true) {
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-error';
+        toast.innerHTML = message + '<button class="toast-close" onclick="this.parentElement.remove()">×</button>';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
     }
     
     async function postNews() {
