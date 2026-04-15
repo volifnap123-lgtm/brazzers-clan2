@@ -353,7 +353,13 @@ async function loadCommon() {
     function openCommonSelect() { document.getElementById('common-modal').classList.add('open'); }
     
     function closeModal(name) { 
-        document.getElementById(name + '-modal').classList.remove('open'); 
+        let id = name + '-modal';
+        if (name === 'stats') id = 'stats-modal';
+        if (name === 'statsChunks') id = 'stats-chunks-modal';
+        if (name === 'statsThreads') id = 'stats-threads-modal';
+        if (name === 'common') id = 'common-modal';
+        let el = document.getElementById(id);
+        if (el) el.classList.remove('open'); 
     }
     function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
