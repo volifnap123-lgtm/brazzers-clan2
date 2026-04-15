@@ -93,8 +93,8 @@
     <div class="h">
         <div class="logo">BRAZZERS</div>
         <div class="nav">
-            <button onclick="openModal('stats')">📊 Статистика</button>
-            <button onclick="openModal('common')">📋 Общая таблица</button>
+            <button onclick="openStatsSelect()">📊 Статистика</button>
+            <button onclick="openCommonSelect()">📋 Общие таблицы</button>
             <button onclick="openModal('news')">📰 Новости</button>
             <button onclick="toggleProfile()">👤 Профиль</button>
         </div>
@@ -106,8 +106,22 @@
     <div id="stats-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Статистика игрока</div>
+                <div class="modal-title">Выберите статистику</div>
                 <button class="close-btn" onclick="closeModal('stats')">×</button>
+            </div>
+            <div style="display:flex;gap:12px;flex-direction:column">
+                <button onclick="loadStatsChunks();closeModal('stats')" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📊 Статистика кусков</button>
+                <button onclick="loadStatsThreads();closeModal('stats')" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Статистика нитей</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статистика кусков (оригинал) -->
+    <div id="stats-chunks-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Статистика кусков</div>
+                <button class="close-btn" onclick="closeModal('statsChunks')">×</button>
             </div>
             <div class="player-info" id="playerName" style="font-size:24px;margin-bottom:16px;font-weight:bold">Игрок: ...</div>
             <div class="table-container" id="statsTable"></div>
@@ -122,14 +136,33 @@
         </div>
     </div>
     
+    <!-- Статистика нитей -->
+    <div id="stats-threads-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Статистика нитей</div>
+                <button class="close-btn" onclick="closeModal('statsThreads')">×</button>
+            </div>
+            <div class="player-info" id="playerNameThreads" style="font-size:24px;margin-bottom:16px;font-weight:bold">Игрок: ...</div>
+            <div class="table-container" id="statsThreadsTable"></div>
+            <div class="s" style="margin:0;margin-top:12px">
+                <h3 style="font-size:14px;margin-bottom:8px">Запросить нить</h3>
+                <div id="requestThreadBtns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Общая -->
     <div id="common-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Общая статистика</div>
+                <div class="modal-title">Выберите таблицу</div>
                 <button class="close-btn" onclick="closeModal('common')">×</button>
             </div>
-            <div class="table-container" id="commonTable"></div>
+            <div style="display:flex;gap:12px;flex-direction:column">
+                <button onclick="loadCommonChunks();closeModal('common')" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📋 Таблица кусков</button>
+                <button onclick="loadCommonThreads();closeModal('common')" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Таблица нитей</button>
+            </div>
         </div>
     </div>
     
@@ -316,8 +349,16 @@ async function loadCommon() {
         console.log('✅ Новости загружены');
     }
     
-    function openModal(name) { console.log('📂 Открыть:', name); document.getElementById(name + '-modal').classList.add('open'); if(name === 'common') loadCommon(); if(name === 'news') loadNews(); }
-    function closeModal(name) { console.log('📕 Закрыть:', name); document.getElementById(name + '-modal').classList.remove('open'); }
+    function openStatsSelect() { document.getElementById('stats-modal').classList.add('open'); }
+    function openCommonSelect() { document.getElementById('common-modal').classList.add('open'); }
+    
+    function closeModal(name) { 
+        let modalId = name + '-modal';
+        if (name === 'stats') modalId = 'stats-modal';
+        if (name === 'statsChunks') modalId = 'stats-chunks-modal';
+        if (name === 'statsThreads') modalId = 'stats-threads-modal';
+        document.getElementById(modalId).classList.remove('open'); 
+    }
     function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
     function toggleTheme() { console.log('🌓 Тема'); document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); }
@@ -372,7 +413,62 @@ async function loadCommon() {
         loadStats();
     }
     
-    // Запускаем когда страница загрузится
+    async function loadStatsChunks() {
+        document.getElementById('stats-chunks-modal').classList.add('open');
+        loadStats();
+    }
+    
+    async function loadStatsThreads() {
+        document.getElementById('stats-threads-modal').classList.add('open');
+        document.getElementById('playerNameThreads').textContent = 'Игрок: ' + user.username;
+        
+        const { data } = await s.from('stats_threads').select('*').eq('user_id', user.id);
+        let total = 0;
+        for (let x of (data || [])) total += x.thread_percent || 0;
+        
+        let h = '<table><thead><tr><th>Тип</th><th>Проценты</th></tr></thead><tbody>';
+        h += '<tr><td>Энергонить</td><td>' + total.toFixed(1) + '%</td></tr>';
+        h += '<tr><td><strong>Всего</strong></td><td><strong>' + total.toFixed(1) + '%</strong></td></tr>';
+        h += '</tbody></table>';
+        document.getElementById('statsThreadsTable').innerHTML = h;
+        
+        // Кнопка запроса нити
+        let btns = '';
+        if (total >= 100) {
+            btns = '<button onclick="reqThread()" style="background:var(--newland);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px">Запросить нить (100%)</button>';
+        } else {
+            btns = '<span style="color:#888;font-size:12px">Недостаточно процентов</span>';
+        }
+        document.getElementById('requestThreadBtns').innerHTML = btns;
+    }
+    
+    async function reqThread() {
+        await s.from('stats_threads').insert({ user_id: user.id, thread_percent: -100 });
+        await s.from('thread_requests').insert({ user_id: user.id, status: 'pending' });
+        loadStatsThreads();
+    }
+    
+    async function showCommonSelect() {
+        // Показываем модал выбора
+    }
+    
+    async function loadCommonChunks() {
+        document.getElementById('common-modal').classList.add('open');
+        loadCommon();
+    }
+    
+    async function loadCommonThreads() {
+        const { data: users } = await s.from('users').select('*');
+        let h = '<table><thead><tr><th>Никнейм</th><th>Энергонить</th></tr></thead><tbody>';
+        for (let u of (users || [])) {
+            const { data: st } = await s.from('stats_threads').select('*').eq('user_id', u.id);
+            let total = 0;
+            for (let x of (st || [])) total += x.thread_percent || 0;
+            h += '<tr><td>' + u.username + '</td><td>' + total.toFixed(1) + '%</td></tr>';
+        }
+        h += '</tbody></table>';
+        document.getElementById('commonTable').innerHTML = h;
+    }
     window.onload = function() {
         console.log('🏠 Страница загружена, запускаем init...');
         init();
