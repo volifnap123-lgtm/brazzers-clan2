@@ -110,8 +110,8 @@
                 <button class="close-btn" onclick="closeModal('stats')">×</button>
             </div>
             <div style="display:flex;gap:12px;flex-direction:column">
-                <button onclick="loadStatsChunks();closeModal('stats')" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📊 Статистика кусков</button>
-                <button onclick="loadStatsThreads();closeModal('stats')" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Статистика нитей</button>
+                <button onclick="loadStatsChunks()" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📊 Статистика кусков</button>
+                <button onclick="loadStatsThreads()" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Статистика нитей</button>
             </div>
         </div>
     </div>
@@ -160,8 +160,8 @@
                 <button class="close-btn" onclick="closeModal('common')">×</button>
             </div>
             <div style="display:flex;gap:12px;flex-direction:column">
-                <button onclick="loadCommonChunks();closeModal('common')" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📋 Таблица кусков</button>
-                <button onclick="loadCommonThreads();closeModal('common')" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Таблица нитей</button>
+                <button onclick="loadCommonChunks()" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📋 Таблица кусков</button>
+                <button onclick="loadCommonThreads()" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Таблица нитей</button>
             </div>
         </div>
     </div>
@@ -350,7 +350,7 @@ async function loadCommon() {
     }
     
     function openStatsSelect() { document.getElementById('stats-modal').classList.add('open'); }
-    function openCommonSelect() { document.getElementById('common-select-modal').classList.add('open'); }
+    function openCommonSelect() { document.getElementById('common-modal').classList.add('open'); }
     
     function closeModal(name) { 
         document.getElementById(name + '-modal').classList.remove('open'); 
@@ -410,14 +410,11 @@ async function loadCommon() {
     }
     
     async function loadStatsChunks() {
-        document.getElementById('stats-select-modal').classList.remove('open');
         document.getElementById('stats-chunks-modal').classList.add('open');
         loadStats();
     }
     
     async function loadStatsThreads() {
-        document.getElementById('stats-select-modal').classList.remove('open');
-        document.getElementById('stats-threads-modal').classList.add('open');
         document.getElementById('playerNameThreads').textContent = 'Игрок: ' + user.username;
         
         const { data } = await s.from('stats_threads').select('*').eq('user_id', user.id);
@@ -451,13 +448,11 @@ async function loadCommon() {
     }
     
     async function loadCommonChunks() {
-        document.getElementById('common-select-modal').classList.remove('open');
         document.getElementById('common-modal').classList.add('open');
         loadCommon();
     }
     
     async function loadCommonThreads() {
-        document.getElementById('common-select-modal').classList.remove('open');
         document.getElementById('common-modal').classList.add('open');
         
         const { data: users } = await s.from('users').select('*');
