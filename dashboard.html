@@ -351,12 +351,8 @@ async function loadCommon() {
     }
     
     function openStatsSelect() { 
-        console.log('📊openStatsSelect вызвана');
-        alert('📊Открываю выбор статистики');
         document.getElementById('stats-modal').classList.add('open'); 
         document.getElementById('statsButtons').style.display = 'flex';
-        document.getElementById('statsTable').innerHTML = '';
-        document.getElementById('statsThreadsTable').innerHTML = '';
     }
     function openCommonSelect() { 
         document.getElementById('common-modal').classList.add('open'); 
@@ -369,7 +365,11 @@ async function loadCommon() {
     }
     
     function closeModal(id) { 
-        document.getElementById(id).classList.remove('open'); 
+        if (id === 'stats-chunks-modal' || id === 'stats-threads-modal' || id === 'common-modal') {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+        } else {
+            document.getElementById(id).classList.remove('open');
+        }
     }
     function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
@@ -426,20 +426,14 @@ async function loadCommon() {
     }
     
 async function loadStatsChunks() {
-        console.log('📊loadStatsChunks вызвана');
-        alert('📊loadStatsChunks вызвана');
         document.getElementById('statsButtons').style.display = 'none';
         document.getElementById('stats-chunks-modal').classList.add('open');
-        document.getElementById('stats-chunks-modal').querySelector('.modal-title').textContent = 'Статистика кусков';
         loadStats();
     }
     
     async function loadStatsThreads() {
-        console.log('🧵loadStatsThreads вызвана');
-        alert('🧵loadStatsThreads вызвана');
         document.getElementById('statsButtons').style.display = 'none';
         document.getElementById('stats-threads-modal').classList.add('open');
-        document.getElementById('stats-threads-modal').querySelector('.modal-title').textContent = 'Статистика нитей';
         document.getElementById('playerNameThreads').textContent = 'Игрок: ' + user.username;
         
         const { data } = await s.from('stats_threads').select('*').eq('user_id', user.id);
@@ -472,10 +466,23 @@ async function loadStatsChunks() {
         // Показываем модал выбора
     }
     
-    async function loadCommonChunks() {
+async function loadCommonChunks() {
         document.getElementById('commonButtons').style.display = 'none';
-        document.getElementById('common-modal').querySelector('.modal-title').textContent = 'Таблица кусков';
         loadCommon();
+    }
+    
+    async function loadCommonThreads() {
+        document.getElementById('commonButtons').style.display = 'none';
+        const { data: users } = await s.from('users').select('*');
+        let h = '<table><thead><tr><th>Никнейм</th><th>Энергонить</th></tr></thead><tbody>';
+        for (let u of (users || [])) {
+            const { data: st } = await s.from('stats_threads').select('*').eq('user_id', u.id);
+            let total = 0;
+            for (let x of (st || [])) total += x.thread_percent || 0;
+            h += '<tr><td>' + u.username + '</td><td>' + total.toFixed(1) + '%</td></tr>';
+        }
+        h += '</tbody></table>';
+        document.getElementById('commonTable').innerHTML = h;
     }
     
     async function loadCommonThreads() {
