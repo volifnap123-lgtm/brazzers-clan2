@@ -163,6 +163,7 @@
                 <button onclick="loadCommonChunks()" style="padding:20px;background:var(--g);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">📋 Таблица кусков</button>
                 <button onclick="loadCommonThreads()" style="padding:20px;background:var(--newland);color:white;border:0;border-radius:8px;cursor:pointer;font-size:18px">🧵 Таблица нитей</button>
             </div>
+            <div class="table-container" id="commonTable" style="margin-top:20px;display:none"></div>
         </div>
     </div>
     
@@ -415,12 +416,15 @@ async function loadCommon() {
         loadStats();
     }
     
-    async function loadStatsChunks() {
+async function loadStatsChunks() {
+        closeModal('stats');
         document.getElementById('stats-chunks-modal').classList.add('open');
         loadStats();
     }
     
     async function loadStatsThreads() {
+        closeModal('stats');
+        document.getElementById('stats-threads-modal').classList.add('open');
         document.getElementById('playerNameThreads').textContent = 'Игрок: ' + user.username;
         
         const { data } = await s.from('stats_threads').select('*').eq('user_id', user.id);
@@ -454,11 +458,13 @@ async function loadCommon() {
     }
     
     async function loadCommonChunks() {
+        closeModal('common');
         document.getElementById('common-modal').classList.add('open');
         loadCommon();
     }
     
     async function loadCommonThreads() {
+        closeModal('common');
         document.getElementById('common-modal').classList.add('open');
         
         const { data: users } = await s.from('users').select('*');
