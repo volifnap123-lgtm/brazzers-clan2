@@ -72,7 +72,7 @@
     
     <div class="section">
         <h2>Выдать проценты нитей группе (100% делится)</h2>
-        <select id="multiUser" multiple size="5"><option value="">Выберите игроков</option></select>
+        <select id="multiUser" multiple size="6"><option value="">Выберите игроков</option></select>
         <button class="btn" onclick="giveThreadPercentGroup()" style="margin-top:8px">Разделить 100%</button>
     </div>
     
@@ -169,23 +169,30 @@
         showLoad();
         const admin = JSON.parse(localStorage.getItem('session'));
         
-        await supabaseClient.from('stats_threads').insert({
+        const { error } = await supabaseClient.from('stats_threads').insert({
             user_id: userId,
             thread_percent: percent,
             admin_id: admin.id
         });
         
-        await supabaseClient.from('audit_log').insert({
-            admin_id: admin.id,
-            action: 'give_thread_percent',
-            target_user_id: userId,
-            amount: percent
-        });
+        if (error) {
+            console.error('Error:', error);
+            alert('Ошибка: ' + error.message);
+        } else {
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'give_thread_percent',
+                target_user_id: userId,
+                amount: percent
+            });
+            
+            document.getElementById('threadPercent').value = '0';
+            document.getElementById('singleUser').value = '';
+        }
         
         hideLoad();
         loadRemainderThreads();
         loadAllUsersStats();
-        alert('Проценты выданы!');
     }
     
     async function giveThreadPercentGroup() {
@@ -205,7 +212,6 @@
         }
         
         hideLoad();
-        alert(`Выдано по ${percent.toFixed(2)}% каждому`);
         loadRemainderThreads();
         loadAllUsersStats();
     }
@@ -232,7 +238,6 @@
         ]);
         
         hideLoad();
-        alert('Проценты переданы!');
         loadAllUsersStats();
     }
     
