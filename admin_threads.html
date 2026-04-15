@@ -122,6 +122,8 @@
         console.log('Админ-панель нитей загружается...');
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
         
+        console.log('✅ Supabase загружен, подключение...');
+        
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
         
         const user = JSON.parse(localStorage.getItem('session'));
@@ -242,13 +244,24 @@
     }
     
     async function loadRemainderThreads() {
-        const { data } = await supabaseClient.from('remainder_threads').select('*');
+        const { data, error } = await supabaseClient.from('remainder_threads').select('*');
+        if (error) {
+            console.log('Остаток нитей:', 0);
+            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: 0%</strong>';
+            return;
+        }
         const remainder = data?.[0]?.remainder_percent || 0;
         document.getElementById('remainderThreads').innerHTML = `<strong>Остаток: ${remainder.toFixed(1)}%</strong>`;
     }
     
     async function loadThreadRequests() {
-        const { data: reqs } = await supabaseClient.from('thread_requests').select('*, users(username)').eq('status', 'pending');
+        const { data: reqs, error } = await supabaseClient.from('thread_requests').select('*').eq('status', 'pending');
+        
+        if (error) {
+            console.error('Error loading requests:', error);
+            document.getElementById('threadRequests').innerHTML = 'Ошибка загрузки';
+            return;
+        }
         
         if (!reqs || reqs.length === 0) {
             document.getElementById('threadRequests').innerHTML = 'Нет запросов';
