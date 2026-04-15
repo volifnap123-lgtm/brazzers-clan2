@@ -350,14 +350,10 @@ async function loadCommon() {
     }
     
     function openStatsSelect() { document.getElementById('stats-modal').classList.add('open'); }
-    function openCommonSelect() { document.getElementById('common-modal').classList.add('open'); }
+    function openCommonSelect() { document.getElementById('common-select-modal').classList.add('open'); }
     
     function closeModal(name) { 
-        let modalId = name + '-modal';
-        if (name === 'stats') modalId = 'stats-modal';
-        if (name === 'statsChunks') modalId = 'stats-chunks-modal';
-        if (name === 'statsThreads') modalId = 'stats-threads-modal';
-        document.getElementById(modalId).classList.remove('open'); 
+        document.getElementById(name + '-modal').classList.remove('open'); 
     }
     function toggleProfile() { console.log('👤 Профиль'); let p = document.getElementById('profile'); p.classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
     function closeAll() { console.log('❌ Закрыть всё'); document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); document.getElementById('profile').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
@@ -414,11 +410,13 @@ async function loadCommon() {
     }
     
     async function loadStatsChunks() {
+        document.getElementById('stats-select-modal').classList.remove('open');
         document.getElementById('stats-chunks-modal').classList.add('open');
         loadStats();
     }
     
     async function loadStatsThreads() {
+        document.getElementById('stats-select-modal').classList.remove('open');
         document.getElementById('stats-threads-modal').classList.add('open');
         document.getElementById('playerNameThreads').textContent = 'Игрок: ' + user.username;
         
@@ -453,11 +451,15 @@ async function loadCommon() {
     }
     
     async function loadCommonChunks() {
+        document.getElementById('common-select-modal').classList.remove('open');
         document.getElementById('common-modal').classList.add('open');
         loadCommon();
     }
     
     async function loadCommonThreads() {
+        document.getElementById('common-select-modal').classList.remove('open');
+        document.getElementById('common-modal').classList.add('open');
+        
         const { data: users } = await s.from('users').select('*');
         let h = '<table><thead><tr><th>Никнейм</th><th>Энергонить</th></tr></thead><tbody>';
         for (let u of (users || [])) {
