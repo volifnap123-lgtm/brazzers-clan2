@@ -244,7 +244,8 @@
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
         
         const user = JSON.parse(localStorage.getItem('session'));
-        if (!user || (user.role !== 'admin' && user.role !== 'admin2')) { location.href = 'login.html'; return; }
+        const allowedRoles = ['admin', 'admin1.3', 'admin2'];
+        if (!user || !allowedRoles.includes(user.role)) { location.href = 'login.html'; return; }
         
         supabaseClient = supabase.createClient(SU, SK);
         loadAll();

@@ -227,9 +227,15 @@
         
         let adminBtns = '';
         if (user.role === 'admin') {
-            adminBtns = '<button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>';
+            adminBtns = '<button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель кусков</button>';
+        } else if (user.role === 'admin1.2') {
+            adminBtns = '<button onclick="goAdminThreads()" style="width:100%;margin-top:16px;padding:10px;background:var(--newland);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель нитей</button>';
+        } else if (user.role === 'admin1.3') {
+            adminBtns = '<button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Куски</button>';
+            adminBtns += '<button onclick="goAdminThreads()" style="width:100%;margin-top:8px;padding:10px;background:var(--newland);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Нити</button>';
         } else if (user.role === 'admin2') {
-            adminBtns = '<button onclick="goAdmin2()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Админ-панель</button>';
+            adminBtns = '<button onclick="goAdmin()" style="width:100%;margin-top:16px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Куски</button>';
+            adminBtns += '<button onclick="goAdminThreads()" style="width:100%;margin-top:8px;padding:10px;background:var(--newland);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Нити</button>';
             adminBtns += '<button onclick="goTech()" style="width:100%;margin-top:8px;padding:10px;background:var(--g);color:white;border:0;border-radius:6px;cursor:pointer;font-weight:600">Тех. режим</button>';
         }
         document.getElementById('adminBtns').innerHTML = adminBtns;
@@ -377,6 +383,7 @@ async function loadCommon() {
     function logout() { console.log('🚪 Выход'); localStorage.removeItem('session'); location.href = 'login.html'; }
     function goAdmin() { console.log('➡️ Админ'); location.href = 'admin.html'; }
     function goAdmin2() { console.log('➡️ Админ2'); location.href = 'admin.html'; }
+    function goAdminThreads() { console.log('➡️ Админ нитей'); location.href = 'admin_threads.html'; }
     function goTech() { console.log('➡️ Тех'); location.href = 'tech.html'; }
     async function reqChange() {
         let nl = document.getElementById('newLogin').value.trim();
