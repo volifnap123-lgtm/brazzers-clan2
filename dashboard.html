@@ -447,15 +447,22 @@ async function loadStatsChunks() {
         let total = 0;
         for (let x of (data || [])) total += x.thread_percent || 0;
         
+        const { data: pendingReqs } = await s.from('thread_requests').select('*').eq('user_id', user.id).eq('status', 'pending');
+        const pendingCount = pendingReqs ? pendingReqs.length : 0;
+        const availableForRequests = Math.floor(total / 100);
+        const canRequest = availableForRequests > pendingCount;
+        
         let h = '<table><thead><tr><th>Тип</th><th>Проценты</th></tr></thead><tbody>';
         h += '<tr><td>Энергонить</td><td>' + total.toFixed(1) + '%</td></tr>';
+        h += '<tr><td>Доступно нитей</td><td>' + availableForRequests + '</td></tr>';
+        h += '<tr><td>Ожидают выдачи</td><td>' + pendingCount + '</td></tr>';
         h += '<tr><td><strong>Всего</strong></td><td><strong>' + total.toFixed(1) + '%</strong></td></tr>';
         h += '</tbody></table>';
         document.getElementById('statsThreadsTable').innerHTML = h;
         
         // Кнопка запроса нити
         let btns = '';
-        if (total >= 100) {
+        if (canRequest) {
             btns = '<button onclick="reqThread()" style="background:var(--newland);color:white;border:0;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px">Запросить нить (100%)</button>';
         } else {
             btns = '<span style="color:#888;font-size:12px">Недостаточно процентов</span>';

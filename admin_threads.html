@@ -210,7 +210,7 @@
             });
         }
         
-        await supabaseClient.from('remainder_threads').update({ remainder_percent: remainder }).gt('id', 0);
+        await supabaseClient.from('remainder_threads').update({ remainder_percent: remainder }).eq('id', 1);
         
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
@@ -277,8 +277,7 @@
     async function loadRemainderThreads() {
         const { data, error } = await supabaseClient.from('remainder_threads').select('*');
         if (error || !data || data.length === 0) {
-            await supabaseClient.from('remainder_threads').insert({ remainder_percent: 100 });
-            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: 100%</strong>';
+            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: ?%</strong>';
             return;
         }
         const remainder = data[0].remainder_percent || 0;
