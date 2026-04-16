@@ -269,6 +269,8 @@
         hideLoad();
         loadAllUsersStats();
     }
+    
+    async function loadRemainderThreads() {
         const { data, error } = await supabaseClient.from('remainder_threads').select('*');
         if (error) {
             console.log('Остаток нитей:', 0);

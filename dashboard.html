@@ -466,11 +466,6 @@ async function loadStatsChunks() {
     async function reqThread() {
         await s.from('thread_requests').insert({ user_id: user.id, status: 'pending' });
         await s.from('stats_threads').insert({ user_id: user.id, thread_percent: -100 });
-        await s.from('audit_log').insert({
-            user_id: user.id,
-            action: 'request_thread',
-            details: 'Запрос нити'
-        });
         loadStatsThreads();
     }
     
