@@ -118,7 +118,7 @@
     let supabaseClient = null;
     let allUsers = [];
     
-    function init() {
+    async function init() {
         console.log('Админ-панель нитей загружается...');
         if (typeof supabase === 'undefined') { setTimeout(init, 50); return; }
         
@@ -212,9 +212,9 @@
         const toId = document.getElementById('toUser').value;
         const amount = parseFloat(document.getElementById('transferAmount').value);
         if (!fromId || !toId || !amount) return alert('Заполните все поля');
+        if (fromId === toId) return alert('Нельзя передать самому себе');
         
         showLoad();
-        const admin = JSON.parse(localStorage.getItem('session'));
         
         await supabaseClient.from('transfers_threads').insert({
             from_user_id: fromId,
@@ -226,6 +226,10 @@
             { user_id: fromId, thread_percent: -amount },
             { user_id: toId, thread_percent: amount }
         ]);
+        
+        document.getElementById('transferAmount').value = '';
+        document.getElementById('fromUser').value = '';
+        document.getElementById('toUser').value = '';
         
         hideLoad();
         loadAllUsersStats();
@@ -263,7 +267,7 @@
                 <div class="thread-req-info"><strong>${username}</strong> - запросил нить</div>
                 <div class="thread-req-btns">
                     <button class="btn" onclick="approveThreadReq('${req.user_id}')">✓</button>
-                    <button class="btn btn-red" onclick="rejectThreadReq('${req.id}')">✗</button>
+                    <button class="btn btn-red" onclick="rejectThreadReq('${req.id}', '${req.user_id}')">✗</button>
                 </div>
             </div>`;
         }
@@ -272,22 +276,20 @@
     
     async function approveThreadReq(userId) {
         showLoad();
-        const admin = JSON.parse(localStorage.getItem('session'));
         
         await supabaseClient.from('thread_requests').update({ status: 'approved' }).eq('user_id', userId);
         await supabaseClient.from('issued_threads').insert({ user_id: userId });
-        await supabaseClient.from('stats_threads').insert({
-            user_id: userId,
-            thread_percent: -100
-        });
         
         hideLoad();
         loadThreadRequests();
-        loadRemainderThreads();
     }
     
-    async function rejectThreadReq(reqId) {
+    async function rejectThreadReq(reqId, userId) {
+        showLoad();
+        
         await supabaseClient.from('thread_requests').update({ status: 'rejected' }).eq('id', reqId);
+        
+        hideLoad();
         loadThreadRequests();
     }
     
