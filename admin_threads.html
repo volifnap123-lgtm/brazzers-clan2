@@ -169,25 +169,16 @@
         if (!userId || !percent) return alert('Выберите игрока и введите проценты');
         
         showLoad();
-        const admin = JSON.parse(localStorage.getItem('session'));
         
         const { error } = await supabaseClient.from('stats_threads').insert({
             user_id: userId,
-            thread_percent: percent,
-            admin_id: admin.id
+            thread_percent: percent
         });
         
         if (error) {
             console.error('Error:', error);
             alert('Ошибка: ' + error.message);
         } else {
-            await supabaseClient.from('audit_log').insert({
-                admin_id: admin.id,
-                action: 'give_thread_percent',
-                target_user_id: userId,
-                amount: percent
-            });
-            
             document.getElementById('threadPercent').value = '0';
             document.getElementById('singleUser').value = '';
         }
@@ -203,13 +194,11 @@
         
         const percent = 100 / selected.length;
         showLoad();
-        const admin = JSON.parse(localStorage.getItem('session'));
         
         for (let userId of selected) {
             await supabaseClient.from('stats_threads').insert({
                 user_id: userId,
-                thread_percent: percent,
-                admin_id: admin.id
+                thread_percent: percent
             });
         }
         
@@ -230,13 +219,12 @@
         await supabaseClient.from('transfers_threads').insert({
             from_user_id: fromId,
             to_user_id: toId,
-            amount: amount,
-            admin_id: admin.id
+            amount: amount
         });
         
         await supabaseClient.from('stats_threads').insert([
-            { user_id: fromId, thread_percent: -amount, admin_id: admin.id },
-            { user_id: toId, thread_percent: amount, admin_id: admin.id }
+            { user_id: fromId, thread_percent: -amount },
+            { user_id: toId, thread_percent: amount }
         ]);
         
         hideLoad();
@@ -287,11 +275,10 @@
         const admin = JSON.parse(localStorage.getItem('session'));
         
         await supabaseClient.from('thread_requests').update({ status: 'approved' }).eq('user_id', userId);
-        await supabaseClient.from('issued_threads').insert({ user_id: userId, admin_id: admin.id });
+        await supabaseClient.from('issued_threads').insert({ user_id: userId });
         await supabaseClient.from('stats_threads').insert({
             user_id: userId,
-            thread_percent: -100,
-            admin_id: admin.id
+            thread_percent: -100
         });
         
         hideLoad();
