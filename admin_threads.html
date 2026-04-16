@@ -84,8 +84,8 @@
         <button class="btn" onclick="transferThreadPercent()" style="margin-top:8px">Передать</button>
     </div>
     
-    <div class="section">
-        <h2>Остаток нитей</h2>
+    <div class="section" style="opacity:0.5;pointer-events:none">
+        <h2>Остаток нитей ⚠️ временно не работает</h2>
         <div id="remainderThreads">Загрузка...</div>
     </div>
     
@@ -134,7 +134,6 @@
         
         supabaseClient = supabase.createClient(SU, SK);
         await loadUsers();
-        await loadRemainderThreads();
         await loadThreadRequests();
         await loadAllUsersStats();
     }
