@@ -134,6 +134,7 @@
         
         supabaseClient = supabase.createClient(SU, SK);
         await loadUsers();
+        await loadRemainderThreads();
         await loadThreadRequests();
         await loadAllUsersStats();
     }
@@ -199,6 +200,7 @@
         if (selected.length === 0) return alert('Выберите игроков');
         
         const percent = 100 / selected.length;
+        const remainder = 100 - (percent * selected.length);
         showLoad();
         
         for (let userId of selected) {
@@ -208,14 +210,22 @@
             });
         }
         
+        const { data: remData } = await supabaseClient.from('remainder').select('*').eq('chunk_name', 'threads').maybeSingle();
+        if (remData) {
+            await supabaseClient.from('remainder').update({ amount: remainder }).eq('chunk_name', 'threads');
+        } else {
+            await supabaseClient.from('remainder').insert({ chunk_name: 'threads', amount: remainder });
+        }
+        
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
             admin_id: admin.id,
             action: 'give_thread_percent_group',
-            details: 'users=' + selected.length + ', amount=' + percent.toFixed(2)
+            details: 'users=' + selected.length + ', amount=' + percent.toFixed(2) + ', remainder=' + remainder.toFixed(2)
         });
         
         hideLoad();
+        loadRemainderThreads();
         loadAllUsersStats();
     }
     
@@ -270,13 +280,13 @@
     }
     
     async function loadRemainderThreads() {
-        const { data, error } = await supabaseClient.from('remainder_threads').select('*').maybeSingle();
+        const { data, error } = await supabaseClient.from('remainder').select('*').eq('chunk_name', 'threads').maybeSingle();
         if (error || !data) {
-            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: ?%</strong>';
+            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток нитей: ?%</strong>';
             return;
         }
-        const remainder = data.remainder_percent || 0;
-        document.getElementById('remainderThreads').innerHTML = `<strong>Остаток: ${remainder.toFixed(1)}%</strong>`;
+        const remainder = data.amount || 0;
+        document.getElementById('remainderThreads').innerHTML = `<strong>Остаток нитей: ${remainder.toFixed(1)}%</strong>`;
     }
     
     async function loadThreadRequests() {
