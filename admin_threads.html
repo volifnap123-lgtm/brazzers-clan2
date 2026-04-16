@@ -210,7 +210,12 @@
             });
         }
         
-        await supabaseClient.from('remainder_threads').update({ remainder_percent: remainder }).eq('id', 1);
+        const { data: remData } = await supabaseClient.from('remainder_threads').select('*').maybeSingle();
+        if (remData) {
+            await supabaseClient.from('remainder_threads').update({ remainder_percent: remainder });
+        } else {
+            await supabaseClient.from('remainder_threads').insert({ remainder_percent: remainder });
+        }
         
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
@@ -275,12 +280,12 @@
     }
     
     async function loadRemainderThreads() {
-        const { data, error } = await supabaseClient.from('remainder_threads').select('*');
-        if (error || !data || data.length === 0) {
+        const { data, error } = await supabaseClient.from('remainder_threads').select('*').maybeSingle();
+        if (error || !data) {
             document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: ?%</strong>';
             return;
         }
-        const remainder = data[0].remainder_percent || 0;
+        const remainder = data.remainder_percent || 0;
         document.getElementById('remainderThreads').innerHTML = `<strong>Остаток: ${remainder.toFixed(1)}%</strong>`;
     }
     
