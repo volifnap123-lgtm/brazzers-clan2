@@ -91,6 +91,22 @@
     </div>
     
     <div class="section">
+        <h2>Назначить админа нитей</h2>
+        <select id="promoteThreadAdminUser"><option value="">Выберите пользователя</option></select>
+        <select id="threadAdminRole" style="margin-top:8px">
+            <option value="admin1.2">admin1.2 (только нити)</option>
+            <option value="admin1.3">admin1.3 (куски + нити)</option>
+        </select>
+        <button class="btn" onclick="promoteToThreadAdmin()" style="margin-top:8px">Сделать админом нитей</button>
+    </div>
+    
+    <div class="section">
+        <h2>Снять админа нитей</h2>
+        <select id="demoteThreadAdminUser"><option value="">Выберите</option></select>
+        <button class="btn btn-red" onclick="demoteThreadAdmin()" style="margin-top:8px">Снять</button>
+    </div>
+    
+    <div class="section">
         <h2>Логины пользователей</h2>
         <div id="usersTable" style="max-height:300px;overflow-y:auto">Загрузка...</div>
         <p style="color:#ef4444;margin-top:10px">⚠️ Пароли не отображаются</p>
@@ -179,6 +195,12 @@
             delSel.innerHTML = '<option value="">Выберите</option>';
             proSel.innerHTML = '<option value="">Выберите (user)</option>';
             demSel.innerHTML = '<option value="">Выберите (admin)</option>';
+            
+            let proThreadSel = document.getElementById('promoteThreadAdminUser');
+            let demThreadSel = document.getElementById('demoteThreadAdminUser');
+            proThreadSel.innerHTML = '<option value="">Выберите пользователя</option>';
+            demThreadSel.innerHTML = '<option value="">Выберите</option>';
+            
             chgSel.innerHTML = '<option value="">Выберите</option>';
             
             let table = '<table><tr><th>Никнейм</th><th>Логин</th><th>Роль</th></tr>';
@@ -186,6 +208,8 @@
                 delSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
                 if (u.role === 'user') proSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
                 if (u.role === 'admin') demSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                if (u.role === 'user') proThreadSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
+                if (u.role === 'admin1.2' || u.role === 'admin1.3') demThreadSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+') - '+u.role+'</option>';
                 chgSel.innerHTML += '<option value="'+u.id+'">'+u.username+' ('+u.login+')</option>';
                 table += '<tr><td>'+u.username+'</td><td>'+u.login+'</td><td>'+u.role+'</td></tr>';
             }
@@ -343,6 +367,45 @@
         });
         
         console.log('✅ Админ снят');
+        loadAll();
+    }
+    
+    async function promoteToThreadAdmin() {
+        console.log('Повышение до админа нитей...');
+        const id = document.getElementById('promoteThreadAdminUser').value;
+        const role = document.getElementById('threadAdminRole').value;
+        if (!id) return;
+        
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
+        await supabaseClient.from('users').update({ role: role }).eq('id', id).eq('role', 'user');
+        
+        const user = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({ 
+            admin_id: user.id, 
+            action: 'promote_thread_admin', 
+            details: 'login=' + targetUser.login + ', role=' + role 
+        });
+        
+        console.log('✅ Пользователь назначен админом нитей');
+        loadAll();
+    }
+    
+    async function demoteThreadAdmin() {
+        console.log('Снятие админа нитей...');
+        const id = document.getElementById('demoteThreadAdminUser').value;
+        if (!id) return;
+        
+        const { data: targetUser } = await supabaseClient.from('users').select('username,login').eq('id', id).single();
+        await supabaseClient.from('users').update({ role: 'user' }).eq('id', id);
+        
+        const user = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({ 
+            admin_id: user.id, 
+            action: 'demote_thread_admin', 
+            details: 'login=' + targetUser.login 
+        });
+        
+        console.log('✅ Админ нитей снят');
         loadAll();
     }
     
