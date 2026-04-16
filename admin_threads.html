@@ -179,12 +179,19 @@
             console.error('Error:', error);
             alert('Ошибка: ' + error.message);
         } else {
+            const admin = JSON.parse(localStorage.getItem('session'));
+            const username = allUsers.find(u => u.id === userId)?.username || 'Unknown';
+            await supabaseClient.from('audit_log').insert({
+                admin_id: admin.id,
+                action: 'give_thread_percent',
+                details: 'user=' + username + ', amount=' + percent
+            });
+            
             document.getElementById('threadPercent').value = '0';
             document.getElementById('singleUser').value = '';
         }
         
         hideLoad();
-        loadRemainderThreads();
         loadAllUsersStats();
     }
     
@@ -202,8 +209,14 @@
             });
         }
         
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'give_thread_percent_group',
+            details: 'users=' + selected.length + ', amount=' + percent.toFixed(2)
+        });
+        
         hideLoad();
-        loadRemainderThreads();
         loadAllUsersStats();
     }
     
@@ -216,6 +229,19 @@
         
         showLoad();
         
+        const { data: fromStats } = await supabaseClient.from('stats_threads').select('thread_percent').eq('user_id', fromId);
+        let balance = 0;
+        for (let s of (fromStats || [])) balance += s.thread_percent || 0;
+        
+        if (balance < amount - 0.01) {
+            hideLoad();
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('fromUser').value = '';
+            document.getElementById('toUser').value = '';
+            alert('❌ Недостаточно процентов для передачи! Максимум: ' + balance.toFixed(1) + '%');
+            return;
+        }
+        
         await supabaseClient.from('transfers_threads').insert({
             from_user_id: fromId,
             to_user_id: toId,
@@ -227,6 +253,15 @@
             { user_id: toId, thread_percent: amount }
         ]);
         
+        const admin = JSON.parse(localStorage.getItem('session'));
+        const fromUser = allUsers.find(u => u.id === fromId)?.username || 'Unknown';
+        const toUser = allUsers.find(u => u.id === toId)?.username || 'Unknown';
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'transfer_thread_percent',
+            details: 'from=' + fromUser + ', to=' + toUser + ', amount=' + amount
+        });
+        
         document.getElementById('transferAmount').value = '';
         document.getElementById('fromUser').value = '';
         document.getElementById('toUser').value = '';
@@ -234,8 +269,6 @@
         hideLoad();
         loadAllUsersStats();
     }
-    
-    async function loadRemainderThreads() {
         const { data, error } = await supabaseClient.from('remainder_threads').select('*');
         if (error) {
             console.log('Остаток нитей:', 0);
@@ -277,17 +310,40 @@
     async function approveThreadReq(userId) {
         showLoad();
         
+        const username = allUsers.find(u => u.id === userId)?.username || 'Unknown';
+        
         await supabaseClient.from('thread_requests').update({ status: 'approved' }).eq('user_id', userId);
         await supabaseClient.from('issued_threads').insert({ user_id: userId });
+        await supabaseClient.from('stats_threads').insert({
+            user_id: userId,
+            thread_percent: -100
+        });
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'approve_thread_request',
+            details: 'user=' + username
+        });
         
         hideLoad();
         loadThreadRequests();
+        loadAllUsersStats();
     }
     
     async function rejectThreadReq(reqId, userId) {
         showLoad();
         
+        const username = allUsers.find(u => u.id === userId)?.username || 'Unknown';
+        
         await supabaseClient.from('thread_requests').update({ status: 'rejected' }).eq('id', reqId);
+        
+        const admin = JSON.parse(localStorage.getItem('session'));
+        await supabaseClient.from('audit_log').insert({
+            admin_id: admin.id,
+            action: 'reject_thread_request',
+            details: 'user=' + username
+        });
         
         hideLoad();
         loadThreadRequests();
