@@ -465,7 +465,6 @@ async function loadStatsChunks() {
     
     async function reqThread() {
         await s.from('thread_requests').insert({ user_id: user.id, status: 'pending' });
-        await s.from('stats_threads').insert({ user_id: user.id, thread_percent: -100 });
         loadStatsThreads();
     }
     

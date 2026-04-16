@@ -133,10 +133,10 @@
         if (!allowedRoles.includes(user.role)) { location.href = 'login.html'; return; }
         
         supabaseClient = supabase.createClient(SU, SK);
-        loadUsers();
-        loadRemainderThreads();
-        loadThreadRequests();
-        loadAllUsersStats();
+        await loadUsers();
+        await loadRemainderThreads();
+        await loadThreadRequests();
+        await loadAllUsersStats();
     }
     
     function toggleTheme() {
@@ -200,6 +200,7 @@
         if (selected.length === 0) return alert('Выберите игроков');
         
         const percent = 100 / selected.length;
+        const remainder = 100 - (percent * selected.length);
         showLoad();
         
         for (let userId of selected) {
@@ -209,14 +210,17 @@
             });
         }
         
+        await supabaseClient.from('remainder_threads').update({ remainder_percent: remainder }).gt('id', 0);
+        
         const admin = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('audit_log').insert({
             admin_id: admin.id,
             action: 'give_thread_percent_group',
-            details: 'users=' + selected.length + ', amount=' + percent.toFixed(2)
+            details: 'users=' + selected.length + ', amount=' + percent.toFixed(2) + ', remainder=' + remainder.toFixed(2)
         });
         
         hideLoad();
+        loadRemainderThreads();
         loadAllUsersStats();
     }
     
@@ -272,12 +276,12 @@
     
     async function loadRemainderThreads() {
         const { data, error } = await supabaseClient.from('remainder_threads').select('*');
-        if (error) {
-            console.log('Остаток нитей:', 0);
-            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: 0%</strong>';
+        if (error || !data || data.length === 0) {
+            await supabaseClient.from('remainder_threads').insert({ remainder_percent: 100 });
+            document.getElementById('remainderThreads').innerHTML = '<strong>Остаток: 100%</strong>';
             return;
         }
-        const remainder = data?.[0]?.remainder_percent || 0;
+        const remainder = data[0].remainder_percent || 0;
         document.getElementById('remainderThreads').innerHTML = `<strong>Остаток: ${remainder.toFixed(1)}%</strong>`;
     }
     
@@ -301,7 +305,7 @@
             html += `<div class="thread-req">
                 <div class="thread-req-info"><strong>${username}</strong> - запросил нить</div>
                 <div class="thread-req-btns">
-                    <button class="btn" onclick="approveThreadReq('${req.user_id}')">✓</button>
+                    <button class="btn" onclick="approveThreadReq('${req.id}', '${req.user_id}')">✓</button>
                     <button class="btn btn-red" onclick="rejectThreadReq('${req.id}', '${req.user_id}')">✗</button>
                 </div>
             </div>`;
@@ -309,12 +313,12 @@
         document.getElementById('threadRequests').innerHTML = html;
     }
     
-    async function approveThreadReq(userId) {
+    async function approveThreadReq(reqId, userId) {
         showLoad();
         
         const username = allUsers.find(u => u.id === userId)?.username || 'Unknown';
         
-        await supabaseClient.from('thread_requests').update({ status: 'approved' }).eq('user_id', userId);
+        await supabaseClient.from('thread_requests').update({ status: 'approved' }).eq('id', reqId);
         await supabaseClient.from('issued_threads').insert({ user_id: userId });
         await supabaseClient.from('stats_threads').insert({
             user_id: userId,
