@@ -83,10 +83,12 @@
         /* Цветные полоски для новостей */
         .news-item{border-left:4px solid transparent}
         .news-admin{border-left-color:#ef4444 !important}
-        .news-admin2{border-left-color:#eab308 !important}
+        .news-admin1-2{border-left-color:#3b82f6 !important}
+        .news-admin1-3{border-left:4px solid #ef4444 !important;background:linear-gradient(180deg, rgba(239,68,68,0.15) 50%, rgba(59,130,246,0.15) 50%) !important}
         
         body.dark .news-admin{border-left-color:#ef4444 !important}
-        body.dark .news-admin2{border-left-color:#eab308 !important}
+        body.dark .news-admin1-2{border-left-color:#3b82f6 !important}
+        body.dark .news-admin1-3{border-left-color:#ef4444 !important}
     </style>
 </head>
 <body>
@@ -345,7 +347,9 @@ async function loadCommon() {
         let h = '';
         for (let n of news) {
             let author = usersMap[n.author_id] || { username: 'Unknown' };
-            let newsClass = n.role === 'admin2' ? 'news-admin2' : 'news-admin';
+            let newsClass = 'news-admin';
+            if (n.role === 'admin1.2') newsClass = 'news-admin1-2';
+            if (n.role === 'admin1.3') newsClass = 'news-admin1-3';
             h += '<div class="news-item ' + newsClass + '" style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px">';
             h += '<div class="author" style="font-weight:bold;color:var(--g2);margin-bottom:6px">' + author.username + '</div>';
             h += '<div class="message" style="white-space:pre-wrap;line-height:1.4">' + n.message + '</div>';
