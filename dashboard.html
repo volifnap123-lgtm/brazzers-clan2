@@ -83,12 +83,14 @@
         /* Цветные полоски для новостей */
         .news-item{border-left:4px solid transparent}
         .news-admin{border-left-color:#ef4444 !important}
+        .news-admin2{border-left-color:#eab308 !important}
         .news-admin1-2{border-left-color:#3b82f6 !important}
-        .news-admin1-3{border-left:4px solid #ef4444 !important;background:linear-gradient(180deg, rgba(239,68,68,0.15) 50%, rgba(59,130,246,0.15) 50%) !important}
+        .news-admin1-3{border-left-color:#f97316 !important}
         
         body.dark .news-admin{border-left-color:#ef4444 !important}
+        body.dark .news-admin2{border-left-color:#eab308 !important}
         body.dark .news-admin1-2{border-left-color:#3b82f6 !important}
-        body.dark .news-admin1-3{border-left-color:#ef4444 !important}
+        body.dark .news-admin1-3{border-left-color:#f97316 !important}
     </style>
 </head>
 <body>
@@ -348,6 +350,7 @@ async function loadCommon() {
         for (let n of news) {
             let author = usersMap[n.author_id] || { username: 'Unknown' };
             let newsClass = 'news-admin';
+            if (n.role === 'admin2') newsClass = 'news-admin2';
             if (n.role === 'admin1.2') newsClass = 'news-admin1-2';
             if (n.role === 'admin1.3') newsClass = 'news-admin1-3';
             h += '<div class="news-item ' + newsClass + '" style="background:var(--g50);padding:12px;border-radius:8px;margin-bottom:12px">';
