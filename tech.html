@@ -249,10 +249,18 @@
                         let approveBtn = document.getElementById('btn-approve-change-'+c.id);
                         let rejectBtn = document.getElementById('btn-reject-change-'+c.id);
                         if (approveBtn) {
-                            approveBtn.onclick = function() { approveChange(c.id); };
+                            approveBtn.onclick = function() {
+                                this.disabled = true;
+                                rejectBtn.disabled = true;
+                                approveChange(c.id);
+                            };
                         }
                         if (rejectBtn) {
-                            rejectBtn.onclick = function() { rejectChange(c.id); };
+                            rejectBtn.onclick = function() {
+                                this.disabled = true;
+                                approveBtn.disabled = true;
+                                rejectChange(c.id);
+                            };
                         }
                     }
                 }, 100);
@@ -492,8 +500,8 @@
     async function postNews() {
         console.log('Публикация новости...');
         const user = JSON.parse(localStorage.getItem('session'));
-        const msg = document.getElementById('newsMessage').value;
-        if (!msg) return;
+        const msg = document.getElementById('newsMessage').value.trim();
+        if (!msg) { alert('Введите сообщение'); return; }
         
         const msgPreview = msg.length > 50 ? msg.substring(0, 50) + '...' : msg;
         

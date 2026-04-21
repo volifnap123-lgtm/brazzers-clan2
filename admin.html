@@ -314,12 +314,16 @@
                 
                 if (approveBtn) {
                     approveBtn.onclick = function() {
+                        this.disabled = true;
+                        document.getElementById('btn-reject-'+req.id).disabled = true;
                         console.log('Клик по Выдать, id=', req.id);
                         approveChunk(req.id);
                     };
                 }
                 if (rejectBtn) {
                     rejectBtn.onclick = function() {
+                        this.disabled = true;
+                        document.getElementById('btn-approve-'+req.id).disabled = true;
                         console.log('Клик по Отказ, id=', req.id);
                         rejectChunk(req.id);
                     };
@@ -686,10 +690,11 @@
     }
     
     async function postNews() {
+        const msg = document.getElementById('newsMessage').value.trim();
+        if (!msg) { alert('Введите сообщение'); return; }
+        
         showLoading();
         const user = JSON.parse(localStorage.getItem('session'));
-        const msg = document.getElementById('newsMessage').value;
-        if (!msg) return;
         
         await supabaseClient.from('news').insert({ author_id: user.id, message: msg, role: user.role });
         

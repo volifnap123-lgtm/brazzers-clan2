@@ -308,12 +308,33 @@
             html += `<div class="thread-req">
                 <div class="thread-req-info"><strong>${username}</strong> - запросил нить</div>
                 <div class="thread-req-btns">
-                    <button class="btn" onclick="approveThreadReq('${req.id}', '${req.user_id}')">✓</button>
-                    <button class="btn btn-red" onclick="rejectThreadReq('${req.id}', '${req.user_id}')">✗</button>
+                    <button class="btn" id="btn-approve-thread-${req.id}">✓</button>
+                    <button class="btn btn-red" id="btn-reject-thread-${req.id}">✗</button>
                 </div>
             </div>`;
         }
         document.getElementById('threadRequests').innerHTML = html;
+        
+        setTimeout(() => {
+            for (let req of reqs) {
+                let approveBtn = document.getElementById('btn-approve-thread-'+req.id);
+                let rejectBtn = document.getElementById('btn-reject-thread-'+req.id);
+                if (approveBtn) {
+                    approveBtn.onclick = function() {
+                        this.disabled = true;
+                        rejectBtn.disabled = true;
+                        approveThreadReq(req.id, req.user_id);
+                    };
+                }
+                if (rejectBtn) {
+                    rejectBtn.onclick = function() {
+                        this.disabled = true;
+                        approveBtn.disabled = true;
+                        rejectThreadReq(req.id, req.user_id);
+                    };
+                }
+            }
+        }, 100);
     }
     
     async function approveThreadReq(reqId, userId) {
@@ -373,7 +394,7 @@
     
     async function postNews() {
         const msg = document.getElementById('newsMessage').value.trim();
-        if (!msg) return;
+        if (!msg) { alert('Введите сообщение'); return; }
         
         const user = JSON.parse(localStorage.getItem('session'));
         await supabaseClient.from('news').insert({ author_id: user.id, message: msg, role: user.role });
